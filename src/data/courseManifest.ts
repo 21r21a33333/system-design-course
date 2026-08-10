@@ -303,6 +303,34 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/consistency/quorum",
+    "title": "Quorum",
+    "path": "/docs/patterns/consistency/quorum",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/consistency/saga",
+    "title": "Saga",
+    "path": "/docs/patterns/consistency/saga",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/consistency/two-phase-commit",
+    "title": "Two-Phase Commit",
+    "path": "/docs/patterns/consistency/two-phase-commit",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/consistency/vector-clocks",
+    "title": "Vector Clocks",
+    "path": "/docs/patterns/consistency/vector-clocks",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/reliability/bulkhead",
     "title": "Bulkhead",
     "path": "/docs/patterns/reliability/bulkhead",
