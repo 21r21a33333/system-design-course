@@ -1,0 +1,34 @@
+/* src/components/Flashcard/styles.module.css */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.face {
+  min-height: 120px;
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.deckProgress {
+  font-weight: 600;
+}
+
+.reviewedLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
