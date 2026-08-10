@@ -1,0 +1,16 @@
+/* src/components/MarkComplete/styles.module.css */
+.button {
+  margin-bottom: 1rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  background: var(--ifm-background-color);
+  cursor: pointer;
+}
+
+.buttonDone {
+  composes: button;
+  background: var(--ifm-color-success-contrast-background);
+  border-color: var(--ifm-color-success);
+  color: var(--ifm-color-success-contrast-foreground);
+}
