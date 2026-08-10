@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { copyImages, rewriteImagePaths } from './images';
+import { copyImages, escapeLiteralBraces, quoteHtmlAttributes, rewriteImagePaths, selfCloseImgTags } from './images';
 
 describe('images', () => {
   let srcDir: string;
@@ -32,5 +32,40 @@ describe('images', () => {
     expect(md).toBe('![alt](/img/sdp/foo.png)');
     const html = rewriteImagePaths('<img src="images/foo.png">');
     expect(html).toBe('<img src="/img/sdp/foo.png">');
+  });
+
+  it('quotes unquoted html attribute values', () => {
+    const out = quoteHtmlAttributes('<a href=https://example.com/page>text</a>');
+    expect(out).toBe('<a href="https://example.com/page">text</a>');
+  });
+
+  it('leaves already-quoted attribute values unchanged', () => {
+    const out = quoteHtmlAttributes('<a href="https://example.com/page">text</a>');
+    expect(out).toBe('<a href="https://example.com/page">text</a>');
+  });
+
+  it('leaves JSX-expression attribute values unchanged', () => {
+    const out = quoteHtmlAttributes('<Foo bar={baz}>text</Foo>');
+    expect(out).toBe('<Foo bar={baz}>text</Foo>');
+  });
+
+  it('self-closes unclosed img tags', () => {
+    const out = selfCloseImgTags('<img src="/img/sdp/foo.png">');
+    expect(out).toBe('<img src="/img/sdp/foo.png" />');
+  });
+
+  it('leaves already-self-closed img tags unchanged', () => {
+    const out = selfCloseImgTags('<img src="/img/sdp/foo.png" />');
+    expect(out).toBe('<img src="/img/sdp/foo.png" />');
+  });
+
+  it('escapes literal braces outside code fences', () => {
+    const out = escapeLiteralBraces('{<br/>"personid": "1234"<br/>}');
+    expect(out).toBe('\\{<br/>"personid": "1234"<br/>\\}');
+  });
+
+  it('leaves braces inside fenced code blocks unescaped', () => {
+    const body = ['```python', 'cache.get("user.{0}", user_id)', '```'].join('\n');
+    expect(escapeLiteralBraces(body)).toBe(body);
   });
 });

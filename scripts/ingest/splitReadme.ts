@@ -61,10 +61,50 @@ export function githubAnchor(heading: string): string {
     .replace(/\s+/g, '-');
 }
 
-export function rewriteInternalLinks(body: string, sections: SectionSpec[]): string {
-  const anchorToSlug = new Map(sections.map((s) => [githubAnchor(s.heading), s.slug]));
+// Maps every #anchor in the source README (top-level `##` section headings
+// AND their `###`/`####` sub-headings) to the concept page slug that section
+// ends up on, so cross-page anchors (e.g. `#cap-theorem`, defined under
+// "Availability vs consistency" but linked to from other sections) resolve
+// correctly after the README is split into separate pages. Headings whose
+// enclosing top-level section isn't one of `sections` (e.g. "Contributing",
+// "Index of system design topics" — deliberately not ingested as pages) are
+// omitted; links to them are left untouched by rewriteInternalLinks.
+export function buildReadmeAnchorMap(readmeContent: string, sections: SectionSpec[]): Map<string, string> {
+  const headingToSlug = new Map(sections.map((s) => [s.heading, s.slug]));
+  const anchorToSlug = new Map<string, string>();
+  let currentSlug: string | undefined;
+  for (const line of readmeContent.split('\n')) {
+    const match = /^(#{2,4}) (.+)$/.exec(line.trim());
+    if (!match) continue;
+    const [, hashes, text] = match;
+    if (hashes === '##') {
+      currentSlug = headingToSlug.get(text.trim());
+    }
+    if (currentSlug) {
+      anchorToSlug.set(githubAnchor(text.trim()), currentSlug);
+    }
+  }
+  return anchorToSlug;
+}
+
+export function rewriteInternalLinks(body: string, sections: SectionSpec[], anchorMap?: Map<string, string>): string {
+  const anchorToSlug = anchorMap ?? new Map(sections.map((s) => [githubAnchor(s.heading), s.slug]));
   return body.replace(/]\(#([^)]+)\)/g, (full, anchor: string) => {
     const slug = anchorToSlug.get(anchor);
     return slug ? `](/docs/concepts/${slug})` : full;
   });
+}
+
+const README_URL = 'https://github.com/donnemartin/system-design-primer/blob/main/README.md';
+
+// A handful of #anchor links in the source README point at sections that
+// were deliberately not ingested as pages (e.g. "Contributing", "Index of
+// system design topics" — meta content and a table-of-contents made
+// redundant by the Docusaurus sidebar). Rather than leave those as
+// unresolvable same-page anchors (which fails Docusaurus's onBrokenAnchors
+// check) or fabricate a local page for them, point them at the same section
+// on the upstream GitHub README — honest about what's out of scope here
+// without dropping the reference.
+export function resolveRemainingAnchorsToGithub(body: string): string {
+  return body.replace(/]\(#([^)]+)\)/g, (_full, anchor: string) => `](${README_URL}#${anchor})`);
 }

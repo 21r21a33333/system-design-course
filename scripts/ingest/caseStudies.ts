@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { buildFrontmatter } from './frontmatter';
-import { rewriteImagePaths } from './images';
+import { escapeLiteralBraces, quoteHtmlAttributes, rewriteImagePaths, selfCloseImgTags } from './images';
 
 export interface CaseStudySpec {
   dir: string; // source directory name under solutions/<category>/
@@ -39,6 +39,20 @@ export function rewriteSiblingCaseStudyLinks(body: string, specs: CaseStudySpec[
   });
 }
 
+// The top-level README (now split into course/concepts/*) links into case
+// study solutions as `solutions/system_design/<dir>/README.md`, relative to
+// the repo root — a different link shape than the sibling-to-sibling links
+// within solutions/ handled above.
+const README_CASE_STUDY_LINK = /]\(solutions\/system_design\/([a-z_]+)\/README\.md\)/g;
+
+export function rewriteReadmeCaseStudyLinks(body: string, specs: CaseStudySpec[]): string {
+  const dirToSlug = new Map(specs.map((s) => [s.dir, s.slug]));
+  return body.replace(README_CASE_STUDY_LINK, (full, dir: string) => {
+    const slug = dirToSlug.get(dir);
+    return slug ? `](/docs/case-studies/system-design/${slug})` : full;
+  });
+}
+
 export function copySystemDesignCaseStudies(sourceRoot: string, outDir: string): CaseStudySpec[] {
   fs.mkdirSync(outDir, { recursive: true });
   SYSTEM_DESIGN_CASE_STUDIES.forEach((spec, index) => {
@@ -47,7 +61,7 @@ export function copySystemDesignCaseStudies(sourceRoot: string, outDir: string):
       throw new Error(`copySystemDesignCaseStudies: missing ${srcFile}`);
     }
     const raw = fs.readFileSync(srcFile, 'utf-8');
-    const withImages = rewriteImagePaths(raw);
+    const withImages = escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(raw))));
     const withLinks = rewriteSiblingCaseStudyLinks(withImages, SYSTEM_DESIGN_CASE_STUDIES);
     fs.writeFileSync(path.join(outDir, `${spec.slug}.md`), buildFrontmatter(spec.title, index + 1) + withLinks + '\n');
   });

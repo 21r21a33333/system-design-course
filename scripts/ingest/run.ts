@@ -1,0 +1,108 @@
+// scripts/ingest/run.ts
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  CONCEPT_SECTIONS,
+  splitReadme,
+  rewriteInternalLinks,
+  buildReadmeAnchorMap,
+  resolveRemainingAnchorsToGithub,
+} from './splitReadme';
+import { copyImages, escapeLiteralBraces, quoteHtmlAttributes, rewriteImagePaths, selfCloseImgTags } from './images';
+import { buildFrontmatter } from './frontmatter';
+import {
+  SYSTEM_DESIGN_CASE_STUDIES,
+  OOD_CASE_STUDIES,
+  copySystemDesignCaseStudies,
+  convertObjectOrientedNotebooks,
+  rewriteReadmeCaseStudyLinks,
+} from './caseStudies';
+import { FLASHCARD_DECKS, extractAllDecks } from './flashcards';
+import { buildManifest, writeManifestFile } from './manifest';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+
+function main(): void {
+  const sourceRoot = process.argv[2];
+  if (!sourceRoot) {
+    throw new Error('Usage: npm run ingest -- <path-to-cloned-system-design-primer>');
+  }
+
+  const readme = fs.readFileSync(path.join(sourceRoot, 'README.md'), 'utf-8');
+
+  // solutions/*/*.png files exist in the source repo but are unreferenced by
+  // any README or notebook (verified during design) — intentionally skipped.
+  const imageFiles = copyImages(path.join(sourceRoot, 'images'), path.join(REPO_ROOT, 'static', 'img', 'sdp'));
+
+  const anchorMap = buildReadmeAnchorMap(readme, CONCEPT_SECTIONS);
+
+  const [motivationBody] = [...splitReadme(readme, [{ heading: 'Motivation', slug: 'motivation', title: 'Motivation' }]).values()];
+  const introBody = resolveRemainingAnchorsToGithub(
+    rewriteInternalLinks(
+      escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(motivationBody)))),
+      CONCEPT_SECTIONS,
+      anchorMap,
+    ),
+  );
+  fs.writeFileSync(
+    path.join(REPO_ROOT, 'course', 'intro.md'),
+    `${buildFrontmatter('Motivation', 1)}${introBody}\n\n---\n\nContent adapted from [donnemartin/system-design-primer](https://github.com/donnemartin/system-design-primer), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).\n`,
+  );
+
+  const conceptBodies = splitReadme(readme, CONCEPT_SECTIONS);
+  const conceptsDir = path.join(REPO_ROOT, 'course', 'concepts');
+  fs.mkdirSync(conceptsDir, { recursive: true });
+  CONCEPT_SECTIONS.forEach((spec, index) => {
+    const raw = conceptBodies.get(spec.slug)!;
+    const withCaseStudyLinks = rewriteReadmeCaseStudyLinks(raw, SYSTEM_DESIGN_CASE_STUDIES);
+    const body = resolveRemainingAnchorsToGithub(
+      rewriteInternalLinks(
+        escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(withCaseStudyLinks)))),
+        CONCEPT_SECTIONS,
+        anchorMap,
+      ),
+    );
+    fs.writeFileSync(path.join(conceptsDir, `${spec.slug}.md`), buildFrontmatter(spec.title, index + 1) + body + '\n');
+  });
+
+  copySystemDesignCaseStudies(sourceRoot, path.join(REPO_ROOT, 'course', 'case-studies', 'system-design'));
+  convertObjectOrientedNotebooks(sourceRoot, path.join(REPO_ROOT, 'course', 'case-studies', 'object-oriented-design'));
+
+  const decks = extractAllDecks(path.join(sourceRoot, 'resources', 'flash_cards'));
+  const flashcardsDir = path.join(REPO_ROOT, 'src', 'data', 'flashcards');
+  fs.mkdirSync(flashcardsDir, { recursive: true });
+  let totalCards = 0;
+  for (const spec of FLASHCARD_DECKS) {
+    const cards = decks[spec.deckId];
+    totalCards += cards.length;
+    fs.writeFileSync(path.join(flashcardsDir, `${spec.deckId}.json`), JSON.stringify(cards, null, 2));
+  }
+
+  const manifest = buildManifest(
+    CONCEPT_SECTIONS.map((s) => ({ slug: s.slug, title: s.title })),
+    SYSTEM_DESIGN_CASE_STUDIES.map((s) => ({ slug: s.slug, title: s.title })),
+    OOD_CASE_STUDIES.map((s) => ({ slug: s.slug, title: s.title })),
+    FLASHCARD_DECKS.map((d) => ({ deckId: d.deckId, title: d.title })),
+  );
+  writeManifestFile(manifest, path.join(REPO_ROOT, 'src', 'data', 'courseManifest.ts'));
+
+  const expected = { concepts: 19, sdCaseStudies: 8, oodCaseStudies: 6, flashcards: 56, images: 36 };
+  const actual = {
+    concepts: CONCEPT_SECTIONS.length,
+    sdCaseStudies: SYSTEM_DESIGN_CASE_STUDIES.length,
+    oodCaseStudies: OOD_CASE_STUDIES.length,
+    flashcards: totalCards,
+    images: imageFiles.length,
+  };
+  console.log('Ingestion summary:', actual);
+  for (const key of Object.keys(expected) as (keyof typeof expected)[]) {
+    if (actual[key] !== expected[key]) {
+      throw new Error(`Ingestion count mismatch for ${key}: expected ${expected[key]}, got ${actual[key]}`);
+    }
+  }
+  console.log('All counts match expected inventory. Ingestion complete.');
+}
+
+main();

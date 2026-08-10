@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   SYSTEM_DESIGN_CASE_STUDIES,
   notebookToMarkdown,
+  rewriteReadmeCaseStudyLinks,
   rewriteSiblingCaseStudyLinks,
   type Notebook,
 } from './caseStudies';
@@ -14,6 +15,24 @@ describe('rewriteSiblingCaseStudyLinks', () => {
       SYSTEM_DESIGN_CASE_STUDIES,
     );
     expect(out).toBe('See [scaling](/docs/case-studies/system-design/scaling-aws) for more.');
+  });
+});
+
+describe('rewriteReadmeCaseStudyLinks', () => {
+  it('rewrites a solutions/system_design/<dir>/README.md link to a course doc path', () => {
+    const out = rewriteReadmeCaseStudyLinks(
+      'See [pastebin](solutions/system_design/pastebin/README.md) for more.',
+      SYSTEM_DESIGN_CASE_STUDIES,
+    );
+    expect(out).toBe('See [pastebin](/docs/case-studies/system-design/pastebin) for more.');
+  });
+
+  it('leaves unknown directories unchanged', () => {
+    const out = rewriteReadmeCaseStudyLinks(
+      'See [x](solutions/system_design/nonexistent/README.md) for more.',
+      SYSTEM_DESIGN_CASE_STUDIES,
+    );
+    expect(out).toBe('See [x](solutions/system_design/nonexistent/README.md) for more.');
   });
 });
 
