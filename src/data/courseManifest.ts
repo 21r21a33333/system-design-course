@@ -401,6 +401,83 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/building-blocks/blob-store",
+    "title": "Blob Store",
+    "path": "/docs/patterns/building-blocks/blob-store",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/distributed-cache",
+    "title": "Distributed Cache",
+    "path": "/docs/patterns/building-blocks/distributed-cache",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/distributed-logging",
+    "title": "Distributed Logging",
+    "path": "/docs/patterns/building-blocks/distributed-logging",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/distributed-message-queue",
+    "title": "Distributed Message Queue",
+    "path": "/docs/patterns/building-blocks/distributed-message-queue",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/distributed-monitoring",
+    "title": "Distributed Monitoring",
+    "path": "/docs/patterns/building-blocks/distributed-monitoring",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/distributed-search",
+    "title": "Distributed Search",
+    "path": "/docs/patterns/building-blocks/distributed-search",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/distributed-task-scheduler",
+    "title": "Distributed Task Scheduler",
+    "path": "/docs/patterns/building-blocks/distributed-task-scheduler",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/key-value-store",
+    "title": "Key-Value Store",
+    "path": "/docs/patterns/building-blocks/key-value-store",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/rate-limiter",
+    "title": "Rate Limiter",
+    "path": "/docs/patterns/building-blocks/rate-limiter",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/sequencer",
+    "title": "Sequencer",
+    "path": "/docs/patterns/building-blocks/sequencer",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/sharded-counters",
+    "title": "Sharded Counters",
+    "path": "/docs/patterns/building-blocks/sharded-counters",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/communication/event-driven-architecture",
     "title": "Event-Driven Architecture",
     "path": "/docs/patterns/communication/event-driven-architecture",
