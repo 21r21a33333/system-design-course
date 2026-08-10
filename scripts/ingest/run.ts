@@ -121,6 +121,14 @@ function main(): void {
       throw new Error(`Ingestion count mismatch for ${key}: expected ${expected[key]}, got ${actual[key]}`);
     }
   }
+
+  const expectedPatternCount = 60;
+  if (patternEntries.length !== expectedPatternCount) {
+    throw new Error(
+      `Supplementary pattern count mismatch: expected ${expectedPatternCount}, got ${patternEntries.length}`,
+    );
+  }
+
   console.log('All counts match expected inventory. Ingestion complete.');
 }
 
