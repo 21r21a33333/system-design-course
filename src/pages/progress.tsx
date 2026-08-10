@@ -12,9 +12,16 @@ const CATEGORY_LABELS: Record<ManifestCategory, string> = {
   'system-design-case-studies': 'System Design Case Studies',
   'oo-case-studies': 'Object-Oriented Design Case Studies',
   flashcards: 'Flashcard Decks',
+  'design-patterns': 'Design Patterns',
 };
 
-const CATEGORY_ORDER: ManifestCategory[] = ['concepts', 'system-design-case-studies', 'oo-case-studies', 'flashcards'];
+const CATEGORY_ORDER: ManifestCategory[] = [
+  'concepts',
+  'system-design-case-studies',
+  'oo-case-studies',
+  'design-patterns',
+  'flashcards',
+];
 
 function DashboardContent(): React.JSX.Element {
   const { state, isComplete } = useProgress();

@@ -19,7 +19,8 @@ import {
   rewriteReadmeCaseStudyLinks,
 } from './caseStudies';
 import { FLASHCARD_DECKS, extractAllDecks } from './flashcards';
-import { buildManifest, writeManifestFile } from './manifest';
+import { buildManifest, writeManifestFile, type ManifestEntry } from './manifest';
+import { scanAuthoredMarkdown } from '../authored/scanAuthoredDocs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -85,16 +86,25 @@ function main(): void {
     fs.writeFileSync(path.join(flashcardsDir, `${spec.deckId}.json`), JSON.stringify(cards, null, 2));
   }
 
-  const manifest = buildManifest(
+  const manifest: ManifestEntry[] = buildManifest(
     CONCEPT_SECTIONS.map((s) => ({ slug: s.slug, title: s.title })),
     SYSTEM_DESIGN_CASE_STUDIES.map((s) => ({ slug: s.slug, title: s.title })),
     OOD_CASE_STUDIES.map((s) => ({ slug: s.slug, title: s.title })),
     FLASHCARD_DECKS.map((d) => ({ deckId: d.deckId, title: d.title })),
-  );
+  ).map((entry) => ({ ...entry, source: 'primer' as const }));
+
+  const patternEntries = scanAuthoredMarkdown(path.join(REPO_ROOT, 'course'), 'patterns').map((p) => ({
+    id: p.id,
+    title: p.title,
+    path: `/docs/${p.id}`,
+    category: 'design-patterns' as const,
+    source: 'supplementary' as const,
+  }));
+  manifest.push(...patternEntries);
   // course/intro.md is generated separately above (not part of CONCEPT_SECTIONS) but
   // still gets a Mark-as-complete toggle via the Task 8 DocItem swizzle, so it needs
   // a manifest entry to be counted toward dashboard progress and category lists.
-  manifest.push({ id: 'intro', title: 'Motivation', path: '/docs/intro', category: 'concepts' });
+  manifest.push({ id: 'intro', title: 'Motivation', path: '/docs/intro', category: 'concepts', source: 'primer' });
   writeManifestFile(manifest, path.join(REPO_ROOT, 'src', 'data', 'courseManifest.ts'));
 
   const expected = { concepts: 19, sdCaseStudies: 8, oodCaseStudies: 6, flashcards: 56, images: 36 };
