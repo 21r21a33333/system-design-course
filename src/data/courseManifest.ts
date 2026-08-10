@@ -303,6 +303,41 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/storage/consistent-hashing",
+    "title": "Consistent Hashing",
+    "path": "/docs/patterns/storage/consistent-hashing",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/storage/cqrs",
+    "title": "CQRS",
+    "path": "/docs/patterns/storage/cqrs",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/storage/event-sourcing",
+    "title": "Event Sourcing",
+    "path": "/docs/patterns/storage/event-sourcing",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/storage/sharding",
+    "title": "Sharding",
+    "path": "/docs/patterns/storage/sharding",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/storage/write-ahead-log",
+    "title": "Write-Ahead Log",
+    "path": "/docs/patterns/storage/write-ahead-log",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "intro",
     "title": "Motivation",
     "path": "/docs/intro",
