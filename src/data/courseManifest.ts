@@ -303,6 +303,55 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/reliability/bulkhead",
+    "title": "Bulkhead",
+    "path": "/docs/patterns/reliability/bulkhead",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/reliability/circuit-breaker",
+    "title": "Circuit Breaker",
+    "path": "/docs/patterns/reliability/circuit-breaker",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/reliability/dead-letter-queue",
+    "title": "Dead Letter Queue",
+    "path": "/docs/patterns/reliability/dead-letter-queue",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/reliability/graceful-degradation",
+    "title": "Graceful Degradation",
+    "path": "/docs/patterns/reliability/graceful-degradation",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/reliability/idempotency",
+    "title": "Idempotency",
+    "path": "/docs/patterns/reliability/idempotency",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/reliability/retry-with-backoff",
+    "title": "Retry with Backoff",
+    "path": "/docs/patterns/reliability/retry-with-backoff",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/reliability/timeout",
+    "title": "Timeout",
+    "path": "/docs/patterns/reliability/timeout",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/storage/consistent-hashing",
     "title": "Consistent Hashing",
     "path": "/docs/patterns/storage/consistent-hashing",
