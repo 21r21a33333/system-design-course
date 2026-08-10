@@ -268,6 +268,41 @@ export const courseManifest: ManifestEntry[] = [
     "source": "primer"
   },
   {
+    "id": "patterns/api-edge/api-gateway",
+    "title": "API Gateway",
+    "path": "/docs/patterns/api-edge/api-gateway",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/backend-for-frontend",
+    "title": "Backend for Frontend",
+    "path": "/docs/patterns/api-edge/backend-for-frontend",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/cursor-pagination",
+    "title": "Cursor Pagination",
+    "path": "/docs/patterns/api-edge/cursor-pagination",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/service-mesh",
+    "title": "Service Mesh",
+    "path": "/docs/patterns/api-edge/service-mesh",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/sidecar",
+    "title": "Sidecar",
+    "path": "/docs/patterns/api-edge/sidecar",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/communication/event-driven-architecture",
     "title": "Event-Driven Architecture",
     "path": "/docs/patterns/communication/event-driven-architecture",
