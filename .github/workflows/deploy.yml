@@ -23,6 +23,13 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      # package-lock.json was generated with npm 11 locally. Node 20's
+      # bundled npm (~10.x) fails `npm ci`'s package.json/lockfile
+      # sync-check on it immediately (in ~1s, before installing anything)
+      # even though the dependency graph itself is fine — pin a matching
+      # npm major version explicitly rather than relying on whatever
+      # setup-node's Node version happens to bundle.
+      - run: npm install -g npm@11
       - run: npm ci
       - run: npm test
       - run: npm run typecheck
