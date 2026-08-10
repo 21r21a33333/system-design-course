@@ -6,7 +6,7 @@ sidebar_position: 6
 ### CAP theorem
 
 <p align="center">
-  <img src="/img/sdp/bgLMI2u.png" />
+  <img src="/system-design-course/img/sdp/bgLMI2u.png" />
   <br/>
   <i><a href="https://robertgreiner.com/cap-theorem-revisited">Source: CAP theorem revisited</a></i>
 </p>

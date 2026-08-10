@@ -4,7 +4,7 @@ sidebar_position: 9
 ---
 
 <p align="center">
-  <img src="/img/sdp/IOyLj4i.jpg" />
+  <img src="/system-design-course/img/sdp/IOyLj4i.jpg" />
   <br/>
   <i><a href="http://www.slideshare.net/srikrupa5/dns-security-presentation-issa">Source: DNS security presentation</a></i>
 </p>

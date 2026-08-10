@@ -24,6 +24,11 @@ import { buildManifest, writeManifestFile } from './manifest';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
+// Must match docusaurus.config.ts's `baseUrl`. Raw HTML <img> tags in the
+// source content need this prepended manually (see images.ts) since
+// Docusaurus only auto-applies baseUrl to markdown ![]() image syntax.
+const SITE_BASE_URL = '/system-design-course';
+
 function main(): void {
   const sourceRoot = process.argv[2];
   if (!sourceRoot) {
@@ -41,7 +46,7 @@ function main(): void {
   const [motivationBody] = [...splitReadme(readme, [{ heading: 'Motivation', slug: 'motivation', title: 'Motivation' }]).values()];
   const introBody = resolveRemainingAnchorsToGithub(
     rewriteInternalLinks(
-      escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(motivationBody)))),
+      escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(motivationBody, SITE_BASE_URL)))),
       CONCEPT_SECTIONS,
       anchorMap,
     ),
@@ -59,7 +64,7 @@ function main(): void {
     const withCaseStudyLinks = rewriteReadmeCaseStudyLinks(raw, SYSTEM_DESIGN_CASE_STUDIES);
     const body = resolveRemainingAnchorsToGithub(
       rewriteInternalLinks(
-        escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(withCaseStudyLinks)))),
+        escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(withCaseStudyLinks, SITE_BASE_URL)))),
         CONCEPT_SECTIONS,
         anchorMap,
       ),
@@ -67,7 +72,7 @@ function main(): void {
     fs.writeFileSync(path.join(conceptsDir, `${spec.slug}.md`), buildFrontmatter(spec.title, index + 1) + body + '\n');
   });
 
-  copySystemDesignCaseStudies(sourceRoot, path.join(REPO_ROOT, 'course', 'case-studies', 'system-design'));
+  copySystemDesignCaseStudies(sourceRoot, path.join(REPO_ROOT, 'course', 'case-studies', 'system-design'), SITE_BASE_URL);
   convertObjectOrientedNotebooks(sourceRoot, path.join(REPO_ROOT, 'course', 'case-studies', 'object-oriented-design'));
 
   const decks = extractAllDecks(path.join(sourceRoot, 'resources', 'flash_cards'));

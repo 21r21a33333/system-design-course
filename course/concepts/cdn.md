@@ -4,7 +4,7 @@ sidebar_position: 10
 ---
 
 <p align="center">
-  <img src="/img/sdp/h9TAuGI.jpg" />
+  <img src="/system-design-course/img/sdp/h9TAuGI.jpg" />
   <br/>
   <i><a href="https://www.creative-artworks.eu/why-use-a-content-delivery-network-cdn/">Source: Why use a CDN</a></i>
 </p>

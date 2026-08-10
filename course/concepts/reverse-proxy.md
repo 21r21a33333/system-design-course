@@ -4,7 +4,7 @@ sidebar_position: 12
 ---
 
 <p align="center">
-  <img src="/img/sdp/n41Azff.png" />
+  <img src="/system-design-course/img/sdp/n41Azff.png" />
   <br/>
   <i><a href="https://upload.wikimedia.org/wikipedia/commons/6/67/Reverse_proxy_h2g2bob.svg">Source: Wikipedia</a></i>
   <br/>

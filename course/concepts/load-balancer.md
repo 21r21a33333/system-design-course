@@ -4,7 +4,7 @@ sidebar_position: 11
 ---
 
 <p align="center">
-  <img src="/img/sdp/h81n9iK.png" />
+  <img src="/system-design-course/img/sdp/h81n9iK.png" />
   <br/>
   <i><a href="http://horicky.blogspot.com/2010/10/scalable-system-design-patterns.html">Source: Scalable system design patterns</a></i>
 </p>

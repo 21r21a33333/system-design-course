@@ -108,7 +108,7 @@ Handy metrics based on numbers above:
 > Articles on how real world systems are designed.
 
 <p align="center">
-  <img src="/img/sdp/TcUo2fw.png" />
+  <img src="/system-design-course/img/sdp/TcUo2fw.png" />
   <br/>
   <i><a href="https://www.infoq.com/presentations/Twitter-Timeline-Scalability">Source: Twitter timelines at scale</a></i>
 </p>

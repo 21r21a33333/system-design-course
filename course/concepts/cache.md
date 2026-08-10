@@ -4,7 +4,7 @@ sidebar_position: 15
 ---
 
 <p align="center">
-  <img src="/img/sdp/Q6z24La.png" />
+  <img src="/system-design-course/img/sdp/Q6z24La.png" />
   <br/>
   <i><a href="http://horicky.blogspot.com/2010/10/scalable-system-design-patterns.html">Source: Scalable system design patterns</a></i>
 </p>
@@ -75,7 +75,7 @@ Since you can only store a limited amount of data in cache, you'll need to deter
 #### Cache-aside
 
 <p align="center">
-  <img src="/img/sdp/ONjORqk.png" />
+  <img src="/system-design-course/img/sdp/ONjORqk.png" />
   <br/>
   <i><a href="http://www.slideshare.net/tmatyashovsky/from-cache-to-in-memory-data-grid-introduction-to-hazelcast">Source: From cache to in-memory data grid</a></i>
 </p>
@@ -111,7 +111,7 @@ Subsequent reads of data added to cache are fast.  Cache-aside is also referred 
 #### Write-through
 
 <p align="center">
-  <img src="/img/sdp/0vBc0hN.png" />
+  <img src="/system-design-course/img/sdp/0vBc0hN.png" />
   <br/>
   <i><a href="http://www.slideshare.net/jboner/scalability-availability-stability-patterns/">Source: Scalability, availability, stability, patterns</a></i>
 </p>
@@ -146,7 +146,7 @@ Write-through is a slow overall operation due to the write operation, but subseq
 #### Write-behind (write-back)
 
 <p align="center">
-  <img src="/img/sdp/rgSrvjG.png" />
+  <img src="/system-design-course/img/sdp/rgSrvjG.png" />
   <br/>
   <i><a href="http://www.slideshare.net/jboner/scalability-availability-stability-patterns/">Source: Scalability, availability, stability, patterns</a></i>
 </p>
@@ -164,7 +164,7 @@ In write-behind, the application does the following:
 #### Refresh-ahead
 
 <p align="center">
-  <img src="/img/sdp/kxtjqgE.png" />
+  <img src="/system-design-course/img/sdp/kxtjqgE.png" />
   <br/>
   <i><a href="http://www.slideshare.net/tmatyashovsky/from-cache-to-in-memory-data-grid-introduction-to-hazelcast">Source: From cache to in-memory data grid</a></i>
 </p>

@@ -4,7 +4,7 @@ sidebar_position: 16
 ---
 
 <p align="center">
-  <img src="/img/sdp/54GYsSx.png" />
+  <img src="/system-design-course/img/sdp/54GYsSx.png" />
   <br/>
   <i><a href="http://lethain.com/introduction-to-architecting-systems-for-scale/#platform_layer">Source: Intro to architecting systems for scale</a></i>
 </p>

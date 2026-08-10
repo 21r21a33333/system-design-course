@@ -34,6 +34,22 @@ describe('images', () => {
     expect(html).toBe('<img src="/img/sdp/foo.png">');
   });
 
+  it('prepends baseUrl to raw html img src but not to markdown image syntax', () => {
+    // Docusaurus's remark plugin already resolves markdown ![]() image paths
+    // against baseUrl automatically; prepending it here too would double it.
+    // Raw HTML <img> tags get no such treatment from Docusaurus, so they need
+    // baseUrl applied at ingestion time or they 404 under a non-root baseUrl.
+    const md = rewriteImagePaths('![alt](images/foo.png)', '/system-design-course');
+    expect(md).toBe('![alt](/img/sdp/foo.png)');
+    const html = rewriteImagePaths('<img src="images/foo.png">', '/system-design-course');
+    expect(html).toBe('<img src="/system-design-course/img/sdp/foo.png">');
+  });
+
+  it('strips a trailing slash from baseUrl before prepending', () => {
+    const html = rewriteImagePaths('<img src="images/foo.png">', '/system-design-course/');
+    expect(html).toBe('<img src="/system-design-course/img/sdp/foo.png">');
+  });
+
   it('quotes unquoted html attribute values', () => {
     const out = quoteHtmlAttributes('<a href=https://example.com/page>text</a>');
     expect(out).toBe('<a href="https://example.com/page">text</a>');

@@ -53,7 +53,7 @@ export function rewriteReadmeCaseStudyLinks(body: string, specs: CaseStudySpec[]
   });
 }
 
-export function copySystemDesignCaseStudies(sourceRoot: string, outDir: string): CaseStudySpec[] {
+export function copySystemDesignCaseStudies(sourceRoot: string, outDir: string, baseUrl: string = ''): CaseStudySpec[] {
   fs.mkdirSync(outDir, { recursive: true });
   SYSTEM_DESIGN_CASE_STUDIES.forEach((spec, index) => {
     const srcFile = path.join(sourceRoot, 'solutions', 'system_design', spec.dir, 'README.md');
@@ -61,7 +61,7 @@ export function copySystemDesignCaseStudies(sourceRoot: string, outDir: string):
       throw new Error(`copySystemDesignCaseStudies: missing ${srcFile}`);
     }
     const raw = fs.readFileSync(srcFile, 'utf-8');
-    const withImages = escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(raw))));
+    const withImages = escapeLiteralBraces(selfCloseImgTags(quoteHtmlAttributes(rewriteImagePaths(raw, baseUrl))));
     const withLinks = rewriteSiblingCaseStudyLinks(withImages, SYSTEM_DESIGN_CASE_STUDIES);
     fs.writeFileSync(path.join(outDir, `${spec.slug}.md`), buildFrontmatter(spec.title, index + 1) + withLinks + '\n');
   });

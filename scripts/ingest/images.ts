@@ -14,8 +14,20 @@ export function copyImages(sourceImagesDir: string, destDir: string): string[] {
 const IMAGE_MARKDOWN = /(!\[[^\]]*]\()images\/([^)]+)(\))/g;
 const IMAGE_HTML_SRC = /(<img[^>]*src=")images\/([^"]+)(")/g;
 
-export function rewriteImagePaths(body: string): string {
-  return body.replace(IMAGE_MARKDOWN, '$1/img/sdp/$2$3').replace(IMAGE_HTML_SRC, '$1/img/sdp/$2$3');
+// Docusaurus's own remark plugin resolves a leading-slash path in markdown
+// `![]()` syntax against `baseUrl` automatically (and bundles it via
+// webpack) — so those paths must stay baseUrl-free here. Raw HTML `<img
+// src="">` tags are NOT processed by that plugin (documented Docusaurus
+// behavior: only markdown image syntax gets baseUrl-aware resolution), so
+// without baseUrl prepended here they 404 under any non-root baseUrl (e.g.
+// GitHub Pages project sites, which are always served under
+// `/<repo-name>/`). `baseUrl` defaults to '' so callers that don't pass it
+// (and existing tests) keep the prior root-baseUrl-only behavior.
+export function rewriteImagePaths(body: string, baseUrl: string = ''): string {
+  const base = baseUrl.replace(/\/$/, '');
+  return body
+    .replace(IMAGE_MARKDOWN, '$1/img/sdp/$2$3')
+    .replace(IMAGE_HTML_SRC, `$1${base}/img/sdp/$2$3`);
 }
 
 // Source README/case-study markdown contains raw HTML tags with unquoted
