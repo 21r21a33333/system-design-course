@@ -1,43 +1,25 @@
-import type {ReactNode} from 'react';
-import clsx from 'clsx';
-import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import React from 'react';
 import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
-import Heading from '@theme/Heading';
+import Link from '@docusaurus/Link';
 
-import styles from './index.module.css';
-
-function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
+export default function Home(): React.JSX.Element {
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <Heading as="h1" className="hero__title">
-          {siteConfig.title}
-        </Heading>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro">
-            Docusaurus Tutorial - 5min ⏱️
+    <Layout title="System Design Course" description="A progress-tracked system-design-primer course">
+      <main className="container margin-vert--lg">
+        <h1>System Design Course</h1>
+        <p>
+          A progress-trackable replica of{' '}
+          <a href="https://github.com/donnemartin/system-design-primer">donnemartin/system-design-primer</a>{' '}
+          (CC BY 4.0), with flashcards and a completion dashboard.
+        </p>
+        <p>
+          <Link className="button button--primary" to="/docs/concepts/study-guide">
+            Start the course
+          </Link>{' '}
+          <Link className="button button--secondary" to="/progress">
+            My Progress
           </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-export default function Home(): ReactNode {
-  const {siteConfig} = useDocusaurusContext();
-  return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
-      <HomepageHeader />
-      <main>
-        <HomepageFeatures />
+        </p>
       </main>
     </Layout>
   );
