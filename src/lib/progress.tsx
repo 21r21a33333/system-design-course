@@ -34,7 +34,7 @@ interface ProgressContextValue {
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
 
-export function ProgressProvider({ children }: { children: ReactNode }): JSX.Element {
+export function ProgressProvider({ children }: { children: ReactNode }): React.JSX.Element {
   const [state, setState] = useState<ProgressState>(EMPTY_STATE);
 
   useEffect(() => {

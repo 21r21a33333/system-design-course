@@ -8,7 +8,7 @@ import MarkComplete from '@site/src/components/MarkComplete';
 
 type Props = WrapperProps<typeof LayoutType>;
 
-export default function LayoutWrapper(props: Props): JSX.Element {
+export default function LayoutWrapper(props: Props): React.JSX.Element {
   return (
     <>
       <BrowserOnly>{() => <MarkComplete />}</BrowserOnly>
