@@ -303,6 +303,55 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/batch-streaming/backpressure",
+    "title": "Backpressure",
+    "path": "/docs/patterns/batch-streaming/backpressure",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/change-data-capture",
+    "title": "Change Data Capture",
+    "path": "/docs/patterns/batch-streaming/change-data-capture",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/exactly-once-semantics",
+    "title": "Exactly-Once Semantics",
+    "path": "/docs/patterns/batch-streaming/exactly-once-semantics",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/lambda-kappa-architecture",
+    "title": "Lambda & Kappa Architecture",
+    "path": "/docs/patterns/batch-streaming/lambda-kappa-architecture",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/mapreduce",
+    "title": "MapReduce",
+    "path": "/docs/patterns/batch-streaming/mapreduce",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/partitioned-consumption",
+    "title": "Partitioned Consumption",
+    "path": "/docs/patterns/batch-streaming/partitioned-consumption",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/stream-processing",
+    "title": "Stream Processing",
+    "path": "/docs/patterns/batch-streaming/stream-processing",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/communication/event-driven-architecture",
     "title": "Event-Driven Architecture",
     "path": "/docs/patterns/communication/event-driven-architecture",
