@@ -268,6 +268,41 @@ export const courseManifest: ManifestEntry[] = [
     "source": "primer"
   },
   {
+    "id": "patterns/communication/event-driven-architecture",
+    "title": "Event-Driven Architecture",
+    "path": "/docs/patterns/communication/event-driven-architecture",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/communication/pub-sub",
+    "title": "Publish-Subscribe",
+    "path": "/docs/patterns/communication/pub-sub",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/communication/server-sent-events",
+    "title": "Server-Sent Events",
+    "path": "/docs/patterns/communication/server-sent-events",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/communication/webhooks",
+    "title": "Webhooks",
+    "path": "/docs/patterns/communication/webhooks",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/communication/websockets",
+    "title": "WebSockets",
+    "path": "/docs/patterns/communication/websockets",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "intro",
     "title": "Motivation",
     "path": "/docs/intro",
