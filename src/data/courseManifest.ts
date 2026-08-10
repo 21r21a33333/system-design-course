@@ -366,6 +366,41 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/observability/blue-green-deployment",
+    "title": "Blue-Green Deployment",
+    "path": "/docs/patterns/observability/blue-green-deployment",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/observability/canary-deployment",
+    "title": "Canary Deployment",
+    "path": "/docs/patterns/observability/canary-deployment",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/observability/distributed-tracing",
+    "title": "Distributed Tracing",
+    "path": "/docs/patterns/observability/distributed-tracing",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/observability/feature-flags",
+    "title": "Feature Flags",
+    "path": "/docs/patterns/observability/feature-flags",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/observability/health-check",
+    "title": "Health Check",
+    "path": "/docs/patterns/observability/health-check",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/reliability/bulkhead",
     "title": "Bulkhead",
     "path": "/docs/patterns/reliability/bulkhead",
