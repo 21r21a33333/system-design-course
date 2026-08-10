@@ -1,5 +1,5 @@
 // src/components/Flashcard/Flashcard.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './styles.module.css';
 
 export interface FlashcardData {
@@ -10,35 +10,39 @@ export interface FlashcardData {
 
 interface Props {
   card: FlashcardData;
+  expanded: boolean;
   reviewed: boolean;
+  onToggleExpanded: () => void;
   onToggleReviewed: () => void;
 }
 
-export default function Flashcard({ card, reviewed, onToggleReviewed }: Props): React.JSX.Element {
-  const [flipped, setFlipped] = useState(false);
-
+export default function Flashcard({ card, expanded, reviewed, onToggleExpanded, onToggleReviewed }: Props): React.JSX.Element {
   return (
-    <div className={styles.card}>
-      {/* Card HTML is sanitized at ingestion time (scripts/ingest/flashcards.ts) and
-          committed as static data, so rendering it directly here is safe. */}
+    <div className={styles.row}>
       <div
-        className={styles.face}
+        className={styles.rowHeader}
         role="button"
         tabIndex={0}
-        onClick={() => setFlipped((f) => !f)}
+        aria-expanded={expanded}
+        onClick={onToggleExpanded}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') setFlipped((f) => !f);
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onToggleExpanded();
+          }
         }}
-        dangerouslySetInnerHTML={{ __html: flipped ? card.back : card.front }}
-      />
-      <div className={styles.controls}>
-        <button type="button" onClick={() => setFlipped((f) => !f)}>
-          {flipped ? 'Show front' : 'Show back'}
-        </button>
-        <label className={styles.reviewedLabel}>
+      >
+        <span className={expanded ? styles.chevronOpen : styles.chevron} aria-hidden="true">
+          ▸
+        </span>
+        {/* Card HTML is sanitized at ingestion time (scripts/ingest/flashcards.ts) and
+            committed as static data, so rendering it directly here is safe. */}
+        <div className={styles.front} dangerouslySetInnerHTML={{ __html: card.front }} />
+        <label className={styles.reviewedLabel} onClick={(e) => e.stopPropagation()}>
           <input type="checkbox" checked={reviewed} onChange={onToggleReviewed} /> Got it
         </label>
       </div>
+      {expanded && <div className={styles.answer} dangerouslySetInnerHTML={{ __html: card.back }} />}
     </div>
   );
 }

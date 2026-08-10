@@ -1,34 +1,87 @@
 /* src/components/Flashcard/styles.module.css */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
-.card {
-  border: 1px solid var(--ifm-color-emphasis-400);
-  border-radius: 8px;
-  padding: 1rem;
-}
-
-.face {
-  min-height: 120px;
-  cursor: pointer;
-}
-
-.controls {
+.toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.toolbarActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toolbarActions button {
+  padding: 0.35rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  background: var(--ifm-background-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.row {
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rowHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+}
+
+.chevron,
+.chevronOpen {
+  flex-shrink: 0;
+  display: inline-block;
+  color: var(--ifm-color-emphasis-600);
+  transition: transform 0.15s ease;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.front {
+  flex: 1;
+  min-width: 0;
+}
+
+.front :global(h1),
+.front :global(h2),
+.front :global(h3),
+.front :global(h4),
+.front :global(p) {
+  margin: 0;
+}
+
+.answer {
+  padding: 0.75rem 1rem 1rem 2.5rem;
+  border-top: 1px solid var(--ifm-color-emphasis-300);
 }
 
 .deckProgress {
   font-weight: 600;
+  margin: 0;
 }
 
 .reviewedLabel {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
