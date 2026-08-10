@@ -1,0 +1,12 @@
+/* src/components/SupplementaryBadge/styles.module.css */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--ifm-color-warning-contrast-background);
+  color: var(--ifm-color-warning-contrast-foreground);
+  border: 1px solid var(--ifm-color-warning);
+  margin-bottom: 0.75rem;
+}

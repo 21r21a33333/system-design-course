@@ -6,6 +6,7 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useProgress, computeCompletionPercent } from '@site/src/lib/progress';
 import { courseManifest, type ManifestCategory, type ManifestEntry } from '@site/src/data/courseManifest';
 import { FLASHCARD_DECK_CARDS } from '@site/src/data/flashcardDecks';
+import SupplementaryBadge from '@site/src/components/SupplementaryBadge';
 
 const CATEGORY_LABELS: Record<ManifestCategory, string> = {
   concepts: 'Core Concepts',
@@ -62,7 +63,8 @@ function DashboardContent(): React.JSX.Element {
                 }
                 return (
                   <li key={entry.id}>
-                    <Link to={entry.path}>{entry.title}</Link> {isComplete(entry.id) ? '✅' : ''}
+                    <Link to={entry.path}>{entry.title}</Link> {isComplete(entry.id) ? '✅' : ''}{' '}
+                    {entry.source === 'supplementary' && <SupplementaryBadge />}
                   </li>
                 );
               })}
