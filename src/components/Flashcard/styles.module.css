@@ -57,14 +57,28 @@
 .front {
   flex: 1;
   min-width: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ifm-font-color-base);
 }
 
+/* Card "front" HTML comes straight from the source Anki decks, where
+   different cards wrap their question in different tags (h1-h6, p, or
+   nothing) — normalize all of them to the row's own size/weight so the
+   list reads as consistent rows, not arbitrary heading sizes. */
 .front :global(h1),
 .front :global(h2),
 .front :global(h3),
 .front :global(h4),
+.front :global(h5),
+.front :global(h6),
 .front :global(p) {
   margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
 }
 
 .answer {
