@@ -268,6 +268,55 @@ export const courseManifest: ManifestEntry[] = [
     "source": "primer"
   },
   {
+    "id": "patterns/ai-infra/feature-store",
+    "title": "Feature Store",
+    "path": "/docs/patterns/ai-infra/feature-store",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-infra/gpu-auto-scaling",
+    "title": "GPU Auto-Scaling",
+    "path": "/docs/patterns/ai-infra/gpu-auto-scaling",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-infra/llm-gateway",
+    "title": "LLM Gateway",
+    "path": "/docs/patterns/ai-infra/llm-gateway",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-infra/model-serving",
+    "title": "Model Serving",
+    "path": "/docs/patterns/ai-infra/model-serving",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-infra/rag-pipeline",
+    "title": "RAG Pipeline",
+    "path": "/docs/patterns/ai-infra/rag-pipeline",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-infra/semantic-caching",
+    "title": "Semantic Caching",
+    "path": "/docs/patterns/ai-infra/semantic-caching",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-infra/vector-database-sharding",
+    "title": "Vector Database Sharding",
+    "path": "/docs/patterns/ai-infra/vector-database-sharding",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/api-edge/api-gateway",
     "title": "API Gateway",
     "path": "/docs/patterns/api-edge/api-gateway",
