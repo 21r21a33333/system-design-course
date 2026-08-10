@@ -224,5 +224,11 @@ export const courseManifest: ManifestEntry[] = [
     "title": "OO Design",
     "path": "/flashcards/oo-design",
     "category": "flashcards"
+  },
+  {
+    "id": "intro",
+    "title": "Motivation",
+    "path": "/docs/intro",
+    "category": "concepts"
   }
 ];

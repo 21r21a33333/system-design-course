@@ -86,6 +86,10 @@ function main(): void {
     OOD_CASE_STUDIES.map((s) => ({ slug: s.slug, title: s.title })),
     FLASHCARD_DECKS.map((d) => ({ deckId: d.deckId, title: d.title })),
   );
+  // course/intro.md is generated separately above (not part of CONCEPT_SECTIONS) but
+  // still gets a Mark-as-complete toggle via the Task 8 DocItem swizzle, so it needs
+  // a manifest entry to be counted toward dashboard progress and category lists.
+  manifest.push({ id: 'intro', title: 'Motivation', path: '/docs/intro', category: 'concepts' });
   writeManifestFile(manifest, path.join(REPO_ROOT, 'src', 'data', 'courseManifest.ts'));
 
   const expected = { concepts: 19, sdCaseStudies: 8, oodCaseStudies: 6, flashcards: 56, images: 36 };
