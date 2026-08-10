@@ -352,6 +352,34 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/scaling/auto-scaling",
+    "title": "Auto-Scaling",
+    "path": "/docs/patterns/scaling/auto-scaling",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/scaling/connection-pooling",
+    "title": "Connection Pooling",
+    "path": "/docs/patterns/scaling/connection-pooling",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/scaling/horizontal-scaling",
+    "title": "Horizontal Scaling",
+    "path": "/docs/patterns/scaling/horizontal-scaling",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/scaling/vertical-scaling",
+    "title": "Vertical Scaling",
+    "path": "/docs/patterns/scaling/vertical-scaling",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/storage/consistent-hashing",
     "title": "Consistent Hashing",
     "path": "/docs/patterns/storage/consistent-hashing",
