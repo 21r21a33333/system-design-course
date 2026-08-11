@@ -51,7 +51,13 @@ via the yt-notes pipeline. Branch: `dsa-course-notes` in `system-design-course`.
       basic cryptography (RSA/DH), FFT, approximation algorithms. Review fixes: LP
       max-flow conservation constraint (Major), Hungarian negative-cost precondition,
       frame swaps, CSES link corrections.
-- [ ] Batch 7 — L61 (parallel algorithms) + DSA manifest wiring + final polish
+- [x] **Batch 7 — L61** (Parallel Algorithms) — DONE (C++), adversarial-reviewed (frame fix).
+      Completes all 61 lectures. Full-site verification: typecheck clean, build SUCCESS,
+      37/37 tests pass. Orphan frames pruned (559 frames, all referenced).
+- Progress-manifest wiring (scripts/ingest/run.ts) DEFERRED: optional (build/deploy don't
+  depend on it), needs the cloned primer source path + typed-category/dashboard-UI changes.
+  DSA section is fully navigable/deployable without it.
+- **ALL 61 LECTURES COMPLETE.** 272 C++ blocks, 0 Python. ~220k words.
 
 ## Bundles already ingested (reusable)
 L01–L10 all ingested + cleaned. Video IDs are in each note's source link.
