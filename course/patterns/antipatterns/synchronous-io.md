@@ -114,8 +114,7 @@ fn build_dashboard(client: &Client, user_id: u64) -> (UserProfile, OrderHistory,
 ## The fix
 
 ```rust
-use std::future::Future;
-use std::pin::Pin;
+use std::thread;
 
 struct UserProfile {
     name: String,
@@ -129,45 +128,53 @@ struct Recommendations {
 
 struct Client;
 impl Client {
-    // Async equivalents — issuing the call no longer blocks the
-    // calling task; it yields control while the I/O is in flight.
-    fn fetch_profile(&self, _user_id: u64) -> Pin<Box<dyn Future<Output = UserProfile>>> {
-        Box::pin(async { UserProfile { name: "Ada".to_string() } })
+    // Same blocking calls as before — the fix isn't making the I/O
+    // itself non-blocking, it's making sure the three independent
+    // calls don't block *each other* by serializing on one thread.
+    fn fetch_profile(&self, _user_id: u64) -> UserProfile {
+        UserProfile { name: "Ada".to_string() }
     }
-    fn fetch_orders(&self, _user_id: u64) -> Pin<Box<dyn Future<Output = OrderHistory>>> {
-        Box::pin(async { OrderHistory { count: 3 } })
+    fn fetch_orders(&self, _user_id: u64) -> OrderHistory {
+        OrderHistory { count: 3 }
     }
-    fn fetch_recommendations(&self, _user_id: u64) -> Pin<Box<dyn Future<Output = Recommendations>>> {
-        Box::pin(async { Recommendations { items: vec!["widget".to_string()] } })
+    fn fetch_recommendations(&self, _user_id: u64) -> Recommendations {
+        Recommendations { items: vec!["widget".to_string()] }
     }
 }
 
-// All three independent calls are started concurrently and awaited
-// together — total wait time is close to the slowest single call
-// rather than the sum of all three, and no thread sits blocked while
-// any one of them is in flight.
-async fn build_dashboard(
-    client: &Client,
+// Each independent call is handed to its own OS thread, so all three
+// are in flight at once; the calling thread then blocks on `join`,
+// which only waits for the *slowest* of the three rather than the sum
+// of all three. This is genuine concurrency (three threads actually
+// running/waiting at the same time), not just async syntax that never
+// gets polled concurrently.
+fn build_dashboard(
+    client: &'static Client,
     user_id: u64,
 ) -> (UserProfile, OrderHistory, Recommendations) {
-    let profile_fut = client.fetch_profile(user_id);
-    let orders_fut = client.fetch_orders(user_id);
-    let recs_fut = client.fetch_recommendations(user_id);
+    let profile_handle = thread::spawn(move || client.fetch_profile(user_id));
+    let orders_handle = thread::spawn(move || client.fetch_orders(user_id));
+    let recs_handle = thread::spawn(move || client.fetch_recommendations(user_id));
 
-    let profile = profile_fut.await;
-    let orders = orders_fut.await;
-    let recs = recs_fut.await;
+    let profile = profile_handle.join().expect("profile thread panicked");
+    let orders = orders_handle.join().expect("orders thread panicked");
+    let recs = recs_handle.join().expect("recommendations thread panicked");
     (profile, orders, recs)
 }
 ```
 
-The fix has two parts working together: switching from blocking calls
-to `async` ones means the runtime can schedule other work on the same
-thread while any one call is waiting on I/O, instead of parking the
-thread; and starting all three futures before awaiting any of them
-means the three independent calls actually run concurrently rather than
-one after another, so total latency approaches the slowest single call
-instead of the sum of all three.
+The fix's core move is starting all three calls before waiting on any
+of them: `thread::spawn` returns immediately and the call actually
+begins running on its own thread, so by the time the first `.join()`
+runs, all three are already in flight concurrently. Total wait time
+approaches the slowest single call rather than the sum of all three,
+and — just as importantly — the calling thread is never the one doing
+the blocking wait for all three in sequence, which is the specific
+defect the original code had. (A production system would more likely
+use an async runtime's task-based concurrency here instead of raw
+OS threads, for lower per-call overhead at high fan-out; the structural
+fix is the same either way — stop awaiting each call before starting
+the next one.)
 
 ## How to detect it
 
