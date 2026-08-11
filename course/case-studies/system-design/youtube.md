@@ -70,27 +70,128 @@ Returning success to the uploader as soon as the raw bytes are durably stored �
 
 ### Use case: Service transcodes an uploaded video
 
-This is the component with no clear analogue in the other case studies in this course, and it's the one most worth spending interview time on for this specific system. The pipeline takes one raw input file and needs to produce several independent outputs (different resolution/bitrate renditions, a set of thumbnail candidates), where each output's transcoding work is independent of the others and can run in parallel.
+The hard problem: a single 10-minute upload transcoded serially into several renditions could take longer than the video itself to process — the pipeline needs to parallelize the work of *one* video across many machines, not just parallelize across different videos.
 
-* A **coordinator** breaks the job into per-rendition tasks (e.g., "produce the 1080p rendition," "produce the 480p rendition," "extract thumbnail candidates") and places them onto a work queue
-* A fleet of **transcoding workers** pulls tasks and processes them — this is compute-intensive, and unlike almost everything else in this design, it's CPU/GPU-bound rather than I/O-bound, so the worker fleet scales on a completely different axis (compute capacity) than the rest of the system. FFmpeg is the widely-used real-world tool for the actual encode step underlying a worker like this, and its wide codec and container support is a large part of why it's such a common building block for this exact stage of a video pipeline.
-* Each completed rendition is written to blob storage independently; the coordinator tracks which renditions are done and updates the video's status once enough are ready to make the video watchable (not necessarily all — the lowest-resolution rendition finishing first is enough to let playback start, with higher tiers becoming available for adaptive switching shortly after)
-* If a worker crashes mid-task, the task needs to be retried by another worker rather than lost — this is a natural fit for [Competing Consumers](/docs/patterns/batch-streaming/competing-consumers) pulling from a [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue), where an unacknowledged task becomes visible again for another worker to pick up
-* Structuring the whole thing as [Pipes and Filters](/docs/patterns/building-blocks/pipes-and-filters) — independent, composable processing stages (demux, per-rendition encode, thumbnail extraction, packaging) rather than one monolithic transcoding job — makes it possible to retry or scale one stage without re-running the others, and to add a new rendition tier later without redesigning the pipeline
+**Core spec: batch/pipeline — DAG-based parallel chunked transcoding**
 
-This pipeline is also the part of the system where cost is most directly proportional to work done (compute-seconds per video, roughly proportional to video length and rendition count), which is worth mentioning as a real operational concern distinct from the storage and bandwidth costs elsewhere in the design.
+The key idea is to split the source video into independent time-segments *before* transcoding, so each segment's work can be scheduled onto a different worker and run concurrently, then reassembled after. The dependency graph is a DAG: many independent chunk-encode tasks fan out from one "split" step, then fan back into one "stitch" step per rendition.
+
+```python
+class TranscodingCoordinator(MRJob):
+    """Splits an uploaded video into fixed-length chunks, transcodes
+    each chunk independently (in parallel, across workers) for every
+    target rendition, then reassembles each rendition from its chunks.
+
+    This is structured as a map/reduce-shaped DAG rather than a single
+    long-running per-video job specifically so a 10-minute upload's
+    transcoding wall-clock time is bounded by one chunk's processing
+    time, not the full video's length.
+    """
+    CHUNK_SECONDS = 600  # 10-minute chunks
+    RENDITIONS = ["1080p", "720p", "480p", "240p"]
+
+    def split_into_chunks(self, video_id, duration_seconds):
+        """Emit one independent unit of work per (chunk, rendition) pair.
+
+        Example: a 32-minute upload -> 4 chunks (0-10, 10-20, 20-30,
+        30-32 min) x 4 renditions = 16 independent tasks, all schedulable
+        in parallel across the worker fleet with no cross-task ordering
+        dependency.
+        """
+        num_chunks = (duration_seconds + self.CHUNK_SECONDS - 1) // self.CHUNK_SECONDS
+        for chunk_index in range(num_chunks):
+            start = chunk_index * self.CHUNK_SECONDS
+            end = min(start + self.CHUNK_SECONDS, duration_seconds)
+            for rendition in self.RENDITIONS:
+                yield (video_id, rendition), (chunk_index, start, end)
+
+    def mapper(self, _, chunk_task):
+        """One worker's unit of work: encode a single time-segment into
+        a single rendition. Independent of every other chunk/rendition
+        pair, which is exactly what makes it safe to run in parallel.
+
+        (video_id, "720p"), (chunk_index=2, start=1200, end=1800)
+          -> (video_id, "720p"), (chunk_index=2, chunk_uri="s3://.../chunk_2_720p.ts")
+        """
+        (video_id, rendition), (chunk_index, start, end) = chunk_task
+        chunk_uri = self.encode_segment(video_id, rendition, start, end)  # invokes ffmpeg
+        yield (video_id, rendition), (chunk_index, chunk_uri)
+
+    def reducer(self, key, chunk_results):
+        """Reassemble one rendition from its completed chunks, once
+        every chunk for that rendition has finished. Reduction is
+        per-rendition, not per-video, so a 1080p rendition being slow
+        never blocks the 240p rendition from finishing and becoming
+        watchable first.
+
+        (video_id, "720p"), [(0, uri0), (1, uri1), (2, uri2)]
+          -> (video_id, "720p"), "s3://.../video_full_720p.mp4"
+        """
+        video_id, rendition = key
+        ordered_chunks = [uri for _, uri in sorted(chunk_results)]
+        final_uri = self.concatenate_segments(ordered_chunks)
+        yield (video_id, rendition), final_uri
+```
+
+* A **coordinator** runs `split_into_chunks` and places every `(chunk, rendition)` task onto a work queue — for the earlier back-of-envelope's average 10-minute video, that's already one chunk per rendition tier; a 40-minute video becomes 4x that many independent, schedulable units
+* A fleet of **transcoding workers** pulls tasks and runs the `mapper` step — this is compute-intensive, and unlike almost everything else in this design, it's CPU/GPU-bound rather than I/O-bound, so the worker fleet scales on a completely different axis (compute capacity) than the rest of the system. [FFmpeg](https://ffmpeg.org/) is the widely-used real-world tool for the actual encode step underlying a worker like this, and its wide codec and container support is a large part of why it's such a common building block for this exact stage of a video pipeline
+* The `reducer` step runs once all of a rendition's chunks are done, stitching them into that rendition's final file; the video becomes watchable as soon as *one* rendition (typically the lowest tier) finishes reducing, not once every rendition is done
+
+**Data structures:**
+* `transcode_tasks`: `video_id`, `chunk_index`, `rendition`, `status` (`pending`/`in_progress`/`done`/`failed`), `worker_id`, `chunk_uri` — the DAG's per-task state, queryable to know exactly how much of a video is done
+* `video_renditions`: `video_id`, `rendition`, `status`, `final_uri` — one row per rendition, updated by the reducer step
+
+**Trade-offs:**
+* **The gotcha:** chunking a video for parallel transcoding isn't free — most modern video codecs compress *between* frames (a frame is encoded as a delta from nearby frames), so an arbitrary byte-offset split can cut through the middle of a dependent frame sequence and produce a corrupt or visually broken chunk boundary. The fix is to only split at existing keyframe boundaries (frames that don't depend on neighboring frames), which means chunk length isn't perfectly uniform — it's "the next keyframe after the target chunk boundary," not an exact wall-clock cut. This is the detail that separates "will this actually produce a correct video when reassembled" from a naive fixed-offset split that looks fine until playback hits a chunk seam.
+* If a worker crashes mid-task, the task needs to be retried by another worker rather than lost — a natural fit for [Competing Consumers](/docs/patterns/batch-streaming/competing-consumers) pulling from a [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue), where an unacknowledged task becomes visible again for another worker to pick up. Because tasks are chunk-scoped, not video-scoped, a retry only redoes a few minutes of work, not the whole video.
+* Structuring the whole thing as [Pipes and Filters](/docs/patterns/building-blocks/pipes-and-filters) — independent, composable stages (split, per-chunk encode, per-rendition stitch, thumbnail extraction) rather than one monolithic job — makes it possible to retry or scale one stage without re-running the others, and to add a new rendition tier later without redesigning the pipeline.
+* This pipeline is also the part of the system where cost is most directly proportional to work done (compute-seconds per video, roughly proportional to video length and rendition count), which is worth mentioning as a real operational concern distinct from the storage and bandwidth costs elsewhere in the design.
 
 ### Use case: User watches a video
 
-* Client requests the video's manifest (the list of available renditions and their URLs) from the metadata/playback service
-* Client begins fetching video segments from the **CDN**, starting at a lower-bitrate rendition to minimize start-up delay, and adjusts which rendition it requests for subsequent segments based on observed download speed — this adaptive-bitrate behavior lives client-side; the server's job is simply to have all the renditions available and correctly segmented. HLS and MPEG-DASH are the two real, widely-deployed protocols that define exactly this segmented-rendition-plus-manifest shape, and either is a reasonable concrete choice for the packaging format this design's renditions and manifest need to follow
-* Segments are fetched from the CDN edge nearest the viewer; only on a cache miss does the request fall through to origin blob storage
+The hard problem here isn't computing anything — it's a wire-format problem: the client needs to know which renditions exist and where their segments live, in a format it can adapt against in real time as network conditions change.
 
-This is the delivery-side counterpart to the transcoding pipeline's production-side complexity: because the pipeline already did the expensive work of producing multiple renditions ahead of time, playback itself is a comparatively simple, mostly-static-file-serving problem, which is exactly what makes it so effectively cacheable. See [CDN](/docs/patterns/building-blocks/cdn) for the general mechanism — the key point specific to video is that popular content's *entire working set* (all renditions of a small number of very popular videos) can often be kept resident at CDN edges, since video traffic tends to follow a strong popularity skew where a small fraction of the catalog accounts for a large fraction of total plays.
+**Core spec: adaptive bitrate manifest (HLS)**
+
+* Client requests the video's manifest from the metadata/playback service
+* [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming) (or [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP)) is the real, widely-deployed wire format that defines exactly this segmented-rendition-plus-manifest shape; a master `.m3u8` playlist lists each available rendition and its bandwidth, and each rendition has its own child playlist listing that rendition's individual segment files:
+
+```
+# master.m3u8 -- lists every available rendition
+#EXTM3U
+#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080
+1080p/rendition.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=2800000,RESOLUTION=1280x720
+720p/rendition.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=1400000,RESOLUTION=854x480
+480p/rendition.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=700000,RESOLUTION=426x240
+240p/rendition.m3u8
+
+# 720p/rendition.m3u8 -- lists that rendition's individual segments
+#EXTM3U
+#EXT-X-TARGETDURATION=10
+#EXTINF:10.0,
+segment_000.ts
+#EXTINF:10.0,
+segment_001.ts
+#EXTINF:10.0,
+segment_002.ts
+#EXT-X-ENDLIST
+```
+
+* The client parses the master playlist, starts at a lower-bitrate rendition to minimize start-up delay, and switches which child playlist it pulls segments from as it observes its own download speed — this adaptive-bitrate decision logic lives entirely client-side; the server's job is only to have every rendition correctly segmented and the manifests accurate
+* Segments are fetched from the **CDN** edge nearest the viewer; only on a cache miss does the request fall through to origin blob storage
+
+**Data structures:** no new server-side storage beyond the `video_renditions` table above — the manifest is generated (or regenerated once, then cached) from that table's rows, one `#EXT-X-STREAM-INF` line per completed rendition.
+
+**Trade-offs:**
+* This is the delivery-side counterpart to the transcoding pipeline's production-side complexity: because the pipeline already did the expensive work of producing multiple renditions and correctly segmenting them ahead of time, playback itself is a comparatively simple, mostly-static-file-serving problem, which is exactly what makes it so effectively cacheable. See [CDN](/docs/patterns/building-blocks/cdn) for the general mechanism — the key point specific to video is that popular content's *entire working set* (all renditions of a small number of very popular videos) can often be kept resident at CDN edges, since video traffic tends to follow a strong popularity skew where a small fraction of the catalog accounts for a large fraction of total plays.
+* A manifest listing a rendition that isn't actually finished yet would cause playback to fail mid-switch — the manifest generation step has to only include renditions the `video_renditions` table marks as `done`, which is a small but easy-to-miss correctness dependency between the transcoding pipeline's write path and the playback manifest's read path.
 
 ### Use case: User searches for videos, service tracks view counts
 
-Search indexes title, description, and (optionally) transcript text against an inverted index — the same general mechanism described in [Distributed Search](/docs/patterns/building-blocks/distributed-search), of the kind Elasticsearch or OpenSearch implement as off-the-shelf systems — updated asynchronously off the same "video uploaded / video ready" event stream the transcoding pipeline already consumes, rather than being a separate ad hoc integration.
+Search indexes title, description, and (optionally) transcript text against an inverted index — the same general mechanism described in [Distributed Search](/docs/patterns/building-blocks/distributed-search), of the kind Elasticsearch or OpenSearch implement as off-the-shelf systems — updated asynchronously off the same "video uploaded / video ready" event stream the transcoding pipeline already consumes, rather than being a separate ad hoc integration. Same REST shape as any keyword search: `GET /api/v1/search?q=...&limit=20`, returning a ranked list of `video_id`/title/thumbnail results — a "same shape as X" case, not worth a separate example here.
 
 View counts follow the same reasoning as Instagram's like counts: extremely high write frequency concentrated on a small number of popular videos, tolerant of a brief lag before the displayed number is exact. A [Sharded Counter](/docs/patterns/building-blocks/sharded-counters) absorbs concurrent increments without one row becoming a bottleneck on a video that's currently trending, with the displayed count refreshed from a periodic aggregate rather than summed on every single page view.
 
@@ -114,3 +215,12 @@ View counts follow the same reasoning as Instagram's like counts: extremely high
 * **Live streaming is a fundamentally different problem, worth naming even though it's out of scope**: there's no "process before serving" step to hide latency behind, since the content doesn't exist yet — the transcoding pipeline described here becomes a real-time, low-latency pipeline instead of a batch job, and adaptive delivery has to happen against a moving target instead of a fixed set of pre-generated segments.
 * **Thumbnail generation is a small piece of the pipeline but has an interesting wrinkle**: producing several candidate thumbnails (frames at different timestamps) and letting the uploader pick, or auto-selecting one, is a good example of a pipeline stage that's cheap and fast (extract a handful of frames) riding alongside stages that are expensive and slow (full transcodes) within the same job — worth mentioning as a reason not to model the whole pipeline as uniformly expensive.
 * **View-count integrity vs. approximate counting** is a good tension to raise: the sharded-counter approach optimizes for throughput and tolerates eventual accuracy, but a platform also cares about *not* counting bot/replay traffic — worth a brief mention that the counting mechanism and the anti-abuse/validity-filtering logic are two separate concerns layered together, not the same problem.
+
+## Source(s) and further reading
+
+* [HTTP Live Streaming — Wikipedia](https://en.wikipedia.org/wiki/HTTP_Live_Streaming) — background on the HLS format this design's manifest example is drawn from
+* [RFC 8216: HTTP Live Streaming](https://www.rfc-editor.org/rfc/rfc8216) — the formal specification defining the `.m3u8` playlist syntax used in this use case's manifest example
+* [HTTP Live Streaming — Apple Developer Documentation](https://developer.apple.com/documentation/http-live-streaming) — the format's originating vendor documentation, with authoring guides for real manifests
+* [Dynamic Adaptive Streaming over HTTP (MPEG-DASH) — Wikipedia](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP) — the vendor-neutral alternative to HLS for the same segmented-rendition-plus-manifest shape
+* [FFmpeg](https://ffmpeg.org/) — the widely-used real-world encoding tool underlying the transcoding workers in this design's pipeline
+* [Pipes and Filters](/docs/patterns/building-blocks/pipes-and-filters) — the general pattern this design's chunked transcoding DAG is structured as

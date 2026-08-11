@@ -69,23 +69,139 @@ Doing image processing asynchronously, off the critical path of "upload finished
 
 ### Use case: User views their home feed — the fan-out decision
 
-This is the central design decision for a photo feed specifically, and it's worth being explicit about why it's *this* system's central decision rather than a generic scaling afterthought: with a 30:1 read-to-write ratio and highly skewed follower counts, the naive "compute the feed at read time by querying every followed user's recent posts" approach means the far more frequent operation (reads) pays the full cost every single time, while a precomputed approach pays that cost once per post and reads become cheap lookups. Two strategies, and a real design mixes them:
+This is the central design decision for a photo feed specifically, and it's worth being explicit about why it's *this* system's central decision rather than a generic scaling afterthought: with a 30:1 read-to-write ratio, the naive "compute the feed at read time by querying every followed user's recent posts" approach means the far more frequent operation (reads) pays the full cost every single time, while a precomputed approach pays that cost once per post and reads become cheap lookups.
 
-**Fan-out-on-write (push):** when a user posts, the fan-out service looks up their followers in the **social graph store** and inserts a reference to the new post (not the image bytes — just `post_id` and a timestamp) into each follower's precomputed **feed store** entry. A feed read then becomes a single cheap lookup: fetch this user's feed list, already sorted, already assembled. This is a great fit when follower counts are modest (the median case in this design's assumptions) — a few hundred insertions per post is cheap.
+**Core algorithm: hybrid push/pull fan-out**
 
-**Fan-out-on-read (pull):** for accounts with enormous follower counts, push becomes the wrong trade — a single post from an account with 30 million followers would mean 30 million feed-store writes for one upload, an amount of write amplification that dwarfs the read savings it buys. Instead, these accounts' posts are excluded from push fan-out; a feed read for someone following one or more such accounts merges their precomputed feed-store entries with a small number of live lookups against those specific high-follower accounts' recent posts, at read time.
+```python
+CELEBRITY_FOLLOWER_THRESHOLD = 10_000
 
-Splitting by a follower-count threshold — push below it, pull above it — gets the benefit of cheap reads for the common case without paying an enormous write cost for the skewed tail. This is a direct application of the same idea [CQRS](/docs/patterns/storage/cqrs) describes in general: optimize the write path and the read path independently rather than forcing one data shape to serve both well, and here that split is threshold-based rather than a single global strategy. It's worth noting explicitly how this differs from a video platform's fan-out problem (see the YouTube case study in this course): here, fan-out is about *distributing a reference to lightweight content* (a post ID) to potentially millions of feed lists cheaply, whereas a video platform's harder problem is preparing the *content itself* — encoding a large file into multiple renditions — before it's even servable to anyone, which is a pipeline problem, not a fan-out-strategy problem.
+class FanOutService:
+    """Fan-out-on-write (push) for normal accounts, fan-out-on-read
+    (pull) for high-follower accounts -- this split is what makes the
+    'the gotcha' below tractable rather than a wall the design hits at
+    scale.
+    """
+
+    def __init__(self, social_graph, feed_store, post_store):
+        self.social_graph = social_graph   # follower/following lookups
+        self.feed_store = feed_store       # precomputed per-user feed lists
+        self.post_store = post_store       # durable post metadata
+
+    def on_new_post(self, post_id, author_id, created_at):
+        follower_count = self.social_graph.follower_count(author_id)
+        if follower_count < CELEBRITY_FOLLOWER_THRESHOLD:
+            self._push_fan_out(post_id, author_id, created_at)
+        else:
+            # Deliberately skip fan-out entirely -- this post is never
+            # written into any follower's feed_store. It's picked up
+            # at read time instead. This is "the celebrity problem":
+            # a push here would mean millions of feed_store writes for
+            # one upload, dwarfing the read-time cost it would save.
+            self._mark_as_pull_only(post_id, author_id)
+
+    def _push_fan_out(self, post_id, author_id, created_at):
+        for follower_id in self.social_graph.followers(author_id):
+            self.feed_store.insert(follower_id, post_id, created_at)
+
+    def _mark_as_pull_only(self, post_id, author_id):
+        self.post_store.tag_pull_only(post_id, author_id)
+
+    def get_feed(self, user_id, limit=30):
+        """Read-time merge: start from the precomputed (pushed) feed,
+        then merge in live posts from any celebrity accounts this user
+        follows -- the only place those posts ever get materialized
+        for this reader.
+        """
+        pushed_posts = self.feed_store.get(user_id, limit=limit)
+        celebrities_followed = self.social_graph.followed_accounts_above(
+            user_id, follower_threshold=CELEBRITY_FOLLOWER_THRESHOLD
+        )
+        pulled_posts = []
+        for celeb_id in celebrities_followed:
+            pulled_posts.extend(
+                self.post_store.recent_posts(celeb_id, limit=limit)
+            )
+        merged = sorted(pushed_posts + pulled_posts, key=lambda p: p.created_at, reverse=True)
+        return merged[:limit]
+```
+
+A feed read for a user following only normal accounts is the cheap, common case: a single `feed_store.get` lookup, already sorted, already assembled. A feed read for a user following one or more celebrity accounts pays a small, bounded extra cost — a handful of live lookups against specifically those accounts' recent posts, not a query against the entire social graph.
+
+**Data structures:**
+* `feed_store`: `user_id -> [(post_id, created_at), ...]` — precomputed, pushed entries only; celebrity posts are never in here
+* `social_graph`: `followed_accounts_above(user_id, threshold)` — needs an index on follower *count* per account, not just the raw follow-edge list, so this filter doesn't require scanning every followed account's follower count at read time
+* `post_store`: adds a `tag_pull_only` marker so `recent_posts(celeb_id)` can be served as a fast, small range query (recent posts by one author, not a full feed computation)
+
+**Trade-offs:**
+* **The gotcha — this is "the celebrity problem," and it's the specific trap that separates a junior fan-out answer from a senior one:** naive push-only fan-out looks correct and performs fine right up until an account with millions of followers posts, at which point one upload triggers millions of feed-store writes, an amount of write amplification that can degrade the whole fan-out pipeline for every other user's posts queued behind it, not just the celebrity's own followers. The fix isn't "push, but faster" — it's structural: exclude high-follower accounts from push entirely and merge their posts in at read time instead, accepting a slightly more expensive read for anyone following a celebrity in exchange for never paying an unbounded write cost on that celebrity's post. A commonly cited threshold for "high-follower enough to switch strategies" is in the tens of thousands of followers, though a real system tunes this against actual write-amplification cost rather than treating any single number as fixed.
+* This is a direct application of the same idea [CQRS](/docs/patterns/storage/cqrs) describes in general: optimize the write path and the read path independently rather than forcing one data shape to serve both well — here the split is threshold-based (push below it, pull above it) rather than a single global strategy.
+* It's worth noting explicitly how this differs from a video platform's fan-out problem (see the YouTube case study in this course): here, fan-out is about *distributing a reference to lightweight content* (a post ID) to potentially millions of feed lists cheaply, whereas a video platform's harder problem is preparing the *content itself* — encoding a large file into multiple renditions — before it's even servable to anyone, which is a pipeline problem, not a fan-out-strategy problem. It's also worth distinguishing from WhatsApp's group-chat fan-out (elsewhere in this course): WhatsApp's per-recipient push is viable specifically because group sizes stay in the dozens — the same push-only approach applied to a follower list of millions is exactly the failure mode the celebrity threshold exists to avoid.
+
+**REST API:**
+
+```
+$ curl https://instagram.example/api/v1/feed?user_id=8821&limit=30 \
+    -H "Authorization: Bearer <token>"
+```
+
+Response:
+
+```json
+{
+  "posts": [
+    {"post_id": "p_991a", "author_id": "u_204", "created_at": "2026-08-11T13:58:02Z", "source": "pushed"},
+    {"post_id": "p_88f2", "author_id": "u_1", "created_at": "2026-08-11T13:57:40Z", "source": "pulled"}
+  ],
+  "next_cursor": "eyJvZmZzZXQiOjMwfQ=="
+}
+```
 
 ### Use case: User views another user's profile grid
 
-Unlike the home feed, a profile grid is just one user's own posts in reverse-chronological order — no fan-out or social-graph merge needed, since it's not aggregating across multiple people. This is a straightforward paginated query against the **post store** by `user_id`, ordered by `created_at`. Because a request for the next page of someone's grid can arrive with posts still being inserted concurrently, this is a natural fit for [Cursor Pagination](/docs/patterns/api-edge/cursor-pagination) rather than offset-based paging, so that pagination stays stable even as new posts land.
+Unlike the home feed, a profile grid is just one user's own posts in reverse-chronological order — no fan-out or social-graph merge needed, since it's not aggregating across multiple people. This is a straightforward paginated query against the **post store** by `user_id`, ordered by `created_at`. Because a request for the next page of someone's grid can arrive with posts still being inserted concurrently, this is a natural fit for [Cursor Pagination](/docs/patterns/api-edge/cursor-pagination) rather than offset-based paging, so that pagination stays stable even as new posts land. Same REST shape as the feed endpoint above — `GET /api/v1/users/{user_id}/posts?limit=30&cursor=...` — with no `source` field, since every post here is the same author's own.
 
 ### Use case: User likes or comments on a post
 
-Likes are extremely high-frequency, low-value-per-write events concentrated on a small number of popular posts — a single popular post can receive thousands of likes within minutes of being posted, all racing to increment the same counter. Treating `like_count` as a single row that every like directly increments and locks would make popular posts a serialization bottleneck exactly when they're getting the most attention. Instead, the count is maintained as a [Sharded Counter](/docs/patterns/building-blocks/sharded-counters): the true count is the sum across several shards, each like increments one (randomly or hash-selected) shard, and the displayed count is read from a periodically-refreshed aggregate rather than summed fresh on every single feed render, which would itself become expensive at feed-open volume.
+The hard problem: absorb bursty, highly-concentrated write volume (thousands of likes on one post within minutes) without that popular post becoming a bottleneck for everyone else's traffic.
 
-The like/comment *event* itself (who liked what, when) is written durably and independently of the counter — the counter is a fast, slightly-lagged aggregate for display; the underlying event log is the source of truth for anything that needs exact correctness (e.g., "did user X like this post," shown as a filled/unfilled icon, which needs an exact per-user answer, not an aggregate).
+**Core spec: sharded counter**
+
+```python
+import random
+
+class LikeCounter:
+    """Sharded counter: a popular post's like_count is spread across N
+    shards so concurrent likes on one post don't all serialize on a
+    single row's lock -- same shape as the sharded click counter in
+    this course's TinyURL case study, applied to a much higher and
+    more bursty write rate.
+    """
+    SHARDS_PER_POST = 20
+
+    def __init__(self, store):
+        self.store = store  # key: (post_id, shard_id) -> count
+
+    def record_like(self, post_id):
+        shard_id = random.randint(0, self.SHARDS_PER_POST - 1)
+        self.store.increment((post_id, shard_id))
+
+    def total_likes(self, post_id):
+        # Read once per cache-refresh interval, not once per feed
+        # render -- see Step 4 for how the displayed count is cached.
+        return sum(
+            self.store.get((post_id, shard_id)) or 0
+            for shard_id in range(self.SHARDS_PER_POST)
+        )
+```
+
+**Data structures:**
+* `like_counts`: `(post_id, shard_id) -> count` — wide, sparse table, not one row per post
+* `likes` (event log, separate from the counter): `post_id`, `user_id`, `created_at`, composite PK `(post_id, user_id)` — the source of truth for "did user X like this post," which needs an exact per-user answer (the filled/unfilled heart icon), not an aggregate
+
+**Trade-offs:**
+* Treating `like_count` as a single row that every like directly increments and locks would make popular posts a serialization bottleneck exactly when they're getting the most attention — the same [Sharded Counter](/docs/patterns/building-blocks/sharded-counters) reasoning as this course's TinyURL and YouTube case studies apply here, just at a higher and more bursty write rate given how concentrated likes are in the minutes right after a popular post goes up.
+* The like/comment *event* itself is written durably and independently of the counter — the counter is a fast, slightly-lagged aggregate for display; the event log is what anything needing exact correctness reads from instead.
 
 ## Step 4: Scale the design
 
@@ -107,3 +223,11 @@ The like/comment *event* itself (who liked what, when) is written durably and in
 * **Feed staleness tolerance is what makes eventual consistency acceptable here**, but it's worth stating the boundary explicitly: the *post itself* (upload succeeded, is retrievable, isn't lost) needs strong durability guarantees; *where it currently appears in fan-out* does not. Conflating those two would either make uploads slower than necessary or make feed correctness weaker than it should be.
 * **Deleting a post has to reverse the same fan-out** it went through on write — a delete needs to remove or tombstone the post reference from every feed-store entry it was pushed into, which is real work proportional to follower count, same as the original fan-out, and easy to forget when focused only on the write path.
 * **Why reverse-chronological rather than ranked, given this is a real product decision Instagram actually made?** Worth a brief honest note: ranking by predicted engagement is a materially different and harder system (needs a scoring model, feature pipeline, and re-ranking at read time) layered on top of everything described here, not a replacement for it — the fan-out and storage architecture above is largely a prerequisite either way.
+
+## Source(s) and further reading
+
+* [Instagram Engineering — Meta Engineering](https://engineering.fb.com/tag/instagram/) — Meta's real engineering blog coverage of Instagram's infrastructure, including feed and storage systems
+* [CQRS](/docs/patterns/storage/cqrs) — the general read/write-path-separation principle this design's push/pull threshold split applies
+* [Sharded Counter](/docs/patterns/building-blocks/sharded-counters) — the pattern behind this design's like-count implementation
+* [Feed (Facebook) — Wikipedia](https://en.wikipedia.org/wiki/Feed_(Facebook)) — background on the general social-feed product concept this design implements a specific architecture for
+* [Cursor Pagination](/docs/patterns/api-edge/cursor-pagination) — the pagination approach used for both the profile grid and feed endpoints above

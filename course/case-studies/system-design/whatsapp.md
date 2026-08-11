@@ -60,38 +60,120 @@ The critical design fork this system faces, more than most others in this course
 
 ## Step 3: Design core components
 
-### Use case: User sends a message, recipient is online
+### Use case: User sends a message — storage schema and delivery state machine
 
-* Sender's client sends the message over its open connection to the gateway it's connected to
-* The gateway forwards it to the **message service**, which assigns a `message_id`, records it as "sent" durably (a write-ahead log entry, not yet the full history store — see below), and looks up the recipient's current connection in the **presence/session directory**
-* If the recipient has an active connection — possibly on a *different* gateway node than the sender, since there's no reason the two are colocated — the message service pushes the message to that gateway node, which delivers it over the recipient's open connection
-* The recipient's client acknowledges receipt; that acknowledgment flows back through the same path and updates the message's status to "delivered," which the sender's client shows as a receipt
+The hard problem: store messages so a single conversation's history can be read back in order cheaply, and track each message through a delivery lifecycle that must never silently get stuck or go backwards, even across a recipient going offline mid-flight.
 
-Because a user can be connected from one gateway node out of a very large fleet, the presence/session directory is the piece of shared state that makes cross-node delivery possible at all — it's a fast key-value lookup of `user_id -> which gateway node holds this connection`, kept in memory since a stale entry just costs one delivery retry, not correctness. See [Key-Value Store](/docs/patterns/building-blocks/key-value-store) for the general shape (an in-memory store like Redis is a common real-world fit for exactly this kind of high-throughput, short-lived lookup) and [WebSockets](/docs/patterns/communication/websockets) for the connection itself. WhatsApp's own real infrastructure is a well-documented case of holding an enormous number of concurrent connections on a comparatively small server fleet, historically built on Erlang specifically for its lightweight-process concurrency model — a useful real-world data point for how far a connection layer built around this shape can scale.
+**Core spec: schema + indexing**
 
-Writing the message durably *before* attempting delivery — rather than only after a failed delivery — matters: if delivery races the persistence write and the server crashes in between, "message accepted by the server but never actually recoverable" is exactly the silent-loss failure mode this system cannot tolerate. This durable-first ordering is the messaging-system analogue of a [Write-Ahead Log](/docs/patterns/storage/write-ahead-log).
+```sql
+CREATE TABLE messages (
+    conversation_id  BIGINT       NOT NULL,   -- shared by both/all participants
+    message_id       BIGINT       NOT NULL,   -- sortable: high bits = timestamp, low bits = per-ms sequence
+    sender_id        BIGINT       NOT NULL,
+    body_ciphertext  VARBINARY(4096) NOT NULL, -- end-to-end encrypted; server cannot read this
+    status           TINYINT      NOT NULL,   -- 0=sent 1=delivered 2=read (see state machine below)
+    created_at       TIMESTAMP    NOT NULL,
+    PRIMARY KEY (conversation_id, message_id),
+    FOREIGN KEY (sender_id) REFERENCES users(user_id)
+);
 
-### Use case: User sends a message, recipient is offline
+-- Partition the table by conversation_id (consistent-hash or range partitioning
+-- across shards) so a single busy conversation's writes and reads stay local
+-- to one partition instead of contending with every other conversation.
 
-* The flow is identical up through the durable write and status "sent"
-* The presence/session directory lookup finds no active connection for the recipient
-* The message is written to a **pending-delivery store** keyed by recipient, and delivery is deferred
-* When the recipient's client reconnects, it registers with the presence/session directory, and the message service checks that user's pending-delivery queue and pushes everything through the newly-open connection, oldest first
-* Once the client acknowledges each message, it's removed from the pending queue and the status transitions to "delivered"
+CREATE TABLE pending_delivery (
+    recipient_id     BIGINT       NOT NULL,
+    conversation_id  BIGINT       NOT NULL,
+    message_id       BIGINT       NOT NULL,
+    queued_at        TIMESTAMP    NOT NULL,
+    PRIMARY KEY (recipient_id, message_id)
+);
+```
 
-The pending-delivery store is really a per-recipient queue, and it's worth explicitly calling out that this is a different access pattern than the message history store: it's read in full on reconnect, then drained, so it should stay small in the steady state — most messages spend seconds to minutes here, not days, since most offline periods are short. A user offline for an extended stretch (days, a new device) is better served by a full history sync than by an ever-growing pending queue, which is why a cap and fallback path matters: past some size or age, stop enqueueing individually and instead mark "this user needs a history catch-up" for the reconnect flow to resolve against the durable history store directly.
+* `messages` is keyed `(conversation_id, message_id)` and *partitioned* by `conversation_id` — every real query this table serves ("give me this conversation's history, in order, possibly paginated") filters by `conversation_id` first, so partitioning any other way (say, by `sender_id`) would turn the single most common read into a scatter-gather across partitions for no benefit.
+* `message_id` is a sortable identifier (a Snowflake-style ID with a timestamp in the high bits, same shape as the [TinyURL case study](/docs/case-studies/system-design/tinyurl)'s code generator) rather than a random UUID, specifically so `ORDER BY message_id` inside one partition is equivalent to chronological order without a separate `created_at` index or sort step.
+* `pending_delivery` is keyed and partitioned by `recipient_id`, not `conversation_id` — its one query pattern is "give me everything queued for user X across *all* their conversations on reconnect," which is the opposite access pattern from `messages`, and is exactly why it's a separate table rather than a status flag on `messages` itself.
+
+**Core spec: delivery state machine (the three-checkmark model)**
+
+```
+                    ┌─────────┐
+     write succeeds │  SENT   │  <- server has durably persisted the message
+     ───────────────▶         │     (sender sees one checkmark)
+                    └────┬────┘
+                         │ recipient's client ACKs receipt
+                         │ over an open connection, OR
+                         │ pulls it from pending_delivery on reconnect
+                         ▼
+                    ┌─────────┐
+                    │DELIVERED│  <- message reached the recipient's device
+                    │         │     (sender sees two checkmarks)
+                    └────┬────┘
+                         │ recipient opens the conversation
+                         │ (client sends an explicit read event)
+                         ▼
+                    ┌─────────┐
+                    │  READ   │  <- sender sees two BLUE checkmarks
+                    └─────────┘
+
+Failure / rollback branches:
+  * SENT, recipient offline indefinitely -> stays SENT; retried on
+    every reconnect attempt, never silently dropped (see pending_delivery)
+  * DELIVERED ACK lost in transit -> server re-sends the message on the
+    recipient's next reconnect; recipient's client deduplicates by
+    message_id, so status still correctly reaches DELIVERED once, not twice
+  * READ receipt disabled by recipient's privacy setting -> state
+    machine halts at DELIVERED by design; sender never sees blue checks,
+    which is a product rule layered on top of the mechanism, not a bug
+```
+
+* Status only ever moves forward (`sent -> delivered -> read`) — a client is never expected to move a message backward, so a state write can be a simple conditional "advance to at least this status" rather than needing to reconcile out-of-order status updates.
+* Because delivery is push-based over an open connection, `sent -> delivered` for an online recipient typically happens within the same round trip that the WhatsApp connection layer (Step 2) already handles; the state machine's real value shows up in the offline branch, where `sent` can persist for hours or days without the message ever being at risk of loss.
+
+**Data structures:** the `messages` and `pending_delivery` tables above are the durable core; the presence/session directory (`user_id -> gateway_node`, in-memory) from Step 2 is what the delivery path consults to decide whether to push immediately or fall into the `pending_delivery` branch.
+
+**Trade-offs:**
+* **The gotcha:** end-to-end encryption means `body_ciphertext` is opaque to the server by design — the server cannot run a content-based search, cannot do keyword-based spam filtering on message bodies, and cannot route or prioritize a message based on what it says, because it structurally cannot read it. This rules out designs that other messaging or feed systems might reach for (server-side full-text search over message history, content-based abuse detection at the transport layer) and pushes any such feature to the client (a device can search its own decrypted local copy) or to metadata-only signals the server *can* see (sender, recipient, timestamp, size) — see [End-to-end encryption](https://en.wikipedia.org/wiki/End-to-end_encryption) and the [Signal Protocol documentation](https://signal.org/docs/) for the real cryptographic scheme this kind of guarantee is typically built on.
+* Writing the message durably *before* attempting delivery — rather than only after a failed delivery — matters: if delivery races the persistence write and the server crashes in between, "message accepted by the server but never actually recoverable" is exactly the silent-loss failure mode this system cannot tolerate. This durable-first ordering is the messaging-system analogue of a [Write-Ahead Log](/docs/patterns/storage/write-ahead-log).
+* The `pending_delivery` table should stay small in steady state — most messages spend seconds to minutes there, not days, since most offline periods are short. A user offline for an extended stretch (days, a new device) is better served by a full history sync than by an ever-growing pending queue, which argues for a cap: past some size or age, stop enqueueing individually and mark "this user needs a history catch-up" for the reconnect flow to resolve against the durable history store directly instead.
+
+**REST API:** message send/receive rides the persistent connection described in Step 2, not a REST endpoint — but a status query for a specific message (used by, e.g., a client reconciling state after reconnect) has the same shape as any other lookup:
+
+```
+$ curl https://whatsapp.example/api/v1/messages/8f3a1c9002/status \
+    -H "Authorization: Bearer <token>"
+```
+
+Response:
+
+```json
+{
+  "message_id": "8f3a1c9002",
+  "conversation_id": "conv_44210",
+  "status": "delivered",
+  "updated_at": "2026-08-11T14:02:31Z"
+}
+```
 
 ### Use case: Group chat message fan-out
 
-A group message is a write to the group's member list plus an independent delivery attempt per member — conceptually the sender sends one message, but the system fans it out as N individual deliveries, each following the online/offline path above independently based on that specific recipient's connection state. This keeps the per-recipient delivery and receipt logic identical to 1:1 messaging rather than introducing a second delivery mechanism, at the cost of doing N times the delivery work per group message — acceptable at the "dozens of members" scale this design targets, but the reason large broadcast channels need a fundamentally different fan-out strategy (more like the feed fan-out problem covered in the Instagram and YouTube case studies) rather than this per-recipient approach.
+A group message is a write to the group's member list plus an independent delivery attempt per member — conceptually the sender sends one message, but the system fans it out as N individual deliveries, each following the state machine above independently based on that specific recipient's connection state. This keeps the per-recipient delivery and receipt logic identical to 1:1 messaging rather than introducing a second delivery mechanism, at the cost of doing N times the delivery work per group message — acceptable at the "dozens of members" scale this design targets, but the reason large broadcast channels need a fundamentally different fan-out strategy (more like the feed fan-out problem covered in the Instagram and YouTube case studies) rather than this per-recipient approach.
 
-Message ordering within a group is handled by having each message carry a per-conversation sequence number assigned at write time, so clients can detect gaps and reorder locally even if two members' deliveries race across different gateway nodes — this avoids needing a single global sequencer for all of WhatsApp's traffic, which would be an unnecessary bottleneck, in favor of ordering that's only meaningful, and only enforced, within one conversation at a time.
+**Data structures:** `group_members` — `conversation_id`, `user_id`, `joined_at`, composite PK `(conversation_id, user_id)`; a group send iterates this list to create one `pending_delivery`/push attempt per member, each carrying the same `message_id` from the shared `messages` row.
 
-### Use case: Delivery and read receipts, presence
+**Trade-offs:**
+* Message ordering within a group is handled by having each message carry a per-conversation sequence number assigned at write time (the `message_id`'s sortable structure from the schema above), so clients can detect gaps and reorder locally even if two members' deliveries race across different gateway nodes — this avoids needing a single global sequencer for all of WhatsApp's traffic, which would be an unnecessary bottleneck, in favor of ordering that's only meaningful, and only enforced, within one conversation at a time.
+* Same end-to-end encryption constraint as 1:1 messages applies per-recipient in a group — the server still cannot read `body_ciphertext`, which means group membership changes (someone added or removed) have real cryptographic key-management implications out of scope here, not just an access-list update.
 
-Receipts are themselves small messages traveling the reverse direction (recipient's client to sender's client), reusing the exact same online/offline delivery path rather than being a separate subsystem — which is a nice simplification: "deliver this event to this user's active connection or queue it" is the one mechanism the whole system is built around, and receipts, presence changes, and typing indicators are all just different event payloads riding it.
+### Use case: Presence ("online" / "last seen")
 
-Presence ("online," "last seen 2 minutes ago") is intentionally treated as lower-durability than messages: a presence update that's lost or a few seconds stale is a cosmetic problem, not a correctness one, so it doesn't need the write-ahead durability messages get. A reasonable implementation just writes the current state into the same presence/session directory with a short expiry, refreshed on activity — if a client disconnects ungracefully (phone dies, connection drops without a clean close), the entry simply expires and the user is shown offline, no explicit cleanup required.
+Presence rides the same connection layer as message delivery and delivery/read receipts — it's just another small event type flowing over the already-open connection — but it has a meaningfully different durability requirement, so it's worth calling out on its own.
+
+**Data structures:** presence lives in the same in-memory presence/session directory as the gateway routing table (`user_id -> gateway_node`), with an added `last_active_at` field and a short TTL refreshed on activity.
+
+**Trade-offs:**
+* Presence is intentionally treated as lower-durability than messages: a presence update that's lost or a few seconds stale is a cosmetic problem, not a correctness one, so it doesn't need the write-ahead durability messages get (no `sent`/`delivered`/`read` state machine, no durable table). If a client disconnects ungracefully (phone dies, connection drops without a clean close), the entry simply expires and the user is shown offline — no explicit cleanup required, which is a deliberately simpler mechanism than the message state machine above, not an oversight.
 
 ## Step 4: Scale the design
 
@@ -115,3 +197,11 @@ Presence ("online," "last seen 2 minutes ago") is intentionally treated as lower
 * **Exactly-once delivery is harder than it sounds, and this design leans on idempotency rather than promising it outright.** A client that sends an acknowledgment that gets lost on the way back will see the same message redelivered — the design's actual guarantee is at-least-once delivery with client-side deduplication by `message_id`, not true exactly-once, which is worth stating explicitly since interviewers often probe this distinction. See [Idempotency](/docs/patterns/reliability/idempotency) and [Exactly-Once Semantics](/docs/patterns/batch-streaming/exactly-once-semantics) for the general tradeoffs.
 * **Multi-device support (same account, phone + desktop + web, simultaneously connected)** complicates the "one connection per user" assumption baked into this design's presence directory — a more complete design would key the directory by `(user_id, device_id)` and fan out sends to all of a user's active devices, which is a good natural extension to mention even though it isn't designed in depth here.
 * **Group chat at very large scale (thousands of members) breaks the per-recipient fan-out model** used here on cost grounds, not correctness grounds — worth connecting this explicitly to how Instagram and YouTube's case studies handle fan-out for content with huge audiences, since it's the same underlying tension (push to everyone vs. let readers pull) showing up in a different system.
+
+## Source(s) and further reading
+
+* [End-to-end encryption — Wikipedia](https://en.wikipedia.org/wiki/End-to-end_encryption) — the property that shapes this design's "server cannot search or content-route" constraint
+* [Signal Protocol documentation](https://signal.org/docs/) — the real, widely-adopted cryptographic protocol underlying end-to-end encrypted messaging of the kind this design assumes
+* [1 million is so 2011 — WhatsApp Engineering](https://blog.whatsapp.com/1-million-is-so-2011) — WhatsApp's own real account of a single connection-layer server holding over a million concurrent connections, a useful data point for this design's connection-fleet scaling numbers
+* [Erlang (programming language) — Wikipedia](https://en.wikipedia.org/wiki/Erlang_(programming_language)) — the lightweight-process concurrency model WhatsApp's real infrastructure was historically built on for exactly this connection-holding problem
+* [Write-Ahead Log](/docs/patterns/storage/write-ahead-log) — the durable-first-write pattern this design's `messages` table write path follows

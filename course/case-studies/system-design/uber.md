@@ -62,39 +62,183 @@ The core of the system is a **dispatch service** that answers one question well:
 
 ## Step 3: Design core components
 
-### Use case: Driver reports live location
+### Use case: Driver reports live location, service finds nearby drivers
 
-Every online driver's app pushes a location ping on an interval, over the persistent connection it already holds. These pings don't need the full request/response ceremony of a REST call, and the volume (hundreds of thousands per second) makes a lightweight push channel the right choice — see [WebSockets](/docs/patterns/communication/websockets) for the client-server channel and [Backpressure](/docs/patterns/batch-streaming/backpressure) for why the ingest path needs to shed or buffer load gracefully rather than fall over when a burst of drivers all report at once.
+The hard problem: given a rider's coordinates, find the closest available drivers among millions of moving points, without scanning every driver's position on every request.
 
-The location index itself doesn't live in the trip store or any durable relational database — it lives in an in-memory structure that supports fast "find nearby" queries. A common approach: divide the map into cells using a hierarchical geospatial grid (each cell is identified by a string-like cell ID at a chosen precision level, and neighboring cells have similar-looking IDs), and maintain a mapping of `cell_id -> [driver_id, driver_id, ...]`. Uber's own open-sourced H3 grid system and Google's S2 library are two well-known real implementations of exactly this hierarchical-cell idea, and either is a reasonable concrete starting point for the indexing scheme described here rather than a bespoke one. A ping updates a driver's cell membership; a "find nearby drivers" query resolves the rider's cell and its immediate neighbor cells (to catch drivers just across a cell boundary) and returns the union of driver lists. This is conceptually the same win that [Consistent Hashing](/docs/patterns/storage/consistent-hashing) gives for key distribution, applied to two spatial dimensions instead of one hash ring: turning an expensive "scan everything and compute distance" query into a cheap, indexed lookup.
+**Core algorithm: geohash-based spatial index with expanding-ring search**
 
-Because there are far more drivers per city than any single machine's memory or query throughput can serve at peak, this index is sharded — most naturally by geography, since a cell in one city is never queried by a rider in another. Each shard owns a contiguous region of the grid; see [Sharding](/docs/patterns/storage/sharding) for the general mechanism.
+A [Geohash](https://en.wikipedia.org/wiki/Geohash) encodes a `(lat, lng)` pair into a short base-32 string where nearby points usually share a prefix — the map is recursively divided into a grid of cells, each identified by a string that gets one character longer (and the cell it names smaller) per unit of added precision. That gives an index that's just a hash map from cell ID to the drivers currently in it, and a "nearby drivers" query becomes a handful of cell lookups instead of a distance calculation against every driver in the city.
 
-Because location is inherently transient and quickly superseded by the next ping, staleness is tolerated. If a shard falls behind or a ping is dropped, a driver simply doesn't show up as a match candidate for a few seconds and then reappears — it's an availability/staleness tradeoff, not a correctness one, since the trip record itself (owned separately) is what actually needs strong consistency.
+```python
+import geohash  # a standard geohash encode/decode implementation
+
+class DriverLocationIndex:
+    """In-memory spatial index: geohash cell -> set of available driver_ids.
+
+    Precision 6 (~1.2km x 0.6km cells) is a reasonable starting
+    resolution for urban ride matching -- coarse enough that most
+    rides find candidates in ring 0 or 1, fine enough that a ring
+    doesn't sweep in drivers from across town.
+    """
+    PRECISION = 6
+
+    def __init__(self):
+        self.cells = {}              # geohash str -> set(driver_id)
+        self.driver_cell = {}        # driver_id -> geohash str (for removal/move)
+
+    def update_location(self, driver_id, lat, lng):
+        new_cell = geohash.encode(lat, lng, precision=self.PRECISION)
+        old_cell = self.driver_cell.get(driver_id)
+        if old_cell == new_cell:
+            return  # still in the same cell, nothing to move
+        if old_cell is not None:
+            self.cells[old_cell].discard(driver_id)
+        self.cells.setdefault(new_cell, set()).add(driver_id)
+        self.driver_cell[driver_id] = new_cell
+
+    def remove_driver(self, driver_id):
+        cell = self.driver_cell.pop(driver_id, None)
+        if cell is not None:
+            self.cells.get(cell, set()).discard(driver_id)
+
+    def find_nearby(self, lat, lng, min_candidates=5, max_rings=4):
+        """Expanding-ring search: start at the rider's own cell, and
+        only widen the search to the ring of 8 surrounding cells (then
+        16, then 24...) if the current radius doesn't have enough
+        candidates yet. Most requests in a dense city resolve at ring
+        0 or 1 -- widening further is the exception, not the norm.
+        """
+        center = geohash.encode(lat, lng, precision=self.PRECISION)
+        found = set(self.cells.get(center, ()))
+        ring = 0
+        while len(found) < min_candidates and ring < max_rings:
+            ring += 1
+            for cell_id in geohash.neighbors_at_ring(center, ring):
+                found |= self.cells.get(cell_id, set())
+        return found
+```
+
+A ping updates a driver's cell membership in place; a "find nearby drivers" query resolves the rider's cell, checks it, and only pays for wider ring lookups when the immediate cell is sparse — a dense downtown core rarely needs to widen past ring 0, while a driver-scarce suburb might widen to ring 2-3 before finding enough candidates. This is the same "turn a scan into an indexed lookup" idea [Consistent Hashing](/docs/patterns/storage/consistent-hashing) applies to a single hash ring, extended to two spatial dimensions. [Uber's own open-sourced H3 grid](https://h3geo.org/) and [Google's S2 library](https://s2geometry.io/) are two well-known real implementations of a hierarchical-cell index built on this same idea, using hexagonal or quad-tree cells instead of geohash's rectangular ones specifically to avoid the "nearest point is in an adjacent cell, not mine" edge case rectangular grids are more prone to — a reasonable production choice over a bespoke geohash implementation.
+
+**Data structures:**
+* `cells`: `geohash_str -> set(driver_id)` — the core spatial index, in memory
+* `driver_cell`: `driver_id -> geohash_str` — reverse lookup so a driver's next ping can remove them from their old cell in O(1) rather than scanning
+* Each driver's full record (rating, vehicle type, current trip status) lives in a separate keyed store; the index above holds only IDs, kept intentionally small so it can be sharded and rebuilt fast
+
+**Trade-offs:**
+* **The gotcha:** geohash cells are rectangular, and a rider sitting a few meters from a cell boundary can have a closer driver sitting in the *adjacent* cell that a naive "just look in my own cell" query would miss entirely — this is exactly why the search has to check neighboring cells, not just the exact-match cell, and it's the detail that separates a working nearest-neighbor design from one that silently returns wrong answers near every cell edge. H3 and S2 reduce (but don't eliminate) this by using cell shapes and multi-resolution indexing designed to make "which cells could plausibly contain the true nearest neighbor" cheaper to compute correctly.
+* Precision is a tuning knob with a real trade: coarser cells (shorter geohash prefix) mean fewer, cheaper lookups but more candidates to rank and discard per query; finer cells mean the opposite, and can force more ring expansions in sparse areas. A real system tunes this per city density rather than using one global precision.
+* Because location is inherently transient and superseded within seconds by the next ping, staleness here is a deliberate, acceptable trade — an index shard that's a few seconds behind just means a driver briefly doesn't show up as a candidate, not a correctness failure, since the trip record (owned separately by the strongly-consistent trip store) is what actually needs to be right.
+* This index is sharded by geography once a single city's driver density exceeds one shard's memory or query throughput — see [Sharding](/docs/patterns/storage/sharding); a cell in one city is never queried by a rider in another, which makes the shard boundary a natural, low-coordination-cost choice.
 
 ### Use case: Rider requests a ride, service finds a driver
 
 * The rider's client sends a ride request with pickup location, destination, and vehicle type to the API layer
-* The **dispatch service** resolves the pickup location's cell, queries the location index for nearby available drivers, and ranks candidates — primarily by ETA to pickup (which is a function of road distance and current traffic, not straight-line distance), with driver rating and vehicle-type match as secondary factors
+* The **dispatch service** calls `find_nearby` against the location index, then ranks candidates — primarily by ETA to pickup (a function of road distance and current traffic, not straight-line distance), with driver rating and vehicle-type match as secondary factors
 * The dispatch service proposes the ride to the top candidate driver by pushing a ride-request event over that driver's open connection, with a short timeout (a handful of seconds)
 * If the driver accepts, the dispatch service marks the driver unavailable in the location index, creates a trip record in the **trip store**, and notifies the rider
 * If the driver rejects or the offer times out, dispatch moves to the next-ranked candidate
 
-A useful design decision to call out explicitly: the "propose to one driver, wait, fall through to the next" flow is a sequential offer, not a broadcast to every nearby driver. A broadcast would fill a trip faster on average but creates a race between multiple drivers accepting simultaneously, which then needs a distributed decision about who actually won — solvable, but it trades simplicity for speed. Sequential offering avoids that race by construction, at the cost of slightly higher latency-to-match when the top candidate doesn't respond quickly. Either way, once a match is proposed and being decided, the driver's own record needs a single point of truth for "is this driver currently claimed" — a natural fit for [Leader Election](/docs/patterns/consistency/leader-election)-style single-writer ownership per driver, or more simply, an atomic conditional update on the driver's status row so two dispatch attempts can't both win the same driver.
+**Data structures:** trip record — `trip_id` (PK), `rider_id`, `driver_id`, `status` (`requested`/`accepted`/`in_progress`/`completed`/`cancelled`), `origin`, `destination`, `requested_at`, `accepted_at`.
 
-Marking a trip as accepted is the one step in this whole flow that must not be lost or double-applied — a driver should never be assigned two simultaneous trips, and a rider should never be told "matched" for a trip that silently failed to persist. That write goes through the durable, strongly-consistent trip store, not the ephemeral location index, and should be idempotent so a client retry after a timeout can't create a duplicate trip — see [Idempotency](/docs/patterns/reliability/idempotency).
+**Trade-offs:**
+* **The gotcha:** the "propose to one driver, wait, fall through to the next" flow is a sequential offer, not a broadcast to every nearby driver, and that's a deliberate choice, not an oversight — a broadcast fills a trip faster on average but creates a race between multiple drivers accepting simultaneously, which then needs a distributed decision about who actually won. Sequential offering avoids that race by construction (only one driver is ever "the offer" at a time) at the cost of slightly higher latency-to-match when the top candidate doesn't respond quickly. Whichever shape is chosen, the driver's status needs a single point of truth — an atomic conditional update on the driver's status row (or [Leader Election](/docs/patterns/consistency/leader-election)-style single ownership per driver) so two dispatch attempts can never both win the same driver.
+* Marking a trip accepted is the one write in this flow that must not be lost or double-applied — a driver should never be assigned two simultaneous trips, and a rider should never be told "matched" for a trip that silently failed to persist. That write goes through the durable trip store, not the ephemeral location index, and must be idempotent so a client retry after a timeout can't create a duplicate trip — see [Idempotency](/docs/patterns/reliability/idempotency).
+
+**REST API:**
+
+```
+$ curl -X POST https://uber.example/api/v1/rides \
+    -d '{"pickup": {"lat": 37.7749, "lng": -122.4194}, "destination": {"lat": 37.8044, "lng": -122.2712}, "vehicle_type": "standard"}'
+```
+
+Response:
+
+```json
+{
+  "trip_id": "t_8f3a1c",
+  "status": "requested",
+  "estimated_fare": {"low": 14.50, "high": 18.00, "surge_multiplier": 1.2}
+}
+```
 
 ### Use case: Rider and driver track an active trip
 
 Once a trip is accepted, both apps hold their persistent connection open and receive two kinds of updates: the driver's live position (relayed from the same location pings dispatch already ingests, just narrow-cast to this one rider instead of feeding the matching index) and trip status transitions (driver arrived, trip started, trip completed). Because both parties already have a channel open, this is push, not poll — a client polling every couple of seconds for 20 million concurrent riders would be an enormous amount of wasted request overhead compared to server-initiated updates on an already-open connection. [Server-Sent Events](/docs/patterns/communication/server-sent-events) is a reasonable simpler alternative to a full bidirectional WebSocket here, since most of this traffic is server-to-client.
 
-ETA during a trip and ETA-to-pickup before a trip both depend on a routing/traffic model that's out of scope to design in depth here, but it's worth naming as a real dependency: dispatch's driver ranking and the rider-facing ETA display both call the same underlying service, so they should never visibly disagree.
+**Data structures:** same trip record as above, `status` field driving what's pushed; no separate storage needed for the live position stream itself, since it's relayed, not persisted at full frequency.
+
+**Trade-offs:**
+* ETA during a trip and ETA-to-pickup before a trip both depend on a routing/traffic model that's out of scope to design in depth here, but it's worth naming as a real dependency: dispatch's driver ranking and the rider-facing ETA display both call the same underlying service, so they should never visibly disagree.
+* Same push-over-poll reasoning as WhatsApp's message delivery elsewhere in this course, but the payload here is different in kind — a continuous position stream rather than discrete messages — so the design doesn't need delivery guarantees as strict as message delivery; a dropped position update is superseded by the next one a few seconds later.
 
 ### Use case: Service computes price estimates and surge pricing
 
-Pricing starts from a base fare formula (a function of distance and estimated time for the route), then applies a multiplier driven by the live ratio of ride requests to available drivers in the rider's geographic cell. That ratio is a natural byproduct of data the dispatch service already has — cell occupancy from the location index, and request volume the dispatch service is already seeing per cell — aggregated over a short rolling window (tens of seconds) rather than computed fresh per request, since per-request computation at dispatch volume would be wasteful and the underlying supply/demand balance doesn't change fast enough to need it. This is a good fit for a [Materialized View](/docs/patterns/storage/materialized-view): a continuously-updated per-cell summary (open requests, available drivers, current multiplier) that pricing and dispatch both read cheaply, rather than each recomputing it from raw pings on every call.
+The hard problem isn't the base fare formula (distance and time, mechanically simple) — it's computing a demand multiplier per zone that responds to real supply/demand imbalance without creating jarring price cliffs between two adjacent city blocks.
 
-The final fare, computed at trip completion from the actual route taken and actual time elapsed, is a write to the trip store and needs the same durability and idempotency treatment as trip state — a driver's app losing connectivity right as a trip ends should not risk charging a rider twice or not at all.
+**Core algorithm: per-cell demand/supply ratio with spatial smoothing**
+
+```python
+class SurgePricingEngine:
+    """Maintains a demand/supply multiplier per geohash cell, updated
+    from a short rolling window of dispatch activity, then smoothed
+    across neighboring cells so adjacent riders never see a jarring
+    multiplier discontinuity at a cell boundary.
+    """
+    BASE_MULTIPLIER = 1.0
+    MAX_MULTIPLIER = 5.0
+    SMOOTHING_WEIGHT = 0.4   # how much a cell's multiplier is pulled toward its neighbors' average
+
+    def __init__(self, location_index):
+        self.location_index = location_index
+        self.open_requests = {}   # cell_id -> count of unmatched requests in the current window
+
+    def record_request(self, lat, lng):
+        cell_id = geohash.encode(lat, lng, precision=6)
+        self.open_requests[cell_id] = self.open_requests.get(cell_id, 0) + 1
+
+    def raw_multiplier(self, cell_id):
+        """Multiplier from this cell's own demand/supply ratio alone,
+        before any smoothing. A cell with no drivers and any open
+        requests is treated as maximally scarce.
+        """
+        demand = self.open_requests.get(cell_id, 0)
+        supply = len(self.location_index.cells.get(cell_id, ()))
+        if demand == 0:
+            return self.BASE_MULTIPLIER
+        if supply == 0:
+            return self.MAX_MULTIPLIER
+        ratio = demand / supply
+        return min(self.MAX_MULTIPLIER, self.BASE_MULTIPLIER + ratio)
+
+    def smoothed_multiplier(self, cell_id):
+        """Pull each cell's multiplier toward the average of its ring-1
+        neighbors. Without this, a rider one block from a stadium
+        exiting a sold-out event can see a wildly different price than
+        someone standing at the stadium's own doorstep, purely because
+        they're in different geohash cells -- the smoothing is what
+        keeps the surge map from looking like noise.
+        """
+        own = self.raw_multiplier(cell_id)
+        neighbor_cells = geohash.neighbors_at_ring(cell_id, 1)
+        neighbor_values = [self.raw_multiplier(c) for c in neighbor_cells]
+        if not neighbor_values:
+            return own
+        neighborhood_avg = sum(neighbor_values) / len(neighbor_values)
+        return (1 - self.SMOOTHING_WEIGHT) * own + self.SMOOTHING_WEIGHT * neighborhood_avg
+```
+
+The demand/supply ratio is a byproduct of data the dispatch service already has — cell occupancy from the location index, and request volume the dispatch service is already seeing per cell — aggregated over a short rolling window (tens of seconds) rather than computed fresh per request. Smoothing runs on the same schedule, not per-request, since recomputing a full neighborhood average on every ride request would be wasted work when the underlying supply/demand balance doesn't shift that fast. This is a good fit for a [Materialized View](/docs/patterns/storage/materialized-view): a continuously-updated per-cell summary (open requests, available drivers, smoothed multiplier) that pricing and dispatch both read cheaply.
+
+**Data structures:**
+* `open_requests`: `cell_id -> count`, reset on a rolling window
+* `surge_multipliers` (materialized view, refreshed on the same interval): `cell_id -> smoothed_multiplier`, read by both the estimate endpoint and the final-fare calculation
+
+**Trade-offs:**
+* **The gotcha:** computing surge purely per-cell, with no smoothing, is the naive version of this feature and it visibly breaks at cell boundaries — two riders standing 50 meters apart but in different geohash cells can be quoted meaningfully different multipliers for what's obviously the same local supply/demand situation, which reads as arbitrary and erodes trust in the pricing even when each individual cell's number is technically correct. Spatial smoothing (blending each cell's raw ratio with its neighbors') is what turns a noisy per-cell signal into a surge map that changes gradually across a city rather than in visible steps — see [surge pricing](https://en.wikipedia.org/wiki/Surge_pricing) for the general demand-based pricing mechanism this implements.
+* The final fare, computed at trip completion from the actual route and time elapsed (using the multiplier locked in at request time, not a possibly-different multiplier by trip's end), is a write to the trip store and needs the same durability and idempotency treatment as trip state — a driver's app losing connectivity right as a trip ends should not risk charging a rider twice or not at all.
+* Smoothing trades responsiveness for stability: a real spike in one cell gets diluted by calmer neighbors, which is usually the right behavior (avoids a price spike from one lucky/unlucky cell boundary) but means the multiplier lags a true highly-localized surge by design.
 
 ## Step 4: Scale the design
 
@@ -118,3 +262,11 @@ The two components under the most distinct kinds of pressure are the location in
 * **Why not just use each device's GPS coordinates directly as the index key, skipping cells entirely?** Raw lat/lng pairs don't cluster into anything queryable — "find drivers near (37.77, -122.41)" over raw coordinates means scanning for proximity, which is exactly the cost cells are designed to avoid. The tradeoff is precision: a coarser cell size means cheaper queries but coarser candidate lists (more false-positive "nearby" drivers to rank and discard); a finer cell size means the opposite. Worth discussing how that precision level might even vary by city density.
 * **Driver-side vs. rider-side fairness.** Sequential offering (Step 3) optimizes for correctness and simplicity but can systematically favor or disadvantage certain drivers depending on ranking order — a real system has to think about long-run fairness in who gets offered trips, not just per-request optimality. Good to raise even though it's more product/policy than infra.
 * **Surge pricing as a supply-shaping signal, not just a demand-dampening one.** The multiplier doesn't only ration scarce rides to riders willing to pay more — it's also the signal that pulls more drivers into a high-demand cell by making it visibly more profitable, which is a feedback loop worth mentioning even though modeling it isn't necessary for the design.
+
+## Source(s) and further reading
+
+* [Geohash — Wikipedia](https://en.wikipedia.org/wiki/Geohash) — the spatial-indexing encoding this design's location index is built on
+* [H3: Uber's Hexagonal Hierarchical Spatial Index](https://h3geo.org/) — a real, production-grade hierarchical geospatial index, using hexagonal cells specifically to reduce the boundary-adjacency problem named as this use case's gotcha
+* [S2 Geometry Library](https://s2geometry.io/) — Google's comparable hierarchical spatial index, a widely-used alternative to H3 for the same class of problem
+* [Surge pricing — Wikipedia](https://en.wikipedia.org/wiki/Surge_pricing) — the general demand-based pricing mechanism this design's `SurgePricingEngine` implements
+* [Consistent Hashing](/docs/patterns/storage/consistent-hashing) — the general "expensive scan becomes indexed lookup" idea this design's spatial index applies in two dimensions
