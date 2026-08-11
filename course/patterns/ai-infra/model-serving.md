@@ -240,7 +240,7 @@ to serve every tenant's requests.
 ## Further reading
 
 - [Deploy models for inference — Amazon SageMaker AI](https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html)
-- [KServe — model serving on Kubernetes](https://kserve.github.io/website/latest/)
+- [KServe — model serving on Kubernetes](https://kserve.github.io/website/)
 - [Ray Serve — request batching for online inference](https://docs.ray.io/en/latest/serve/advanced-guides/dyn-req-batch.html)
 - [NVIDIA Triton Inference Server — dynamic batching](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/user_guide/model_configuration.html)
 - [vLLM — quantization support](https://docs.vllm.ai/en/latest/features/quantization/index.html)
