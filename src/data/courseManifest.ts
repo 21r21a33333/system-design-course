@@ -324,6 +324,13 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/api-edge/api-versioning",
+    "title": "API Versioning",
+    "path": "/docs/patterns/api-edge/api-versioning",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/api-edge/backend-for-frontend",
     "title": "Backend for Frontend",
     "path": "/docs/patterns/api-edge/backend-for-frontend",
@@ -362,6 +369,27 @@ export const courseManifest: ManifestEntry[] = [
     "id": "patterns/api-edge/gateway-routing",
     "title": "Gateway Routing",
     "path": "/docs/patterns/api-edge/gateway-routing",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/load-balancing",
+    "title": "Load Balancing",
+    "path": "/docs/patterns/api-edge/load-balancing",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/reverse-proxy",
+    "title": "Reverse Proxy",
+    "path": "/docs/patterns/api-edge/reverse-proxy",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/service-discovery",
+    "title": "Service Discovery",
+    "path": "/docs/patterns/api-edge/service-discovery",
     "category": "design-patterns",
     "source": "supplementary"
   },
@@ -467,6 +495,13 @@ export const courseManifest: ManifestEntry[] = [
     "id": "patterns/building-blocks/blob-store",
     "title": "Blob Store",
     "path": "/docs/patterns/building-blocks/blob-store",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/cdn",
+    "title": "CDN (Content Delivery Network)",
+    "path": "/docs/patterns/building-blocks/cdn",
     "category": "design-patterns",
     "source": "supplementary"
   },

@@ -1,0 +1,51 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Nearby edge answers most requests; origin is contacted only on a cache miss</text>
+
+  <!-- User near edge 1 -->
+  <rect x="30" y="60" width="110" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="85" y="83" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">User (EU)</text>
+  <text x="85" y="99" font-size="8" fill="#dbeafe" text-anchor="middle">requests image</text>
+
+  <!-- User near edge 2 -->
+  <rect x="30" y="220" width="110" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="85" y="243" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">User (Asia)</text>
+  <text x="85" y="259" font-size="8" fill="#dbeafe" text-anchor="middle">requests image</text>
+
+  <!-- Edge location 1 (teal, cache hit) -->
+  <rect x="230" y="55" width="150" height="60" rx="8" fill="#0f766e"/>
+  <text x="305" y="81" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Edge (EU)</text>
+  <text x="305" y="99" font-size="9" fill="#ccfbf1" text-anchor="middle">cache HIT — fresh TTL</text>
+
+  <!-- Edge location 2 (amber, cache miss) -->
+  <rect x="230" y="215" width="150" height="60" rx="8" fill="#b45309"/>
+  <text x="305" y="241" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Edge (Asia)</text>
+  <text x="305" y="259" font-size="9" fill="#fde68a" text-anchor="middle">cache MISS — TTL expired</text>
+
+  <line x1="140" y1="85" x2="228" y2="85" stroke="#1d4ed8" stroke-width="2" marker-end="url(#cdnArrowBlue)"/>
+  <line x1="140" y1="245" x2="228" y2="245" stroke="#1d4ed8" stroke-width="2" marker-end="url(#cdnArrowBlue)"/>
+
+  <!-- return path from edge 1 straight to user -->
+  <text x="185" y="70" font-size="8" fill="#0f766e" text-anchor="middle">served instantly</text>
+
+  <!-- Origin -->
+  <rect x="580" y="140" width="150" height="60" rx="8" fill="#334155"/>
+  <text x="655" y="166" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Origin</text>
+  <text x="655" y="184" font-size="9" fill="#cbd5e1" text-anchor="middle">authoritative copy</text>
+
+  <line x1="380" y1="245" x2="580" y2="185" stroke="#b45309" stroke-width="2" marker-end="url(#cdnArrowAmber)"/>
+  <text x="480" y="230" font-size="9" fill="#b45309" text-anchor="middle">fetch + repopulate cache</text>
+
+  <line x1="380" y1="95" x2="580" y2="150" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="480" y="110" font-size="8" fill="#94a3b8" text-anchor="middle">not contacted on a hit</text>
+
+  <defs>
+    <marker id="cdnArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="cdnArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>
