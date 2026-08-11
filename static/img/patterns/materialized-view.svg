@@ -1,0 +1,59 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <!-- Source tables -->
+  <text x="150" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Source tables (normalized, write-optimized)</text>
+  <rect x="30" y="40" width="110" height="55" rx="6" fill="#334155"/>
+  <text x="85" y="72" font-size="11" fill="#ffffff" text-anchor="middle">Orders</text>
+  <rect x="150" y="40" width="110" height="55" rx="6" fill="#334155"/>
+  <text x="205" y="72" font-size="11" fill="#ffffff" text-anchor="middle">Order Items</text>
+  <rect x="90" y="105" width="110" height="55" rx="6" fill="#334155"/>
+  <text x="145" y="137" font-size="11" fill="#ffffff" text-anchor="middle">Products</text>
+
+  <!-- expensive join/aggregate, avoided per-read -->
+  <rect x="270" y="70" width="150" height="60" rx="8" fill="#b45309"/>
+  <text x="345" y="95" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Join + Aggregate</text>
+  <text x="345" y="112" font-size="9" fill="#fef3c7" text-anchor="middle">expensive if run on</text>
+  <text x="345" y="124" font-size="9" fill="#fef3c7" text-anchor="middle">every read</text>
+
+  <line x1="140" y1="67" x2="270" y2="90" stroke="#334155" stroke-width="1.5" marker-end="url(#arrowMv)"/>
+  <line x1="205" y1="95" x2="272" y2="100" stroke="#334155" stroke-width="1.5" marker-end="url(#arrowMv)"/>
+  <line x1="200" y1="132" x2="272" y2="115" stroke="#334155" stroke-width="1.5" marker-end="url(#arrowMv)"/>
+
+  <text x="345" y="60" font-size="9" fill="#b45309" text-anchor="middle">refresh (scheduled or incremental)</text>
+
+  <!-- materialized view: precomputed table -->
+  <rect x="500" y="70" width="180" height="70" rx="8" fill="#0f766e"/>
+  <text x="590" y="98" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Materialized View</text>
+  <text x="590" y="116" font-size="10" fill="#ccfbf1" text-anchor="middle">precomputed result,</text>
+  <text x="590" y="130" font-size="10" fill="#ccfbf1" text-anchor="middle">stored as its own table</text>
+
+  <line x1="420" y1="100" x2="498" y2="100" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowMvGreen)"/>
+  <text x="459" y="90" font-size="9" fill="#0f766e" text-anchor="middle">write</text>
+
+  <!-- read path: cheap lookup -->
+  <rect x="560" y="200" width="150" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="635" y="225" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Reader</text>
+  <text x="635" y="243" font-size="9" fill="#dbeafe" text-anchor="middle">cheap lookup, no join</text>
+
+  <line x1="600" y1="140" x2="620" y2="198" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrowMvBlue)"/>
+
+  <!-- staleness note -->
+  <rect x="30" y="220" width="420" height="60" rx="8" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="240" y="244" font-size="10" fill="#64748b" text-anchor="middle">View can go stale between refreshes —</text>
+  <text x="240" y="260" font-size="10" fill="#64748b" text-anchor="middle">the price paid for not recomputing on every read</text>
+  <line x1="145" y1="160" x2="145" y2="218" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="580" y1="140" x2="145" y2="215" stroke="#64748b" stroke-width="1" stroke-dasharray="2,3"/>
+
+  <defs>
+    <marker id="arrowMv" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrowMvGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="arrowMvBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+</svg>
