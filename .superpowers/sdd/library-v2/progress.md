@@ -1150,3 +1150,67 @@ neighbor computation, verified correct via a standalone test (nearby
 points crossing a cell boundary genuinely land in the computed
 8-neighbor set, not just the center cell). Build/typecheck clean after
 fix. Task fully closed.
+
+### Deep-dive rewrite C — Typeahead/Google Docs/Payment System/Deployment System — COMPLETE
+Commit `01603d3` on `library-v2-expansion`. Rewrote Step 3/Step 4/Additional
+talking points + added Source(s) sections for all 4 files; Step 1/2
+confirmed byte-identical via diff (untouched). Per-file Core spec shape
+and named gotcha, each with real, verified-correct code (not prose-only):
+- **Typeahead**: trie Core algorithm — the load-bearing decision named
+  explicitly as its own gotcha is write-time top-K caching at every
+  `TrieNode`, not the trie shape alone; naive read-time subtree DFS
+  called out as the wrong approach. Real `Trie`/`TrieNode` classes with
+  `record_query`/`_update_node_top_k` (write path) and `suggest` (read
+  path, O(K) cache return only); `rebuild_index` batch aggregation +
+  atomic-swap update path. Hand-tested: prefix lookups, frequency-bump
+  re-ranking, and batch rebuild all verified correct against expected
+  ordered output.
+- **Google Docs**: operational transformation (OT) named as Google's
+  real, publicly-documented design choice over CRDT for Google Docs,
+  with the actual trade-off (per-op overhead vs. per-character CRDT
+  metadata, central authority requirement) explained as a gotcha. Real
+  `transform(op1, op2)` classic-OT function plus `apply_insert`; a
+  worked two-concurrent-inserts example proven to converge to the
+  identical string regardless of application order, hand-traced via a
+  standalone script including the equal-position tiebreak branch.
+- **Payment System**: double-entry ledger given its own named schema
+  treatment, separate from idempotency — `accounts`/`ledger_entries`
+  DDL with `SUM(debits) = SUM(credits)` as the core invariant, plus a
+  real `check_ledger_balanced`/`record_payment` implementation. Saga
+  state machine (reserve -> charging -> confirmed/compensating ->
+  cancelled) with named rollback branches, kept explicitly distinct
+  from idempotency-key protocol (also its own Core spec + REST API).
+  Hand-tested: balanced-payment case, multi-payment full-ledger
+  reconciliation, and a deliberately broken invariant (missing credit
+  row) correctly detected as unbalanced.
+- **Deployment System**: rolling/blue-green/canary compared explicitly
+  in a mechanics table (not just named) with blast radius as the
+  unifying gotcha concept tying all three together. Real
+  `CanaryDeployment` state machine (`Stage` enum: 5% -> 25% -> 100%,
+  `observe_and_advance` gate, automatic `rollback()` on error-rate
+  threshold breach, manual rollback reusing the identical method).
+  Hand-tested via 3 scenarios: bad release caught and auto-rolled-back
+  at the 25% stage, healthy release promoting through all 3 stages
+  then idempotent at FULL_100, and manual rollback reaching 0% traffic.
+
+Verification: all 7 Python code blocks parsed via `ast.parse` (0
+failures); 1 SQL DDL block (payment-system) hand-checked; every
+function called by name in any block cross-checked against a matching
+`def` in the same file via AST call/def-set diff (only Python builtins,
+stdlib imports, and injected mock-dependency methods excluded, all
+individually named) — zero unimplemented-stub gotcha functions found,
+directly addressing the prior task's `geohash_neighbors` defect class.
+15 unique external links curl-verified live (200): Trie/Autocomplete/
+Operational transformation/CRDT/Double-entry bookkeeping/Canary release
+(Wikipedia), Elasticsearch completion suggester, Yjs, Automerge, Google
+Drive blog (OT design decision), Stripe idempotency docs, AWS rolling
+deployments whitepaper, Kubernetes rolling update docs, LaunchDarkly
+feature flags docs, Martin Fowler blue-green deployment. `npm run
+typecheck` and `npm run build` both pass clean with zero broken links.
+Step 1/2 diffed byte-identical against pre-edit versions for all 4
+files. Committed as a single `feat(case-studies):` commit (`01603d3`)
+on `library-v2-expansion`.
+
+Remaining deep-dive rewrite scope (not part of this entry, tracked
+separately): Data Infrastructure/ChatGPT/LLM Support Bot/Code
+Assistant — 4 more case studies still on the old template.
