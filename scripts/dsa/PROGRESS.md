@@ -23,7 +23,11 @@ via the yt-notes pipeline. Branch: `dsa-course-notes` in `system-design-course`.
       (2 Critical), e07 persistent-list cascade corruption (Critical), e10 min-cost-path
       data inconsistency (Critical), e04 counting-sort example (2 Major), e09 heap-merge
       cost claim (Major). e01/e02/e05/e08 clean. Frames pruned of orphans.
-- [ ] Batch 2 — L11–L20 (DP2, hashing, Union-Find complexity, segment/Fenwick trees)
+- [x] **Batch 2 — L11–L20** — DONE (C++), build green, adversarial-reviewed. S01 tail
+      (DP2, knapsack, DP subsets/profiles, hash tables, perfect/cuckoo/Bloom, Union-Find
+      inverse-Ackermann, eval-link-update) + S02 start (segment tree, lazy prop, Fenwick/
+      sparse). Review fixes: e14 probe-series =1→=2, e15 Bloom unit, s02e02 test value 6→9.
+      NOTE: batch-2 lectures have NO Codeforces home-task link (only early lectures did).
 - [ ] Batch 3 — L21–L30 (2D segtree, balanced BSTs, tree decompositions)
 - [ ] Batch 4 — L31–L40 (external memory, complexity classes, graphs start)
 - [ ] Batch 5 — L41–L50 (strings, suffix structures, matchings/flows start)

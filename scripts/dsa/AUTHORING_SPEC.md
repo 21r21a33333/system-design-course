@@ -77,9 +77,9 @@ Pavel Mavrin _Algorithms & Data Structures_ lecture. The reader reads the note
 
 - **NO explicit `{#heading-id}` anchors** — this site's MDX parses `{…}` as JSX and
   the build throws. Rely on auto-generated heading slugs.
-- **No bare `{` or `}` or raw `<` / `>` in prose** (MDX/JSX hazard). Use words or
-  put them inside `$…$` math or code fences. Comparisons in prose: use `≤`, `≥`, `<`
-  only inside code/math.
+- **No bare `{` or `}` or raw `<` / `>` in prose OR in image alt-text** (MDX/JSX
+  hazard — alt text inside `![ ... ]` is parsed too). Use words or put them inside
+  `$…$` math or code fences. In prose and alt-text use `≤`, `≥` (unicode), never `<=`/`>=`.
 - **Every code block must be self-consistent** — no calling a function you never define.
 - **Links:** LeetCode/Codeforces block scripted fetches (403) — only cite canonical,
   well-known LeetCode slugs and Codeforces posts you're certain of (the description's
