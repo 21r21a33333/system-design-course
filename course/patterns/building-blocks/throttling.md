@@ -26,8 +26,9 @@ shared resource a class of internal work is allowed to use, so that
 lower-priority work slows down or does less before it ever gets the
 chance to starve higher-priority work of the capacity it needs.
 
-## How it works
+## Technical architecture & implementation
 
+**Throttling vs. rate limiting.**
 [Rate limiting](/docs/patterns/building-blocks/rate-limiter) and
 throttling are often used loosely as synonyms, but they operate at
 different points in the system and produce different outcomes when
@@ -68,6 +69,65 @@ crossed *its* fixed line?" and answers with accept-or-reject. Throttling
 asks "how much of *this shared resource* is under pressure right now?"
 and answers by turning a dial on *how much or how fast* lower-priority
 work is allowed to proceed — without necessarily telling anyone no.
+
+**Admission control and QoS tiers.** The dial throttling turns is
+usually driven by an **admission-control** decision: before a unit of
+work is allowed to start, the throttle checks whether the shared
+resource has headroom for it *given its priority*. Work is classified
+into **quality-of-service tiers** — interactive foreground requests
+above async processing above best-effort batch — and the throttle
+admits, delays, or degrades each tier against a different pressure
+threshold. Foreground work might be admitted until the connection pool
+is 95% full; batch export might start shedding at 60%, so it yields
+headroom *before* foreground work is ever at risk. This is what lets a
+system stay responsive to users while quietly slowing everything else.
+
+**Signals that drive the dial.** A throttle is only as good as the
+pressure signal it reads. Common signals are connection-pool
+saturation, CPU load, request queue depth, and downstream latency or
+error rate. Queue depth is often the most direct: a growing queue *is*
+the definition of arrivals outpacing service, and is the same signal
+[backpressure](/docs/patterns/batch-streaming/backpressure) and
+[queue-based load leveling](/docs/patterns/batch-streaming/queue-based-load-leveling)
+act on. Signals should be smoothed (e.g. an exponential moving average)
+and paired with hysteresis — a higher threshold to *start* throttling
+than to *stop* — so the dial doesn't oscillate rapidly around a single
+tipping point.
+
+**Backpressure as the propagation mechanism.** Throttling one stage
+only helps if the slowdown propagates upstream rather than piling work
+in a queue between stages. **Backpressure** is that propagation: a
+throttled consumer stops pulling, which fills its input buffer, which
+signals the producer to slow down, all the way back to the source.
+Without backpressure, throttling a downstream stage just moves the
+overload into an unbounded in-memory queue that eventually exhausts
+memory — so throttling and
+[backpressure](/docs/patterns/batch-streaming/backpressure) are almost
+always deployed together.
+
+**Failure modes.** A throttle that reads a *stale* pressure signal
+reacts too late — admitting work into a resource that's already
+saturated. Too-aggressive throttling starves lower-priority work
+indefinitely (a batch job that never runs because foreground load never
+fully subsides), so throttles usually guarantee some minimum floor of
+progress. And a throttle with no hysteresis flaps between full-speed and
+degraded, producing sawtooth load that's worse than either steady
+state. Finally, throttling shapes *your own* work — it does nothing
+against an external client flooding the edge; that's the
+[rate limiter's](/docs/patterns/building-blocks/rate-limiter) job, and
+the two protect different boundaries.
+
+**Differentiation from siblings.** Beyond rate limiting, throttling sits
+near several load-management patterns.
+[Queue-based load leveling](/docs/patterns/batch-streaming/queue-based-load-leveling)
+absorbs bursts into a buffer so a downstream sees a smooth arrival rate;
+throttling is what *drains* that buffer at a pace the resource can
+sustain. A [priority queue](/docs/patterns/batch-streaming/priority-queue)
+orders *which* buffered work runs next; throttling governs *how much*
+runs at all. And load shedding *drops* excess work outright under
+extreme overload, where throttling merely *slows* it — throttling is the
+graduated response, shedding the last resort when even the slowest pace
+is too much.
 
 ## Code example
 
@@ -143,24 +203,60 @@ difference between the two patterns.
   expense of *something else*, and without that asymmetry there's
   nothing to prioritize.
 
-## Real-world example
+## Use-case scenarios
 
-A SaaS platform runs customer-facing API requests and internal nightly
-data-export jobs against the same primary database. Under normal load,
-export jobs run at full speed; when the database's connection pool
-utilization crosses a threshold, the job scheduler throttles export
-jobs — reducing their batch size and concurrency, or pausing them
-briefly — until pool pressure subsides, without ever returning an error
-to the customers making API requests at the same time.
+**Nightly exports vs. live API traffic.** A SaaS platform runs
+customer-facing API requests and internal nightly data-export jobs
+against the same primary database. Under normal load, export jobs run at
+full speed; when the connection pool crosses a pressure threshold, the
+scheduler throttles exports — reducing batch size and concurrency, or
+pausing them briefly — until pool pressure subsides, without ever
+returning an error to the customers making API requests at the same
+time. The export finishes later, but the users never notice a thing.
+
+**Tiered async processing under a spike.** A media platform transcodes
+uploads through a worker pool shared by two tiers: interactive
+"processing your upload now" jobs and bulk re-encode jobs for an old
+catalog. When queue depth climbs, the admission controller keeps
+admitting interactive jobs but throttles bulk re-encodes down to a
+trickle — they still make progress on a guaranteed floor of workers, but
+yield the bulk of capacity to the tier a user is actively waiting on. As
+the queue drains past the lower hysteresis threshold, bulk work ramps
+back up.
+
+**Downstream-aware outbound throttling.** A service calls an internal
+dependency and watches its latency and error rate as the pressure
+signal. When the dependency's p99 latency climbs — a sign it's near
+saturation — the caller throttles its own outbound concurrency, slowing
+the rate it issues calls rather than piling on and pushing the
+dependency into collapse. Paired with a
+[circuit breaker](/docs/patterns/reliability/circuit-breaker) for the
+hard-failure case, this graduated slowdown keeps a strained dependency
+usable instead of tipping it over.
 
 ## Related patterns
 
 - [Rate Limiter](/docs/patterns/building-blocks/rate-limiter) — the
   closely related, but mechanically distinct, pattern of enforcing a
   hard per-client quota at the edge with an explicit reject once
-  exceeded.
+  exceeded; throttling protects a shared resource by degrading work
+  under live pressure instead.
+- [Backpressure](/docs/patterns/batch-streaming/backpressure) — the
+  mechanism that propagates a throttled stage's slowdown upstream so
+  overload doesn't just accumulate in an unbounded queue.
+- [Queue-Based Load Leveling](/docs/patterns/batch-streaming/queue-based-load-leveling) —
+  absorbs bursts into a buffer that throttling then drains at a
+  sustainable pace.
+- [Priority Queue](/docs/patterns/batch-streaming/priority-queue) —
+  orders which buffered work runs next, complementing throttling's
+  control over how much runs at all.
+- [Circuit Breaker](/docs/patterns/reliability/circuit-breaker) — the
+  hard-failure counterpart: where throttling slows a strained
+  dependency, a breaker stops calling a failing one outright.
 
 ## Further reading
 
 - [Throttling pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/throttling)
 - [Rate limiting — Wikipedia](https://en.wikipedia.org/wiki/Rate_limiting)
+- [Using load shedding to avoid overload — Amazon Builders' Library](https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/)
+- [Handling overload — Google SRE Book, Ch. 21](https://sre.google/sre-book/handling-overload/)

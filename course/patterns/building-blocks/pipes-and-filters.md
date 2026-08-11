@@ -84,6 +84,24 @@ other producer-consumer system — a robust pipe implementation bounds
 its buffer and propagates the slowdown backward (the upstream filter
 blocks or is throttled) rather than buffering without limit.
 
+**Parallel filters and the ordering trade-off.** Because a filter is
+stateless with respect to its neighbors, a slow stage can be *scaled
+horizontally* by running many replicas of that one filter and spreading
+units across them — the enrichment stage that makes a network call per
+record runs with far more instances than a cheap in-memory parse stage.
+This is the [Competing
+Consumers](/docs/patterns/batch-streaming/competing-consumers) pattern
+applied to a single stage of the pipe, and it's what lets each filter be
+scaled independently to match its own cost. The trade-off it introduces
+is **ordering**: the moment a stage has multiple parallel workers pulling
+from the same pipe, units can finish out of the order they entered, so a
+pipeline that must preserve order either keeps order-sensitive stages
+single-worker or carries a sequence key and re-orders downstream (the
+[Sequential Convoy](/docs/patterns/batch-streaming/sequential-convoy)
+approach of partitioning by key so same-key units stay serialized while
+different keys run in parallel). Deciding, per stage, whether ordering
+actually matters is what makes safe parallelization possible.
+
 **Pipes and Filters vs. Event-Driven Architecture / Choreography.**
 Pipes and Filters looks superficially similar to an event-driven chain
 of services, but the coupling is different in an important way: a
@@ -208,8 +226,15 @@ filtering steps.
 - [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue) —
   the infrastructure a pipe is frequently implemented on top of when
   filters run as separate services rather than in-process functions.
+- [Competing Consumers](/docs/patterns/batch-streaming/competing-consumers) —
+  how a single slow filter stage is scaled by running many replicas that
+  pull from the same pipe, at the cost of cross-unit ordering.
+- [Sequential Convoy](/docs/patterns/batch-streaming/sequential-convoy) —
+  preserves order *within* a key while still parallelizing across keys,
+  the way to parallelize an order-sensitive filter stage safely.
 
 ## Further reading
 
 - [Pipes and Filters pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/pipes-and-filters)
 - [Pipeline (software) — Wikipedia](https://en.wikipedia.org/wiki/Pipeline_(software))
+- [Pipes and Filters — Enterprise Integration Patterns (Hohpe & Woolf)](https://www.enterpriseintegrationpatterns.com/patterns/messaging/PipesAndFilters.html)
