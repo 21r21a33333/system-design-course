@@ -4,6 +4,11 @@
  * work well for content-centric websites.
  */
 
+/* KaTeX styles for math rendering in the DSA course. Bundled from
+   node_modules so the site stays self-hosted (no CDN). Must precede
+   all style rules per the CSS @import ordering requirement. */
+@import '~katex/dist/katex.min.css';
+
 /* You can override the default Infima variables here. */
 :root {
   --ifm-color-primary: #2e8555;

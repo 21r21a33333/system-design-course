@@ -1,4 +1,6 @@
 import {themes as prismThemes} from 'prism-react-renderer';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
@@ -28,6 +30,12 @@ const config: Config = {
   onBrokenLinks: 'throw',
   onBrokenAnchors: 'throw',
 
+  // Render ```mermaid fenced blocks as diagrams (recurrence trees, decision
+  // trees, structure diagrams throughout the DSA course).
+  markdown: {
+    mermaid: true,
+  },
+
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
@@ -44,6 +52,11 @@ const config: Config = {
           path: 'course',
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
+          // KaTeX math rendering for the DSA course (recurrences, complexity,
+          // number-theory formulas). CSS is bundled locally via src/css/custom.css
+          // to keep the site self-hosted with no CDN dependency.
+          remarkPlugins: [remarkMath],
+          rehypePlugins: [rehypeKatex],
         },
         blog: false,
         theme: {
@@ -57,6 +70,7 @@ const config: Config = {
   // API keys, consistent with the rest of the site being self-hosted with
   // zero backend.
   themes: [
+    '@docusaurus/theme-mermaid',
     [
       '@easyops-cn/docusaurus-search-local',
       {
@@ -92,6 +106,8 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      // C++ is the core-code language for the DSA course; not in Prism's default set.
+      additionalLanguages: ['cpp'],
     },
   } satisfies Preset.ThemeConfig,
 };
