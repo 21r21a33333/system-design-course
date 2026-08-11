@@ -161,13 +161,14 @@ one is aware the other exists, or that a payment step comes after.
 
 ## Real-world example
 
-Event-driven order fulfillment pipelines commonly use choreography:
-an "OrderPlaced" event triggers an independent inventory service to
-reserve stock and publish "InventoryReserved," which triggers an
-independent payment service to charge the customer and publish
-"PaymentCharged," which triggers a shipping service — with no service
-in the chain aware that any of the others exist, only that it should
-react to one event and emit another.
+CI/CD pipelines are commonly choreographed: a "CodePushed" event
+triggers an independent build service to compile and publish
+"BuildSucceeded," which triggers an independent test service to run
+the suite and publish "TestsPassed," which triggers a deployment
+service — with no service in the chain aware that any of the others
+exist, only that it should react to one event and emit another. Adding
+a new stage (a security scan, say) means subscribing it to an existing
+event; nothing already in the chain has to change.
 
 ## Related patterns
 
@@ -182,4 +183,5 @@ react to one event and emit another.
 ## Further reading
 
 - [Event-driven architecture — Wikipedia](https://en.wikipedia.org/wiki/Event-driven_architecture)
-- [Orchestration and choreography patterns — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/orchestration-choreography.html)
+- [Choreography pattern — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-choreography.html)
+- [Orchestration pattern — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-orchestration.html)
