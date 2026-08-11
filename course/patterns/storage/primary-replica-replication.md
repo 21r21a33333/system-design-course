@@ -96,6 +96,43 @@ shard is itself a primary-replica set, so the system gets sharding's
 write-throughput and capacity scaling and replication's read scaling
 and failover safety, layered on top of each other.
 
+## Living with replication lag
+
+Serving reads from asynchronous replicas is where lag stops being an
+abstraction and starts producing user-visible anomalies, and a few
+recurring ones are worth naming because each has a standard mitigation.
+
+**Read-your-own-writes.** A user updates their profile, the write
+commits on the primary, the immediate re-read is routed to a replica
+that hasn't received the change yet — and the user sees their *old*
+profile, as if the save failed. The usual fix is to route a user's reads
+to the primary (or to a replica known to be caught up) for a short window
+after that user writes, so they always observe at least their own latest
+change even while everyone else reads from lagging replicas.
+
+**Monotonic reads.** Two successive reads by the same user land on two
+different replicas at different lag, and the second replica is *further
+behind* than the first — so the user watches data appear to travel
+backwards in time (a comment they just saw vanishes). Pinning a session
+to a single replica, or tracking a per-session read position, keeps a
+user's view moving only forward.
+
+**Bounding and monitoring lag.** Because lag is the currency of all of
+this, production systems measure it continuously — as a time delta (how
+many seconds behind) or a log-position delta — and act on it: a replica
+whose lag crosses a threshold is pulled out of the read pool until it
+catches up, rather than serving reads so stale they're misleading. Some
+systems expose the primary's current write position to clients and let a
+read specify "only serve me from a replica that has applied at least up
+to position X," turning "read from a fresh-enough replica" into an
+explicit, checkable contract rather than a hope.
+
+These are the same consistency guarantees the
+[consistency patterns](/docs/patterns/consistency/quorum) formalize;
+primary-replica replication is where an application most often meets them
+in practice, because "read from a replica" quietly opts into all of them
+at once.
+
 ## Code example
 
 ```rust
@@ -218,4 +255,6 @@ operation.
 ## Further reading
 
 - [Replication (computing) — Wikipedia](https://en.wikipedia.org/wiki/Replication_(computing))
-- [Geodes pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes)
+- [High availability, load balancing, and replication — PostgreSQL documentation](https://www.postgresql.org/docs/current/high-availability.html)
+- [MySQL replication — MySQL 8.0 reference manual](https://dev.mysql.com/doc/refman/8.0/en/replication.html)
+- [Geodes pattern — Azure Architecture Center (Microsoft)](https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes)
