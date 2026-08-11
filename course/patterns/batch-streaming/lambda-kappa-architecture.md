@@ -209,6 +209,21 @@ aggregate is fixed by replaying the retained log through the corrected
 job, rebuilding the aggregate exactly — no separate batch reconciliation
 system to maintain.
 
+## Production libraries & getting started
+
+Both architectures are assembled from the same building blocks — a durable log, a compute engine, and a serving store — rather than shipped as one product.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Apache Kafka | JVM | The immutable, replayable log at the heart of Kappa (and the ingest for both) | [Kafka quickstart](https://kafka.apache.org/quickstart) |
+| Apache Flink | JVM | Stream compute for the speed layer / the single Kappa processor with log replay | [Stateful stream processing](https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/stateful-stream-processing/) |
+| Apache Spark | JVM | Batch layer (RDD/DataFrame) plus Structured Streaming speed layer | [Structured Streaming guide](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) |
+| Apache Druid | JVM | Real-time analytics serving store for low-latency query views | [Druid tutorials](https://druid.apache.org/docs/latest/tutorials/) |
+| Apache Pinot | JVM | Real-time OLAP serving store for user-facing analytics | [Pinot getting started](https://docs.pinot.apache.org/basics/getting-started) |
+| ClickHouse | C++ | Columnar store that serves both batch and streaming-derived views fast | [ClickHouse quick start](https://clickhouse.com/docs/getting-started/quick-start) |
+
+**Example / reference:** [Questioning the Lambda Architecture — Jay Kreps (O'Reilly Radar)](https://www.oreilly.com/radar/questioning-the-lambda-architecture/)
+
 ## Related patterns
 
 - [MapReduce](/docs/patterns/batch-streaming/mapreduce) — the classic

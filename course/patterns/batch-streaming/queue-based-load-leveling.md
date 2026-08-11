@@ -244,6 +244,20 @@ turns a spiky, unpredictable arrival pattern into a smooth, predictable
 write load downstream, and monitoring queue depth gives an early signal
 when the *average* ingestion rate starts to exceed processing capacity.
 
+## Production libraries & getting started
+
+The queue itself *is* the leveling buffer — any durable queue works. Put
+one between a bursty producer and a fixed-rate consumer and size its depth
+and retention for your largest realistic burst.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Amazon SQS | Any (AWS SDK) | Fully managed durable buffer; producers enqueue and return, workers drain steadily | [SQS getting started](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-getting-started.html) |
+| RabbitMQ | JS / Python / Rust / Go clients | Durable queues with acks and bounded length (`x-max-length`) for the buffer | [Hello World tutorial](https://www.rabbitmq.com/tutorials/tutorial-one-python) |
+| BullMQ (Redis) | JS / TS | Redis-backed queue that absorbs bursts; add workers to drain faster | [BullMQ docs](https://docs.bullmq.io/) |
+| Azure Service Bus queues | Any (Azure SDK) | Managed durable queue with sessions, DLQ, and dead-letter-on-expiry | [Queues, topics & subscriptions](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-queues-topics-subscriptions) |
+| Apache Kafka | Any (many clients) | A durable log used as a deep buffer; consumers read at their own sustainable pace | [Kafka quickstart](https://kafka.apache.org/documentation/#gettingStarted) |
+
 ## Related patterns
 
 - [Backpressure](/docs/patterns/batch-streaming/backpressure) — the

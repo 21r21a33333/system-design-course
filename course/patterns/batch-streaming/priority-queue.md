@@ -218,6 +218,20 @@ being starved by a steady stream of higher-priority ones — the same
 aging idea the code example implements, applied to CPU time instead of
 queue position.
 
+## Production libraries & getting started
+
+Most brokers and job libraries expose priority either as a native queue
+property, as separate per-tier queues polled in order, or as a score in a
+sorted set — pick whichever your infrastructure already runs.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| RabbitMQ priority queues | Any (AMQP client) | Native `x-max-priority` queues that serve higher-priority messages first | [Priority queue support](https://www.rabbitmq.com/docs/priority) (browser-live; returns 403 to bots) |
+| BullMQ | JS / TS | Per-job `priority` option on a Redis-backed queue | [Job priority](https://docs.bullmq.io/guide/jobs/prioritized) |
+| Redis sorted sets | Any (Redis client) | Roll your own: `ZADD` with a priority score, pop the top with `ZPOPMIN`/`ZPOPMAX` | [ZADD command](https://redis.io/docs/latest/commands/zadd/) |
+| Celery | Python | Priority via broker (RabbitMQ `x-max-priority` or Redis) and routing | [Routing / priorities](https://docs.celeryq.dev/en/stable/userguide/routing.html) |
+| asynq | Go | Weighted priority queues with strict or weighted draining (starvation guard) | [Queue priority](https://github.com/hibiken/asynq/wiki/Queue-Priority) |
+
 ## Related patterns
 
 - [Competing Consumers](/docs/patterns/batch-streaming/competing-consumers) —

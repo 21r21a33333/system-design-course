@@ -237,6 +237,21 @@ so matching records co-locate, and reduces to emit the joined,
 enriched rows into a data warehouse — the kind of bounded, high-volume
 transformation the model was built for.
 
+## Production libraries & getting started
+
+Raw MapReduce still runs on Hadoop, but most new batch work uses a DAG engine or a Python-native framework built on the same map/shuffle/reduce primitives.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Apache Hadoop MapReduce | JVM | The canonical map/shuffle/reduce engine over HDFS | [MapReduce tutorial](https://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html) |
+| Apache Spark (RDD) | JVM / Python | In-memory DAG engine; RDDs generalize map/reduce with staged execution | [RDD programming guide](https://spark.apache.org/docs/latest/rdd-programming-guide.html) |
+| Apache Beam | JVM / Python / Go | Unified batch + streaming model, portable across runners | [Beam quickstart](https://beam.apache.org/get-started/quickstart/) |
+| Google Cloud Dataflow | Managed (Beam) | Serverless managed runner for Beam pipelines | [Dataflow docs](https://cloud.google.com/dataflow/docs) |
+| Dask | Python | Parallel dataframes and task graphs scaling NumPy/pandas across a cluster | [Dask docs](https://docs.dask.org/en/stable/) |
+| mrjob | Python | Write MapReduce jobs in Python, run locally or on Hadoop/EMR | [mrjob docs](https://mrjob.readthedocs.io/en/latest/) |
+
+**Example / reference:** [MapReduce: Simplified Data Processing on Large Clusters — Dean & Ghemawat (Google, 2004)](https://research.google/pubs/mapreduce-simplified-data-processing-on-large-clusters/)
+
 ## Related patterns
 
 - [Stream Processing](/docs/patterns/batch-streaming/stream-processing) —

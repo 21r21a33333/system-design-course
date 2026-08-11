@@ -249,6 +249,22 @@ partitions, deliberately relaxing strict per-tenant ordering for the
 whales in exchange for keeping any one partition from becoming the
 group's bottleneck.
 
+## Production libraries & getting started
+
+Partitioned consumption is what Kafka-style consumer groups and Kinesis
+shard consumers implement natively — you pick a partition key and the
+broker/library handles assignment, offsets, and rebalancing.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| KafkaJS | JS / TS | Consumer-group client with partition assignment and offset commits | [Consuming messages](https://kafka.js.org/docs/consuming) |
+| rust-rdkafka | Rust | librdkafka bindings: consumer groups, rebalancing, offset management | [rdkafka docs](https://docs.rs/rdkafka/latest/rdkafka/) |
+| Sarama / franz-go | Go | Two mature Kafka clients with consumer-group support | [Sarama](https://github.com/IBM/sarama) · [franz-go](https://github.com/twmb/franz-go) |
+| confluent-kafka-python | Python | librdkafka-backed client with consumer groups and cooperative rebalancing | [confluent-kafka-python](https://github.com/confluentinc/confluent-kafka-python) |
+| AWS Kinesis (KCL) | Java / multi-lang | Kinesis Client Library: one worker per shard, lease-based assignment, checkpointing | [KCL developer guide](https://docs.aws.amazon.com/streams/latest/dev/kcl.html) |
+| Apache Pulsar | Any (many clients) | Partitioned topics with `Failover` / `Key_Shared` subscriptions for ordered per-key consumption | [Pulsar standalone quickstart](https://pulsar.apache.org/docs/getting-started-standalone/) |
+| Redpanda | Any (Kafka clients) | Kafka-API-compatible streaming platform; same consumer-group semantics | [Redpanda quickstart](https://docs.redpanda.com/current/get-started/quick-start/) |
+
 ## Related patterns
 
 - [Competing Consumers](/docs/patterns/batch-streaming/competing-consumers)

@@ -228,6 +228,21 @@ in-memory buffer drops the *oldest* samples on overflow and increments a
 slightly gappy metrics timeline is acceptable, but an agent that OOM-kills
 the host it is monitoring is not.
 
+## Production libraries & getting started
+
+Backpressure is usually a first-class feature of the concurrency primitive or reactive library, not something you build from scratch.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Reactive Streams | Spec (JVM) | The `request(n)` demand-signaling contract every JVM reactive lib implements | [reactive-streams.org](https://www.reactive-streams.org/) |
+| Project Reactor | JVM | Reactive types (`Flux`/`Mono`) with explicit backpressure operators | [Handling backpressure](https://projectreactor.io/docs/core/release/reference/#reactive.backpressure) |
+| RxJS | JS / TS | Observable pipelines; backpressure via buffering/sampling operators | [RxJS overview](https://rxjs.dev/guide/overview) |
+| Tokio bounded mpsc | Rust | `channel(capacity)` — `send().await` parks the producer when full | [tokio mpsc channel](https://docs.rs/tokio/latest/tokio/sync/mpsc/fn.channel.html) |
+| Go buffered channels | Go | `make(chan T, n)` — a full channel blocks the sender | [Go tour: buffered channels](https://go.dev/tour/concurrency/3) |
+| Pekko Streams (Akka) | JVM | Demand-driven stream stages with built-in backpressure | [Streams basics](https://pekko.apache.org/docs/pekko/current/stream/stream-flows-and-basics.html) |
+
+**Example / reference:** [Backpressure explained — Jay Phelps](https://medium.com/@jayphelps/backpressure-explained-the-flow-of-data-through-software-2350b3e77ce7)
+
 ## Related patterns
 
 - [Queue-Based Load Leveling](/docs/patterns/batch-streaming/queue-based-load-leveling)

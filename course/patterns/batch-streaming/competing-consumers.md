@@ -281,6 +281,22 @@ recipients, so competing consumers is a perfect fit; the only
 discipline required is idempotency (dedupe on notification ID) so a
 redelivered message doesn't send the same email twice.
 
+## Production libraries & getting started
+
+You rarely build the claim-and-ack machinery yourself — a broker or a job
+library gives you a shared queue with exactly-one-consumer delivery, and
+you just run more worker processes against it.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Amazon SQS | Any (AWS SDK) | Managed queue with visibility timeout and max-receive → DLQ; run any number of competing consumers | [SQS getting started](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-getting-started.html) |
+| RabbitMQ work queues | JS `amqplib`, Python `pika`, Rust `lapin`, Go `amqp091-go` | Round-robin dispatch across consumers with per-message acks and requeue-on-crash | [Work Queues tutorial](https://www.rabbitmq.com/tutorials/tutorial-two-python) · [amqplib](https://amqp-node.github.io/amqplib/) · [pika](https://pika.readthedocs.io/en/stable/) · [lapin](https://docs.rs/lapin/latest/lapin/) · [amqp091-go](https://github.com/rabbitmq/amqp091-go) |
+| Apache Kafka consumer groups | Any (many clients) | Partitions divided across a consumer group so members share one workload | [Kafka consumers](https://kafka.apache.org/documentation/#intro_consumers) |
+| BullMQ | JS / TS | Redis-backed job queue; run many `Worker` instances that compete for jobs | [BullMQ docs](https://docs.bullmq.io/) |
+| Celery | Python | Distributed task queue; scale by adding worker processes/nodes | [First steps with Celery](https://docs.celeryq.dev/en/stable/getting-started/first-steps-with-celery.html) |
+| asynq | Go | Redis-backed task queue with retries, DLQ, and a worker server | [asynq](https://github.com/hibiken/asynq) |
+| Faktory | Any (language workers) | Language-agnostic job server; workers of any language pull from shared queues | [Faktory getting started](https://github.com/contribsys/faktory/wiki/Getting-Started) |
+
 ## Related patterns
 
 - [Publish-Subscribe](/docs/patterns/communication/pub-sub) — fans the

@@ -262,6 +262,25 @@ funnel stage reached) used for real-time personalization, with session
 state kept in an embedded key-value store so millions of concurrent
 sessions exceed memory safely.
 
+## Production libraries & getting started
+
+The dominant streaming engines are JVM-based, but Python, Rust, Go, and SQL-first options now cover most of the same ground.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Apache Flink | JVM | Record-at-a-time engine with event-time windows, watermarks, and checkpointed state | [DataStream overview](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/overview/) |
+| Kafka Streams | JVM | Stream-processing library embedded in your app — no separate cluster | [Streams quickstart](https://kafka.apache.org/documentation/streams/quickstart) |
+| Spark Structured Streaming | JVM | Micro-batch (and continuous) streaming on the Spark engine | [Structured Streaming guide](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) |
+| Faust | Python | Kafka Streams-style stateful processing in async Python | [Faust docs](https://faust-streaming.github.io/faust/) |
+| Bytewax | Python | Dataflow streaming with Rust core, event-time windows and recovery | [Installing Bytewax](https://docs.bytewax.io/stable/guide/getting-started/installing.html) (browser-live; DNS-blocked in some sandboxes) |
+| Redpanda Connect (Benthos) | Go | Declarative stream connectors and transforms as a single binary | [About Redpanda Connect](https://docs.redpanda.com/redpanda-connect/about/) |
+| Fluvio | Rust | Cloud-native streaming platform with WASM stream processing | [Fluvio quickstart](https://www.fluvio.io/docs/fluvio/quickstart) |
+| Arroyo | Rust | SQL-based stateful stream processing engine | [Arroyo getting started](https://doc.arroyo.dev/getting-started) |
+| Materialize | SQL | Incremental view maintenance — streaming as standing SQL views | [Materialize quickstart](https://materialize.com/docs/get-started/quickstart/) |
+| RisingWave | SQL | Postgres-compatible streaming database with materialized views | [RisingWave quickstart](https://docs.risingwave.com/get-started/quickstart) |
+
+**Example / reference:** [The Dataflow Model — Google Research (VLDB 2015)](https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/)
+
 ## Related patterns
 
 - [MapReduce](/docs/patterns/batch-streaming/mapreduce) — the

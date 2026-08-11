@@ -243,6 +243,20 @@ entity's events to one ordered lane; the number of concurrent lanes
 scales with the number of active devices, so throughput grows with the
 fleet as long as no single device is a hot key monopolizing its lane.
 
+## Production libraries & getting started
+
+You get sequential-convoy behavior by choosing a mechanism that pins every
+same-key message to a single ordered lane — a session, a partition key, or
+a key-shared subscription — so per-key order holds while unrelated keys run
+in parallel.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Azure Service Bus sessions | Any (Azure SDK) | Message sessions: all messages with the same `SessionId` are delivered in order to one consumer | [Message sessions](https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sessions) |
+| Apache Kafka | Any (many clients) | Partition-by-key ordering: same key → same partition → one consumer, in offset order | [Concepts & terminology](https://kafka.apache.org/documentation/#intro_concepts_and_terms) |
+| Apache Pulsar | Any (many clients) | `Key_Shared` subscription keeps per-key order while spreading distinct keys across consumers | [Key_Shared subscription](https://pulsar.apache.org/docs/concepts-messaging/#key_shared) |
+| RabbitMQ consistent-hash exchange | Any (AMQP client) | Routes same-key messages to the same queue/consumer for stable per-key lanes | [Consistent hash exchange plugin](https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_consistent_hash_exchange) |
+
 ## Related patterns
 
 - [Competing Consumers](/docs/patterns/batch-streaming/competing-consumers) —

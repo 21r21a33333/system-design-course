@@ -232,6 +232,21 @@ the broker in commit order, and marks it forwarded — turning a committed
 database write into a durably published event without a distributed
 transaction.
 
+## Production libraries & getting started
+
+Debezium is the de facto CDC standard; the rest cover lighter-weight or database-native paths.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Debezium | JVM | Log-based CDC connectors for Postgres, MySQL, Mongo, SQL Server, Oracle | [Debezium tutorial](https://debezium.io/documentation/reference/stable/tutorial.html) |
+| Kafka Connect | JVM | The connector runtime Debezium ships on; source/sink pipelines to Kafka | [Kafka Connect docs](https://kafka.apache.org/documentation/#connect) |
+| Maxwell's Daemon | JVM | Reads the MySQL binlog and emits row changes as JSON | [Maxwell docs](https://maxwells-daemon.io/) |
+| PostgreSQL logical decoding | SQL / C | Native change stream via replication slots (pgoutput / wal2json) | [Logical decoding docs](https://www.postgresql.org/docs/current/logicaldecoding.html) · [wal2json](https://github.com/eulerto/wal2json) |
+| Sequin | Go | Postgres-native CDC to streams and queues with a managed runtime | [Sequin docs](https://sequinstream.com/docs) |
+| Materialize source | SQL | Consume Postgres/MySQL CDC directly as a streaming SQL source | [CREATE SOURCE](https://materialize.com/docs/sql/create-source/) |
+
+**Example / reference:** [The Transactional Outbox pattern — microservices.io](https://microservices.io/patterns/data/transactional-outbox.html)
+
 ## Related patterns
 
 - [Write-Ahead Log](/docs/patterns/storage/write-ahead-log) — the
