@@ -59,48 +59,157 @@ The design's central bet is the mirror image of this course's Google Maps case s
 
 ### Use case: User searches for businesses near a location
 
-* The client sends a center point (lat/lng) and optional filters (category, radius) to the **search service**
-* The search service resolves the center point to its geographic cell in the **spatial index** and queries that cell plus its immediate neighbors, to catch businesses just across a cell boundary from the search center
-* Candidates are filtered by category if specified, ranked, and the top results are returned with distance computed per result
+The hard problem: filter 50 million largely-static points down to "what's near this exact coordinate" in under 300ms, at 7,000 searches/sec peak, without scanning the dataset.
 
-The spatial index is the crux of this design, and it's worth being explicit about why a naive approach fails: scanning all 50 million businesses and computing distance for each one, per search, at 7,000 searches/sec peak, means the full dataset is touched roughly 350 billion times a second worth of comparisons — obviously untenable. Instead, the map is divided into cells using a hierarchical geospatial grid — Geohash, Google's S2, and Uber's H3 are three real, widely-used implementations of this exact idea, each with a compact string or integer key at a chosen precision level and neighboring cells having adjacent-looking keys, letting "give me this area and its neighbors" resolve to a handful of index lookups instead of a scan. The index itself is a straightforward mapping of `cell_id -> [business_id, business_id, ...]`, maintained incrementally as businesses are created, moved, or removed — see [Index Table](/docs/patterns/storage/index-table) for the general pattern of maintaining a secondary structure keyed by something other than a record's primary ID specifically to avoid full scans, applied here with a geographic cell as the secondary key instead of an ordinary field value.
+**Core spec: schema + geohash indexing**
 
-Choosing the cell precision level is a real tradeoff: coarser cells mean fewer cells to query but more candidates per cell to filter and rank (more false-positive "nearby" results that turn out to be outside the actual search radius once precise distance is computed); finer cells mean the opposite, plus more neighbor cells to check near a boundary. A reasonable design picks a precision level that keeps a typical urban cell's business count in the low hundreds, and may vary precision by known business density (dense downtown cores vs. sparse rural areas) rather than using one fixed size worldwide.
+```sql
+CREATE TABLE businesses (
+    business_id   BIGINT PRIMARY KEY,
+    name          VARCHAR(200) NOT NULL,
+    lat           DECIMAL(9,6) NOT NULL,
+    lng           DECIMAL(9,6) NOT NULL,
+    geohash       CHAR(7) NOT NULL,        -- precomputed, precision ~150m x 150m cells
+    category      VARCHAR(50) NOT NULL,
+    avg_rating    DECIMAL(2,1) NOT NULL DEFAULT 0,
+    review_count  INT NOT NULL DEFAULT 0,
+    updated_at    TIMESTAMP NOT NULL
+);
 
-Because business locations are effectively static and this index is queried far more than it's updated, it lives largely in memory across the search fleet — see [Distributed Cache](/docs/patterns/building-blocks/distributed-cache) — with the durable **business store** as the source of truth that the index is rebuilt or incrementally patched from, not something queried directly on the hot search path.
+-- The index that makes nearby-search fast: businesses sharing a
+-- geohash prefix are physically close, so range/equality queries on
+-- this column resolve "what's in this area" without scanning lat/lng.
+CREATE INDEX idx_businesses_geohash ON businesses (geohash);
+CREATE INDEX idx_businesses_geohash_category ON businesses (geohash, category);
+```
+
+A geohash encodes a lat/lng pair into a base-32 string where each additional character narrows the cell to a smaller region — a 7-character geohash covers roughly a 150m x 150m cell, a reasonable precision for "nearby" urban search. Businesses sharing a geohash prefix are geographically close, so `idx_businesses_geohash` turns "what's near this point" into an equality/prefix lookup instead of a full-table distance scan. Google's [S2](https://s2geometry.io/) and Uber's [H3](https://h3geo.org/) are two real, widely-used alternatives to geohash — both cover the sphere with cells too, with different trade-offs around cell shape uniformity, but the indexing idea (map 2D coordinates to a 1D sortable/indexable key) is the same across all three.
+
+```python
+def nearby_search(lat, lng, precision, index, radius_km, category=None):
+    center_cell = geohash_encode(lat, lng, precision)
+    cells_to_query = [center_cell] + geohash_neighbors(center_cell)  # see "the gotcha" below
+
+    candidates = []
+    for cell in cells_to_query:
+        candidates.extend(index.get(cell, []))
+
+    results = []
+    for biz in candidates:
+        if category and biz.category != category:
+            continue
+        d = haversine_distance(lat, lng, biz.lat, biz.lng)
+        if d <= radius_km:
+            results.append((biz, d))
+
+    return sorted(results, key=lambda r: r[1])
+```
+
+**Data structures:**
+* `spatial_index`: `geohash_cell -> [business_id, business_id, ...]`, kept largely in memory across the search fleet since it's queried far more than it's updated
+* `businesses` table: as in the DDL above, `business_id` primary, `geohash` indexed for cell lookups
+* `geohash_neighbors(cell)`: a pure function returning the 8 adjacent cells for a given geohash string — no storage, computed per query
+
+**Trade-offs:**
+* **The gotcha — this is "the boundary problem," and it's the specific trap a naive geohash implementation falls into:** two businesses can be meters apart in the real world yet fall into different geohash cells if they're near a cell edge — geohash cells are a rigid grid overlaid on the earth, and physical proximity doesn't respect grid lines. A query that looks up only the searcher's own cell will silently miss real nearby results sitting just across a boundary, and worse, this failure is invisible in testing unless a test case happens to place a point near an edge. The fix, shown in `nearby_search` above, is to always query the current cell **plus its 8 neighboring cells** (`geohash_neighbors`) — 9 cells total — never just one. This is the single most commonly cited gotcha in real geospatial-indexing write-ups for exactly this reason: it's easy to implement a version that passes casual testing and still returns wrong results in production.
+* Choosing geohash precision is a real trade-off: coarser cells (fewer characters) mean fewer cells to query but more candidates per cell to filter and rank; finer cells mean the opposite, plus (per the gotcha above) still always 9 cells to check regardless of precision. A reasonable design picks a precision that keeps a typical urban cell's business count in the low hundreds, and may vary precision by known business density (dense downtown cores vs. sparse rural areas) rather than one fixed size worldwide.
+* Some general-purpose search/storage systems bolt geo-filtering on as a feature — [PostGIS](https://postgis.net/) for PostgreSQL and Elasticsearch's [`geo_distance` query](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html) are two real, well-known examples — but understanding *why* proximity search needs cell-based indexing (not just "there's a geo feature in the database we already use") is the more durable system-design point than any specific tool choice.
+
+See: [Geohash — Wikipedia](https://en.wikipedia.org/wiki/Geohash) for the encoding scheme itself.
+
+**REST API:**
+
+```
+$ curl "https://yelp.example/api/v1/search?lat=37.7749&lng=-122.4194&radius_km=2&category=coffee"
+```
+
+Response:
+
+```json
+{
+  "results": [
+    {"business_id": "b_5521", "name": "Corner Coffee Co.", "distance_km": 0.3, "avg_rating": 4.5},
+    {"business_id": "b_9012", "name": "Bean There", "distance_km": 0.8, "avg_rating": 4.2}
+  ]
+}
+```
 
 ### Use case: Service ranks results by distance and rating
 
-Pure distance ranking is a bad user experience on its own — the absolute nearest coffee shop with a 2-star rating usually isn't what a user wants over a slightly farther 4.5-star one. Ranking combines both signals: a candidate list is retrieved by the spatial index (distance-relevant by construction, since it's already limited to nearby cells), then scored by a function that weighs precise distance against the business's aggregate rating, rather than sorting by distance alone and only using rating as a tiebreaker. This scoring step runs against a small candidate set (the contents of a handful of cells, typically a few hundred businesses at most), not the full dataset, which is exactly why getting the candidate set small via the spatial index first matters — the ranking function's cost is proportional to candidates returned, not to total businesses that exist.
+Pure distance ranking is a bad user experience on its own — the absolute nearest coffee shop with a 2-star rating usually isn't what a user wants over a slightly farther 4.5-star one.
+
+**Core spec: weighted scoring over a small, already-filtered candidate set**
+
+```python
+def rank_score(distance_km, avg_rating, max_radius_km):
+    distance_score = 1 - (distance_km / max_radius_km)     # closer -> higher, in [0, 1]
+    rating_score = avg_rating / 5.0                          # normalize to [0, 1]
+    return 0.6 * distance_score + 0.4 * rating_score          # tunable weights
+
+def rank_results(candidates, max_radius_km):
+    scored = [
+        (biz, rank_score(dist, biz.avg_rating, max_radius_km))
+        for biz, dist in candidates
+    ]
+    return sorted(scored, key=lambda r: r[1], reverse=True)
+```
+
+**Data structures:** operates directly on the `(business, distance)` candidate list `nearby_search` already produced — no separate storage.
+
+**Trade-offs:**
+* This scoring step runs against a small candidate set (the contents of 9 cells, typically a few hundred businesses at most), not the full dataset — which is exactly why getting the candidate set small via the spatial index first matters; the ranking function's cost is proportional to candidates returned, not to total businesses that exist.
+* Fixed weights (0.6/0.4 above) are a simplification — a production system would tune these against actual click-through/conversion data rather than a guessed constant, but the *structure* (combine a normalized distance signal with a normalized quality signal) is the durable part of this design.
 
 ### Use case: Business owner creates or updates a listing
 
-Listing writes are rare relative to search reads (the calculation above puts read:write pressure at multiple orders of magnitude), so this path is optimized for correctness over raw throughput. A write goes to the durable **business store** first; only after that succeeds does the system update the spatial index, published as an event the index-maintenance layer consumes asynchronously — see [Event-Driven Architecture](/docs/patterns/communication/event-driven-architecture). A brand-new listing being invisible in search for a few seconds after creation is an acceptable staleness window given this design's assumptions; a listing write that succeeds in the business store but is silently never reflected in the index would not be, so index updates need at-least-once delivery with idempotent application (re-applying "business X is in cell Y" twice is harmless).
+Listing writes are rare relative to search reads (the calculation above puts read:write pressure at multiple orders of magnitude), so this path is optimized for correctness over raw throughput. A write goes to the durable `businesses` table first; only after that succeeds does the system update the spatial index, published as an event the index-maintenance layer consumes asynchronously — see [Event-Driven Architecture](/docs/patterns/communication/event-driven-architecture).
+
+**Trade-offs:**
+* A brand-new listing being invisible in search for a few seconds after creation is an acceptable staleness window given this design's assumptions; a listing write that succeeds in the `businesses` table but is silently never reflected in the index would not be, so index updates need at-least-once delivery with idempotent application (re-applying "business X is in cell Y" twice is harmless) — see [Idempotency](/docs/patterns/reliability/idempotency).
+* A business that moves or closes needs its old geohash cell entry removed and its new one added — naively "add to new cell, then remove from old" briefly double-lists the business, while the reverse order briefly makes it vanish. Neither is catastrophic given the short staleness window already tolerated, but it's an easy detail to get backwards under review.
 
 ### Use case: User leaves a rating and review
 
-* The client submits a rating and optional text to the **review service**, which writes it durably to the **review store**
-* The business's aggregate rating (`avg_rating`, `review_count`) needs to reflect the new review, but recomputing an average over potentially thousands of reviews on every single new submission is wasteful when the vast majority of read traffic is search and detail-page views, not review submissions
+* The client submits a rating and optional text to the **review service**, which writes it durably to a `reviews` table (`review_id`, `business_id`, `user_id`, `rating`, `text`, `created_at`, indexed on `business_id`)
+* The business's `avg_rating`/`review_count` need to reflect the new review, but recomputing an average over potentially thousands of reviews on every single new submission is wasteful when the vast majority of read traffic is search and detail-page views, not review submissions
 
-Rather than storing only raw reviews and averaging at read time, the aggregate is maintained incrementally: a new review updates a running sum and count rather than triggering a full recomputation, and that aggregate is what search ranking and the business detail page read — see [Materialized View](/docs/patterns/storage/materialized-view) for the general idea of maintaining a cheap, continuously-updated summary specifically so the much more frequent read path doesn't pay aggregation cost repeatedly. For businesses with unusually high review velocity (a newly viral restaurant), the same kind of write-contention concern this course's Instagram case study discusses for like counters applies here too — a [Sharded Counter](/docs/patterns/building-blocks/sharded-counters)-style approach to the running sum avoids a single hot row becoming a bottleneck, though at Yelp's assumed review-write volume (tens of writes/sec system-wide) this matters far less than it does for a social feed's like counts, and is more of a per-business hot-spot mitigation than a system-wide necessity.
+```python
+def record_review(business_id, rating, store):
+    biz = store.get_business(business_id)
+    new_count = biz.review_count + 1
+    new_avg = (biz.avg_rating * biz.review_count + rating) / new_count
+    store.update_business(business_id, avg_rating=new_avg, review_count=new_count)
+```
+
+**Data structures:** the incremental update above only needs the business's current `avg_rating` and `review_count` — no read of the full review history required.
+
+**Trade-offs:**
+* Rather than storing only raw reviews and averaging at read time, the aggregate is maintained incrementally, and that aggregate is what search ranking and the business detail page read — see [Materialized View](/docs/patterns/storage/materialized-view) for the general idea of maintaining a cheap, continuously-updated summary specifically so the much more frequent read path doesn't pay aggregation cost repeatedly.
+* For businesses with unusually high review velocity (a newly viral restaurant), the same kind of write-contention concern this course's Instagram case study discusses for like counters applies here too — a [Sharded Counter](/docs/patterns/building-blocks/sharded-counters)-style approach to `review_count` avoids a single hot row becoming a bottleneck, though at Yelp's assumed review-write volume (tens of writes/sec system-wide) this matters far less than it does for a social feed's like counts, and is more of a per-business hot-spot mitigation than a system-wide necessity.
+* An aggregate-rating system that trusts every review equally is gameable — fake reviews and review-bombing are a policy/trust problem layered on top of, not a replacement for, the aggregation mechanism above; out of scope to design in depth here.
 
 ## Step 4: Scale the design
 
 ![Yelp scaled architecture](/img/case-studies/yelp-scaled.svg)
 
-**The spatial index scales by geographic sharding, similar in principle to how this course's Uber case study shards its location index — but for a very different reason.** Uber shards by geography because a rider in one city should never match a driver in another; Yelp shards by geography because the *volume* of static business data and search query load in a single dense metro area can exceed what one machine's memory and query throughput can serve, even though the data itself never moves. See [Sharding](/docs/patterns/storage/sharding). Unlike Uber's index, which is under constant write pressure from location pings, Yelp's index shards are overwhelmingly read-heavy and only need to absorb rare listing changes — which means each shard can be replicated more aggressively for read scaling without the write-conflict concerns a high-churn index would have.
-
-**Search read load is the dominant traffic and is served primarily from cache, in front of the spatial index and the business store both.** A search for a popular area (a downtown core, a busy neighborhood) is requested repeatedly by many different users in a short window, making it a good candidate for [Cache-Aside](/docs/patterns/caching/cache-aside) at the query-result level, not just at the underlying index level — caching "top businesses near cell X" as a unit avoids repeating even the cheap index lookup and ranking work for a popular area on every single request.
-
-**Business detail pages benefit from a [CDN](/docs/patterns/building-blocks/cdn) for anything static** (photos, hours, address) with only the aggregate rating needing a fresher, non-cached-at-the-edge path — separating what's genuinely dynamic (the rating, which changes with every review) from what isn't (the listing's core facts) keeps the cacheable majority of the page cheap to serve.
-
-**The review store scales by sharding on `business_id`**, since virtually every review read is scoped to a single business (its detail page) rather than needing to query across businesses — see [Sharding](/docs/patterns/storage/sharding). Combined with [Primary-Replica Replication](/docs/patterns/storage/primary-replica-replication) for the much higher read volume relative to writes, this keeps review reads cheap without over-provisioning for the comparatively rare write path.
-
-**Rate limiting protects the search API from abusive or automated scraping traffic** specifically because the underlying dataset (business listings) is valuable and static enough to be worth scraping wholesale — see [Rate Limiter](/docs/patterns/building-blocks/rate-limiter) and [Throttling](/docs/patterns/building-blocks/throttling). This is a lower concern for a system like Uber's dispatch API, where the data is transient and time-sensitive and therefore much less valuable to scrape in bulk.
+* **The spatial index scales by geographic sharding, similar in principle to how this course's Uber case study shards its location index — but for a very different reason.** Uber shards by geography because a rider in one city should never match a driver in another; Yelp shards by geography because the *volume* of static business data and search query load in a single dense metro area can exceed what one machine's memory and query throughput can serve, even though the data itself never moves. See [Sharding](/docs/patterns/storage/sharding). Unlike Uber's index, which is under constant write pressure from location pings, Yelp's index shards are overwhelmingly read-heavy and only need to absorb rare listing changes — which means each shard can be replicated more aggressively for read scaling without the write-conflict concerns a high-churn index would have.
+* **Search read load is the dominant traffic and is served primarily from cache, in front of the spatial index and the business store both.** A search for a popular area (a downtown core, a busy neighborhood) is requested repeatedly by many different users in a short window, making it a good candidate for [Cache-Aside](/docs/patterns/caching/cache-aside) at the query-result level, not just at the underlying index level — caching "top businesses near cell X" as a unit avoids repeating even the cheap index lookup and ranking work for a popular area on every single request.
+* **Business detail pages benefit from a [CDN](/docs/patterns/building-blocks/cdn) for anything static** (photos, hours, address) with only the aggregate rating needing a fresher, non-cached-at-the-edge path — separating what's genuinely dynamic (the rating, which changes with every review) from what isn't (the listing's core facts) keeps the cacheable majority of the page cheap to serve.
+* **The review store scales by sharding on `business_id`**, since virtually every review read is scoped to a single business (its detail page) rather than needing to query across businesses — see [Sharding](/docs/patterns/storage/sharding). Combined with [Primary-Replica Replication](/docs/patterns/storage/primary-replica-replication) for the much higher read volume relative to writes, this keeps review reads cheap without over-provisioning for the comparatively rare write path.
+* **Rate limiting protects the search API from abusive or automated scraping traffic** specifically because the underlying dataset (business listings) is valuable and static enough to be worth scraping wholesale — see [Rate Limiter](/docs/patterns/building-blocks/rate-limiter) and [Throttling](/docs/patterns/building-blocks/throttling). This is a lower concern for a system like Uber's dispatch API, where the data is transient and time-sensitive and therefore much less valuable to scrape in bulk.
 
 ## Additional talking points
 
 * **Why not use a general full-text search index for location filtering too, since one already exists for review text?** A geospatial cell index and a text search index solve different problems — proximity filtering needs a structure organized by physical space, not by token overlap — and while some search systems (Elasticsearch's `geo_distance` queries and PostgreSQL's PostGIS extension are two real, well-known examples) do support geo-filtering as a bolted-on feature, understanding *why* proximity search needs its own indexing structure (rather than "just use whatever search engine we already have") is the more interesting system-design point than the specific tool choice.
-* **Handling businesses that move or close.** A listing update needs to remove the business from its old cell and add it to its new one atomically enough that a search never returns a business at a stale location — a small but easy-to-get-wrong detail, since naively "add to new cell, then remove from old cell" briefly double-lists the business, while the reverse order briefly makes it vanish.
-* **Fraud in ratings (fake reviews, review bombing).** Out of scope to design in depth, but worth a mention: an aggregate-rating system that trusts every review equally is gameable, and a production system would need some notion of review-source trust or anomaly detection feeding into how much weight a given review contributes to the aggregate — a policy/trust problem layered on top of, not a replacement for, the aggregation mechanism described above.
+* **Fraud in ratings (fake reviews, review bombing).** Out of scope to design in depth, but worth a mention: an aggregate-rating system that trusts every review equally is gameable, and a production system would need some notion of review-source trust or anomaly detection feeding into how much weight a given review contributes to the aggregate.
 * **Search-radius versus fixed-result-count tradeoffs.** A fixed search radius can return zero results in a sparse area and hundreds in a dense one; a fixed result count (e.g., "nearest 30") behaves more consistently for the user but means the effective radius searched varies wildly by location density — worth discussing which behavior actually matches user expectations, since it changes how the neighbor-cell expansion logic in Step 3 needs to behave.
+* **S2 and H3 both solve the boundary problem differently than geohash's fixed grid** — worth a brief mention that hexagonal cells (H3) have more uniform neighbor distances than geohash's rectangular cells, which reduces (but doesn't eliminate) the boundary distortion at cell edges; the neighbor-expansion fix in Step 3 is still needed regardless of which cell scheme is chosen.
+
+## Source(s) and further reading
+
+* [Geohash — Wikipedia](https://en.wikipedia.org/wiki/Geohash) — the encoding scheme this design's spatial index is built on
+* [S2 Geometry](https://s2geometry.io/) — Google's hierarchical spherical-cell indexing library, a real alternative to geohash
+* [H3](https://h3geo.org/) — Uber's hexagonal hierarchical spatial index, another real, widely-used alternative
+* [PostGIS](https://postgis.net/) — PostgreSQL's geospatial extension, a real example of geo-filtering bolted onto a general-purpose database
+* [Elasticsearch `geo_distance` query](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html) — a real production geo-filtering feature on a general-purpose search engine
+* [Materialized View](/docs/patterns/storage/materialized-view) — the pattern behind this design's incrementally-maintained rating aggregate

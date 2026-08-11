@@ -61,49 +61,207 @@ The core design tension is between two things that both want to be fast: routing
 
 ### Use case: User requests a route
 
-* The client sends origin and destination coordinates to the **routing service**
-* The routing service resolves both points to the nearest graph nodes and runs a shortest-path search over the **road graph**, where each edge's weight is its current best-known travel time — base travel time adjusted by the live multiplier from the **traffic layer**
-* The result — an ordered sequence of edges — is converted into turn-by-turn instructions (which requires geometry and street-name data associated with each edge, fetched alongside the graph) and returned to the client along with an initial ETA
+The hard problem: find the shortest (or fastest) path across a graph with ~700 million edges, in well under a second, using edge weights that are changing hundreds of thousands of times a second underneath the query.
 
-Running a plain shortest-path search (conceptually similar to Dijkstra's algorithm) over the full 700-million-edge global graph on every request would be far too slow to meet a sub-second target — the search space is enormous even though any single route only ever touches a tiny fraction of it. Two standard techniques make this tractable. First, **bidirectional search**: running the shortest-path search simultaneously outward from the origin and backward from the destination and stopping when the two frontiers meet cuts the effective search space dramatically compared to searching from just one end. Second, and more importantly at this system's scale, **precomputed hierarchical shortcuts** — a technique known in the routing literature as contraction hierarchies, and one that real open-source routing engines like OSRM and GraphHopper implement as their core speed-up strategy: offline, the graph is preprocessed to identify "important" long-distance edges (the road-network equivalent of highways connecting regions) and precompute shortcut edges that skip over long stretches of less-important local roads. A live query then only needs to search in detail near the origin and destination, and can "jump" through the precomputed shortcut layer for the long middle stretch of a route — trading a large offline precomputation cost, redone periodically as the road network changes, for a dramatically smaller online query cost. This is a graph-specific realization of a very general idea also seen elsewhere in this course under [Materialized View](/docs/patterns/storage/materialized-view): expensive computation is done once, ahead of time, so that reads pay a much smaller cost repeatedly.
+**Core algorithm: Dijkstra/A\* for correctness, Contraction Hierarchies for the speed-up that makes it viable at this scale**
 
-Because the road graph itself changes rarely (new roads, closures) relative to how often it's read, it's held largely in memory across a fleet of routing servers rather than fetched from a durable store per request — see [Distributed Cache](/docs/patterns/building-blocks/distributed-cache) for the general shape of keeping a large, read-heavy, infrequently-updated dataset resident near compute rather than paying storage-layer latency on every query.
+Plain Dijkstra's algorithm, run over the full global graph, would explore tens of millions of nodes for a long cross-country query — nowhere close to a sub-second budget. Two techniques compose to fix this. **A\*** improves on Dijkstra by guiding the search with a heuristic (straight-line distance to the destination is a common admissible heuristic for road networks), so the frontier expands toward the destination rather than uniformly in all directions. That alone still isn't enough at 700-million-edge scale — which is where **Contraction Hierarchies (CH)** comes in, as a distinct *offline precomputation* step, not a smarter online search. CH preprocesses the graph once (and re-preprocesses incrementally as roads change — see Step 4) by "contracting" nodes in an order that leaves behind **shortcut edges**: an edge `(u, v)` with weight equal to the shortest path through some contracted node `w`, so a later search can traverse `u -> v` directly without ever visiting `w`. Doing this for the whole graph builds a hierarchy where important long-distance roads (the highway-equivalent nodes contracted last) become directly reachable from each other via shortcuts, and a live query only needs to search in detail near the origin and destination, "jumping" through the shortcut layer for the long middle stretch. Real open-source routing engines — [OSRM](https://github.com/Project-OSRM/osrm-backend) and [GraphHopper](https://www.graphhopper.com/) — implement CH (or a close variant) as their core speed-up strategy for exactly this reason. The qualitative effect is dramatic: a query that would otherwise touch a large fraction of the graph instead explores a small, bounded neighborhood near each endpoint plus a short hop through shortcuts, turning a search that's infeasible within a sub-second budget into one that comfortably fits it.
+
+The code below implements plain Dijkstra over a small graph — enough to show the actual shortest-path mechanism this design depends on — with comments marking exactly where CH's precomputed shortcuts would let a real query skip work entirely:
+
+```python
+import heapq
+
+def dijkstra_shortest_path(graph, source, target):
+    """graph: dict[node] -> list[(neighbor, edge_weight)]
+    edge_weight here is current best-known travel time: base travel
+    time adjusted by the live multiplier from the traffic layer.
+
+    At full scale (~700M edges) this exact algorithm is far too slow
+    to run against the raw graph per request -- CH is what makes it
+    tractable, by letting the search below "jump" over long stretches
+    of local roads via precomputed shortcut edges instead of visiting
+    every node in between. This function shows the mechanism CH
+    accelerates, not a replacement for CH itself.
+    """
+    dist = {source: 0}
+    prev = {}
+    visited = set()
+    # (distance, node) min-heap -- CH would additionally let this
+    # frontier expand across precomputed shortcut edges, so "next
+    # closest node" is often a shortcut hop spanning many real edges
+    # rather than a single local road segment.
+    frontier = [(0, source)]
+
+    while frontier:
+        d, node = heapq.heappop(frontier)
+        if node in visited:
+            continue
+        visited.add(node)
+        if node == target:
+            break  # bidirectional search (origin + destination) stops even earlier
+
+        for neighbor, weight in graph.get(node, []):
+            if neighbor in visited:
+                continue
+            new_dist = d + weight
+            if new_dist < dist.get(neighbor, float("inf")):
+                dist[neighbor] = new_dist
+                prev[neighbor] = node
+                heapq.heappush(frontier, (new_dist, neighbor))
+
+    if target not in dist:
+        return None, float("inf")
+
+    path = [target]
+    while path[-1] != source:
+        path.append(prev[path[-1]])
+    path.reverse()
+    return path, dist[target]
+```
+
+Beyond CH, **bidirectional search** — running the search simultaneously outward from the origin and backward from the destination, stopping when the two frontiers meet — cuts the effective search space further compared to searching from one end only, and composes naturally with CH's shortcut layer.
+
+**Data structures:**
+* `road_graph`: adjacency structure, `node -> [(neighbor_node, edge_weight), ...]`, held largely in memory across the routing fleet since it changes rarely relative to read volume
+* `shortcut_edges` (CH's offline output): `(node_u, node_v) -> shortcut_weight`, layered on top of the base graph so a query can traverse long stretches without visiting every intermediate node
+* `traffic_layer`: `edge_id -> current_speed_estimate`, continuously overwritten (see next use case) and read on every edge-weight lookup during a search
+* `contraction_order`: per-node rank recorded during offline preprocessing, used to decide which direction a query is allowed to traverse a given shortcut
+
+**Trade-offs:**
+* **The gotcha:** the instinct is to reach for "just run Dijkstra" or "just run A\*" and stop there — but neither one, run naively against the full live graph, meets a sub-second budget at hundreds of millions of edges. The graph-search algorithm is necessary but not sufficient; CH's offline precomputation is what actually makes the online query cheap, by moving the expensive part (finding which long-distance connections matter) out of the request path entirely. Treating CH as an optional optimization rather than a load-bearing part of the design is the specific gap that separates a naive answer from a real one here.
+* CH trades a large, periodic offline cost (contracting the graph, redone incrementally as roads change — see Step 4) for a dramatically smaller online query cost — the same "expensive computation done once, ahead of time" shape as [Materialized View](/docs/patterns/storage/materialized-view), applied to a graph structure instead of a table.
+* A\*'s heuristic (straight-line distance) is a search *guide*, not a substitute for the graph search itself — see the Additional talking points below for why using it as a standalone distance proxy instead would be a mistake specific to road networks.
+
+See: [Contraction Hierarchies — Wikipedia](https://en.wikipedia.org/wiki/Contraction_hierarchies) for the formal algorithm, and [A* search algorithm — Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm) for the heuristic-search half of this design.
+
+**REST API:**
+
+```
+$ curl "https://maps.example/api/v1/route?origin=37.7749,-122.4194&destination=37.3382,-121.8863"
+```
+
+Response:
+
+```json
+{
+  "route_id": "r_4471a",
+  "distance_meters": 78300,
+  "eta_seconds": 3120,
+  "steps": [
+    {"instruction": "Head south on Market St", "distance_meters": 400},
+    {"instruction": "Merge onto US-101 S", "distance_meters": 61200}
+  ]
+}
+```
 
 ### Use case: Service ingests live traffic and keeps the traffic layer fresh
 
-Every navigating device reports its position on an interval. At the assumed ~560,000 pings/sec, applying each ping synchronously to the shared traffic layer the moment it arrives would create write contention on hot edges (a busy highway segment gets pinged by thousands of concurrent drivers) and would couple ingest throughput directly to how fast the traffic layer can be updated. Instead, pings are published to a **traffic ingestion pipeline** — an asynchronous stream, decoupling "a ping arrived" from "the traffic layer reflects it" — see [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue) and [Stream Processing](/docs/patterns/batch-streaming/stream-processing). A pool of aggregators consumes that stream, groups pings by the road edge they're currently on (map-matching a raw lat/lng to the nearest edge is itself a small spatial-indexing problem, conceptually similar to what this course's Yelp case study covers for point lookups), and maintains a rolling average speed per edge over a short window (tens of seconds), overwriting the previous estimate rather than appending to an ever-growing log.
+**Core spec: async stream aggregation into a continuously-overwritten per-edge estimate**
 
-This design deliberately treats the traffic layer as an eventually-consistent, continuously-overwritten aggregate rather than a durable history: an individual ping that's lost or delayed by a few seconds has no meaningful effect on route quality, since the next ping from any of hundreds of other drivers on the same edge corrects the estimate almost immediately. That tolerance for staleness is exactly what makes it acceptable to update the traffic layer asynchronously and in a best-effort way rather than treating every ping as a transaction that must be durably applied before being acknowledged.
+Every navigating device reports its position on an interval. At the assumed ~560,000 pings/sec, applying each ping synchronously to the shared traffic layer the moment it arrives would create write contention on hot edges (a busy highway segment gets pinged by thousands of concurrent drivers) and would couple ingest throughput directly to how fast the traffic layer can be updated. Instead, pings are published to a **traffic ingestion pipeline** — an asynchronous stream, decoupling "a ping arrived" from "the traffic layer reflects it" — see [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue) and [Stream Processing](/docs/patterns/batch-streaming/stream-processing).
+
+```python
+class TrafficAggregator:
+    """Consumes position pings, map-matches each to the edge the
+    device is currently on, and maintains a rolling average speed per
+    edge -- overwriting, not appending, so storage stays proportional
+    to edge count rather than ping volume.
+    """
+    WINDOW_SECONDS = 30
+
+    def __init__(self, traffic_layer, road_graph):
+        self.traffic_layer = traffic_layer  # edge_id -> (speed_sum, ping_count, window_start)
+        self.road_graph = road_graph
+
+    def on_ping(self, device_id, lat, lng, speed, timestamp):
+        edge_id = self.road_graph.nearest_edge(lat, lng)  # map-matching
+        bucket = self.traffic_layer.get(edge_id)
+        if bucket is None or timestamp - bucket.window_start > self.WINDOW_SECONDS:
+            self.traffic_layer.set(edge_id, speed_sum=speed, ping_count=1, window_start=timestamp)
+        else:
+            self.traffic_layer.set(
+                edge_id,
+                speed_sum=bucket.speed_sum + speed,
+                ping_count=bucket.ping_count + 1,
+                window_start=bucket.window_start,
+            )
+
+    def current_speed_estimate(self, edge_id):
+        bucket = self.traffic_layer.get(edge_id)
+        if bucket is None or bucket.ping_count == 0:
+            return None  # fall back to base_travel_time, no live signal
+        return bucket.speed_sum / bucket.ping_count
+```
+
+**Data structures:**
+* `traffic_layer`: `edge_id -> (speed_sum, ping_count, window_start)` — a rolling-window aggregate per edge, overwritten as new pings arrive, not a growing log
+* Map-matching index: a spatial lookup from `(lat, lng)` to nearest `edge_id`, conceptually the same point-to-nearest-structure problem this course's Yelp case study covers for business listings, applied here to road segments instead of static points
+
+**Trade-offs:**
+* This design deliberately treats the traffic layer as an eventually-consistent, continuously-overwritten aggregate rather than a durable history: an individual ping that's lost or delayed by a few seconds has no meaningful effect on route quality, since the next ping from any of hundreds of other drivers on the same edge corrects the estimate almost immediately.
+* That tolerance for staleness is exactly what makes it acceptable to update the traffic layer asynchronously and in a best-effort way rather than treating every ping as a transaction that must be durably applied before being acknowledged — a strong-durability design here would add latency and coordination cost for a freshness guarantee the product doesn't actually need.
+* Road-class-based freshness tuning (a highway's traffic estimate matters more than a quiet residential street's) is a reasonable follow-up, not designed in depth here — see Additional talking points.
 
 ### Use case: User follows an active route with live re-routing
 
+**Core spec: bounded-interval re-evaluation, not per-ping recomputation**
+
 While a route is active, the client keeps reporting position pings, and an **ETA/re-route monitor** compares the reported position against the assigned route. Two conditions can trigger a recompute: the driver has physically deviated from the route (missed a turn, took a detour), or the traffic layer has shifted enough along the remaining route that an alternate path is now meaningfully faster — not just marginally faster, since recomputing and switching routes has its own cost in driver confusion and shouldn't fire on noise-level differences.
 
-Rather than running a full route recomputation on every single position ping (which would multiply the routing service's query load by the ping rate for no benefit, since traffic doesn't meaningfully shift second to second), the monitor evaluates the "is the current route still good" check on a coarser interval — a period of tens of seconds is enough to catch a real traffic shift without adding meaningful load. This is the same idea as the [Throttling](/docs/patterns/building-blocks/throttling) pattern applied to an internal decision rather than a client-facing API: bound the rate of an expensive operation to something proportional to how often its answer can actually change, not to how often new data technically arrives.
+```python
+REROUTE_CHECK_INTERVAL_SECONDS = 20
+MIN_IMPROVEMENT_TO_REROUTE = 0.10  # 10% faster, not just nominally faster
 
-When a recompute is triggered, it's a normal call into the same routing path described above, just automated rather than user-initiated, and the ETA is updated to match the new route.
+def should_reroute(session, current_position, now, routing_service):
+    if now - session.last_check < REROUTE_CHECK_INTERVAL_SECONDS:
+        return False, None  # throttle: don't re-evaluate on every 5-second ping
+    session.last_check = now
+
+    if session.route.distance_from(current_position) > session.DEVIATION_THRESHOLD_METERS:
+        new_route = routing_service.compute(current_position, session.destination)
+        return True, new_route
+
+    new_route = routing_service.compute(current_position, session.destination)
+    if new_route.eta_seconds < session.route.remaining_eta_seconds(now) * (1 - MIN_IMPROVEMENT_TO_REROUTE):
+        return True, new_route
+
+    return False, None
+```
+
+**Data structures:** `session` — `device_id`, `route` (ordered edge list + per-step ETA), `last_check`, `destination`, `DEVIATION_THRESHOLD_METERS`.
+
+**Trade-offs:**
+* Rather than running a full route recomputation on every single position ping (which would multiply the routing service's query load by the ping rate for no benefit, since traffic doesn't meaningfully shift second to second), the monitor evaluates on a coarser interval — the same idea as the [Throttling](/docs/patterns/building-blocks/throttling) pattern applied to an internal decision rather than a client-facing API: bound the rate of an expensive operation to something proportional to how often its answer can actually change.
+* The 10% improvement floor exists specifically to avoid rerouting on noise — a route that's marginally faster by a few seconds isn't worth the driver confusion of a sudden new instruction.
+* When a recompute is triggered, it's a normal call into the same CH-accelerated routing path described above, just automated rather than user-initiated.
 
 ### Use case: Service renders map tiles for the current view
 
-Map tiles are a textbook cacheable, read-heavy workload: a tile for a given area and zoom level is identical for every user looking at that location, changes rarely (road construction, new points of interest), and is requested constantly. Tiles are pre-rendered offline from the underlying map data at each zoom level and served as static assets through a [CDN](/docs/patterns/building-blocks/cdn) — the same slippy-map tile-pyramid convention popularized by OpenStreetMap-based tile servers and widely reused across the mapping industry — nearly all tile requests are served from an edge cache and never reach an origin server. This is architecturally the least novel part of the system, and deliberately so: the interesting engineering budget in this design goes toward the routing and traffic subsystems, not tile serving.
+Map tiles are a textbook cacheable, read-heavy workload: a tile for a given area and zoom level is identical for every user looking at that location, changes rarely (road construction, new points of interest), and is requested constantly. Tiles are pre-rendered offline from the underlying map data at each zoom level and served as static assets through a [CDN](/docs/patterns/building-blocks/cdn) — the same slippy-map tile-pyramid convention popularized by OpenStreetMap-based tile servers and widely reused across the mapping industry — nearly all tile requests are served from an edge cache and never reach an origin server. This is architecturally the least novel part of the system, and deliberately so: the interesting engineering budget in this design goes toward the routing and traffic subsystems (skip the REST contract here — it's the same cache-first shape as TinyURL's redirect lookup in this course, keyed by `{zoom}/{x}/{y}` instead of a short code).
 
 ## Step 4: Scale the design
 
 ![Google Maps scaled architecture](/img/case-studies/google-maps-scaled.svg)
 
-**The routing service scales by geographic partitioning of the road graph, not by simply adding more identical replicas of a global graph.** A single machine holding the entire 700-million-edge world graph in memory is possible given the storage math above, but query latency and fault isolation both benefit from splitting the graph into regional shards (continent- or country-sized, with some overlap at boundaries so cross-region routes don't require an expensive multi-shard stitch on every query) — see [Sharding](/docs/patterns/storage/sharding). This also bounds blast radius: a routing outage or a bad graph update in one region doesn't take down routing anywhere else, similar in spirit to the per-city independence this course's Uber case study relies on for dispatch.
-
-**The traffic ingestion pipeline scales by partitioning the ping stream by geography and processing it independently of the query path.** Because aggregation only ever needs pings from drivers physically near a given edge, the same regional partitioning used for the graph applies naturally to traffic ingestion — a burst of pings in one city's rush hour doesn't compete for aggregation capacity with a quiet region elsewhere. See [Partitioned Consumption](/docs/patterns/batch-streaming/partitioned-consumption).
-
-**Precomputed shortcuts age, and recomputing them for the whole world at once doesn't scale as a single batch job.** As roads open and close, the offline hierarchy precomputation needs to be redone — but only for the regions that actually changed, incrementally, rather than reprocessing the entire global graph on every update cycle. This keeps the cost of staying correct proportional to the size of what changed, the same principle behind [Change Data Capture](/docs/patterns/batch-streaming/change-data-capture) applied to a graph structure instead of a database table.
-
-**Read load on the traffic layer is far higher than write load in query terms** — every route computation reads potentially thousands of edges' current traffic state, while any single edge is written to only as often as pings arrive for it. Keeping the traffic layer as an in-memory structure colocated with (or very close to) the routing servers that read it, rather than behind a network hop to a separate durable store on every query, is what makes sub-second routing possible at all — see [Cache-Aside](/docs/patterns/caching/cache-aside) for the general read-heavy access pattern this mirrors, applied here to a continuously-refreshed in-memory layer rather than a cache in front of a slower source of truth.
-
-**Multi-region failure isolation follows the same regional graph partitioning already in place.** Because a region's routing capability doesn't depend on any other region's graph shard or traffic layer, a regional outage degrades routing only for users physically in or near that region — there's no single global routing dependency to fail over as one unit, the same [Deployment Stamps](/docs/patterns/observability/deployment-stamps) idea this course applies elsewhere to per-region independence.
+* **The routing service scales by geographic partitioning of the road graph, not by simply adding more identical replicas of a global graph.** A single machine holding the entire 700-million-edge world graph in memory is possible given the storage math above, but query latency and fault isolation both benefit from splitting the graph into regional shards (continent- or country-sized, with some overlap at boundaries so cross-region routes don't require an expensive multi-shard stitch on every query) — see [Sharding](/docs/patterns/storage/sharding). This also bounds blast radius: a routing outage or a bad graph update in one region doesn't take down routing anywhere else, similar in spirit to the per-city independence this course's Uber case study relies on for dispatch.
+* **The traffic ingestion pipeline scales by partitioning the ping stream by geography and processing it independently of the query path.** Because aggregation only ever needs pings from drivers physically near a given edge, the same regional partitioning used for the graph applies naturally to traffic ingestion — a burst of pings in one city's rush hour doesn't compete for aggregation capacity with a quiet region elsewhere. See [Partitioned Consumption](/docs/patterns/batch-streaming/partitioned-consumption).
+* **Precomputed shortcuts age, and recomputing them for the whole world at once doesn't scale as a single batch job.** As roads open and close, the offline CH precomputation needs to be redone — but only for the regions that actually changed, incrementally, rather than reprocessing the entire global graph on every update cycle. This keeps the cost of staying correct proportional to the size of what changed, the same principle behind [Change Data Capture](/docs/patterns/batch-streaming/change-data-capture) applied to a graph structure instead of a database table.
+* **Read load on the traffic layer is far higher than write load in query terms** — every route computation reads potentially thousands of edges' current traffic state, while any single edge is written to only as often as pings arrive for it. Keeping the traffic layer as an in-memory structure colocated with (or very close to) the routing servers that read it, rather than behind a network hop to a separate durable store on every query, is what makes sub-second routing possible at all — see [Cache-Aside](/docs/patterns/caching/cache-aside) for the general read-heavy access pattern this mirrors, applied here to a continuously-refreshed in-memory layer rather than a cache in front of a slower source of truth.
+* **Multi-region failure isolation follows the same regional graph partitioning already in place.** Because a region's routing capability doesn't depend on any other region's graph shard or traffic layer, a regional outage degrades routing only for users physically in or near that region — there's no single global routing dependency to fail over as one unit, the same [Deployment Stamps](/docs/patterns/observability/deployment-stamps) idea this course applies elsewhere to per-region independence.
 
 ## Additional talking points
 
-* **Why not just use straight-line (as-the-crow-flies) distance as a cheap pre-filter before running the full graph search?** It's a reasonable heuristic for guiding a search (informing which direction to expand the frontier first, similar in spirit to A* search), but it's a poor substitute for the search itself — road networks routinely make straight-line distance a bad proxy for actual travel time (a river, a highway with no nearby crossing, a one-way system). Worth distinguishing "use distance as a search heuristic" from "use distance instead of a real graph search," which are very different design choices.
-* **Handling road closures and real-time incidents (accidents, construction) as a distinct signal from routine traffic congestion.** An incident report needs to be reflected in the traffic layer immediately and with much higher confidence than a single ping's speed estimate — worth discussing as a separate, higher-priority ingestion path rather than folding it into the same rolling-average aggregation used for ordinary congestion.
+* **Why not just use straight-line (as-the-crow-flies) distance as a cheap pre-filter before running the full graph search?** It's a reasonable heuristic for guiding A\* (informing which direction to expand the frontier first), but it's a poor substitute for the search itself — road networks routinely make straight-line distance a bad proxy for actual travel time (a river, a highway with no nearby crossing, a one-way system). Worth distinguishing "use distance as a search heuristic" from "use distance instead of a real graph search," which are very different design choices.
+* **Handling road closures and real-time incidents (accidents, construction) as a distinct signal from routine traffic congestion.** An incident report needs to be reflected in the traffic layer immediately and with much higher confidence than a single ping's speed estimate — worth discussing as a separate, higher-priority ingestion path rather than folding it into the same rolling-average aggregation used for ordinary congestion. It also has a second-order effect worth naming: a closure invalidates any CH shortcut edges that route through the closed segment, which is a stronger correctness requirement than nudging a speed estimate.
 * **Alternate-route generation for the initial request.** Real navigation apps typically offer 2-3 route options, not just the single shortest path — generating genuinely different alternatives (not just near-duplicates of the same road with trivial variations) is a harder graph problem than it sounds, since naively re-running shortest-path search after removing the best route's edges can produce a route that's technically different but practically identical.
 * **The traffic layer's freshness-versus-cost tradeoff is tunable per road class.** A rarely-traveled residential street doesn't need traffic estimates refreshed as aggressively as a major highway — allocating aggregation freshness proportional to a road's actual traffic-query volume is a reasonable follow-up optimization once the base design is in place.
+
+## Source(s) and further reading
+
+* [Contraction Hierarchies — Wikipedia](https://en.wikipedia.org/wiki/Contraction_hierarchies) — the offline shortcut-precomputation technique this design's routing core spec is built on
+* [A\* search algorithm — Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm) — the heuristic-guided half of the online query
+* [Dijkstra's algorithm — Wikipedia](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) — the base shortest-path mechanism both A\* and CH build on
+* [OSRM (Open Source Routing Machine)](https://github.com/Project-OSRM/osrm-backend) — a real, widely-used open-source routing engine implementing contraction hierarchies
+* [GraphHopper](https://www.graphhopper.com/) — another real routing engine using CH-based speed-ups, with public documentation of the technique
+* [Materialized View](/docs/patterns/storage/materialized-view) — the general "precompute once, read cheaply many times" pattern CH is a graph-specific instance of
