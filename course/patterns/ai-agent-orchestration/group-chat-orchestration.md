@@ -45,34 +45,27 @@ participant's context window can hold, requiring summarization or
 truncation strategies the other four patterns in this group don't need
 to worry about to the same degree.
 
-**Turn selection.** After each message, a moderator (which may itself
-be an LLM-backed agent, or a simpler rule-based component) decides who
-speaks next. Selection strategies range from simple round-robin
-(cycling through participants in a fixed order, which degrades toward
-sequential orchestration's predictability) to a moderator that reads the
-latest message and picks whichever participant's expertise seems most
-relevant to what was just said, to letting agents themselves signal
-when they have something relevant to add. What the moderator is really
-solving is a search problem over "who should talk next," and a bad
-selection strategy — always picking the same agent, or picking based on
-surface keyword matches rather than actual relevance — degrades the
-conversation's usefulness without necessarily being visible as an
+**Turn selection.** After each message, a moderator (an LLM-backed
+agent or a simpler rule-based component) decides who speaks next.
+Strategies range from round-robin (which degrades toward sequential
+orchestration's predictability) to a moderator that reads the latest
+message and picks whichever participant's expertise seems most
+relevant. A bad selection strategy — always picking the same agent, or
+matching on surface keywords rather than actual relevance — degrades
+the conversation's usefulness without necessarily being visible as an
 outright failure.
 
-**What stops an infinite loop.** Because turn selection is dynamic and
-any participant can, in principle, be selected repeatedly, group chat
-orchestration is the one pattern in this group with a real risk of
-never terminating on its own — two agents can end up in an
-unproductive exchange, restating positions without progressing toward a
-resolution. Implementations guard against this with an explicit
-termination condition independent of the conversation's content: a
-maximum turn count, a required "conclusion" or "done" signal from a
-designated participant (often the moderator itself), or a
-convergence check that ends the chat once no new substantive content
+**What stops an infinite loop.** Because turn selection is dynamic,
+group chat orchestration is the one pattern in this group with a real
+risk of never terminating on its own — two agents can end up
+restating positions without progressing toward a resolution.
+Implementations guard against this with an explicit termination
+condition independent of the conversation's content: a maximum turn
+count, a required "conclusion" signal from a designated participant, or
+a convergence check that ends the chat once no new substantive content
 has appeared for some number of turns. Without one of these, a group
 chat has no natural stopping point the way a sequential pipeline (ends
-when the last stage returns) or a concurrent fan-out (ends when every
-agent returns) does.
+when the last stage returns) does.
 
 **The maker-checker sub-case.** A specific, named structure within
 group chat orchestration constrains the roster to exactly two

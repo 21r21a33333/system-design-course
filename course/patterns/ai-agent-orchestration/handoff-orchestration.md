@@ -120,7 +120,6 @@ enum Outcome {
 }
 
 trait Agent {
-    fn name(&self) -> &'static str;
     fn handle(&self, request: &str, incoming: Option<&HandoffContext>) -> Outcome;
 }
 
