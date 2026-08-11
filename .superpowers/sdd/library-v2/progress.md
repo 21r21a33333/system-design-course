@@ -359,3 +359,22 @@ fan-out, EDA dedup+dead-letter, claim-check integrity, async submit
 idempotency, bridge ack-after-confirm). 27 internal links resolve, 26
 external URLs all 200, originality verbatim-search clean, SVGs valid+on-
 palette. Build/typecheck clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Storage & Replication (9 pages) — COMPLETE
+Commits: 16561ed (all 9), plus review-fix. 5 bare built out (consistent-
+hashing, sharding, write-ahead-log, cqrs, event-sourcing), 2 depth-ups
+(index-table, materialized-view), 2 v3 light-enhanced (federation +31/-0,
+primary-replica-replication +40/-1 [link-text only] — preservation diff-
+verified). 5 new SVGs incl a 480x480 square hash-ring. consistent-hashing
+deliberately does NOT duplicate key-value-store's ring snippet — goes
+deeper on the algorithm + a different Rust facet (measured remap %). ES
+vs CQRS vs WAL vs CDC vs EDA all differentiated + cross-linked.
+
+Independent review: all checks pass. Re-ran 3 measured demos (CH 24.1%
+moved vs modulo-N 75.0%; WAL pre-crash==post-recovery alice=90/bob=60;
+sharding split moves only targeted bucket + flags hot key) — all match
+claimed numbers. Verified asserts genuinely execute (tamper->panic). 25
+internal links resolve; fixed 1 dangling Wikipedia section anchor
+(#Incremental_maintenance absent -> page root). 11/12 external 200 (MySQL
+403 bot-block, browser-live, left). Originality clean. Build/typecheck
+clean, manifest 121.
