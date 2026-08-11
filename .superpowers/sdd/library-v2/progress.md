@@ -462,3 +462,18 @@ reverse-order-only-completed) — all hold. 5 light-enhances additive-only.
 17 external URLs 200. Fixed 1 malformed pre-existing SVG entity (&le; ->
 &#8804; in vector-clocks.svg). Build/typecheck clean, manifest 121. 9 of
 14 groups complete (89 pages).
+
+### Phase 3 (relaunched) — Group: Legacy Integration & Resilience (5 pages) — COMPLETE
+Commits: 70db3e1 (all 5) + review-fix. All 5 depth-ups: strangler-fig
+(+migration-stages SVG), anti-corruption-layer, ambassador (migration
+family); gatekeeper (+trust-boundary SVG), quarantine (+pipeline SVG)
+(security family). 3 new SVGs. Invariant-verified Rust (all re-run by
+review): strangler per-route flip, ACL two-way translation no-legacy-leak
+round-trip, ambassador retry+breaker fail-fast, gatekeeper rejects-before-
+backend (processed==1), quarantine reject-never-reaches-trusted-store.
+Ambassador-vs-sidecar-vs-gateway-offloading + gatekeeper-vs-gateway-vs-
+valet-key differentiations consistent with target pages.
+
+Independent review: all 10 checks pass, 1 MINOR fix (Envoy 404 ->
+what_is_envoy). Build/typecheck clean, manifest 121. 10 of 14 groups
+complete (94 pages).
