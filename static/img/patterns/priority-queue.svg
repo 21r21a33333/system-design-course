@@ -1,0 +1,58 @@
+<svg viewBox="0 0 720 335" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="335" fill="#ffffff"/>
+
+  <!-- Producers -->
+  <rect x="20" y="40" width="130" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="85" y="70" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">High-priority req</text>
+
+  <rect x="20" y="135" width="130" height="50" rx="8" fill="#64748b"/>
+  <text x="85" y="165" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Medium-priority req</text>
+
+  <rect x="20" y="230" width="130" height="50" rx="8" fill="#94a3b8"/>
+  <text x="85" y="260" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Low-priority req</text>
+
+  <!-- Priority queue with tiers -->
+  <rect x="235" y="30" width="220" height="270" rx="8" fill="none" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="345" y="18" font-size="11" fill="#0f766e" text-anchor="middle">Priority Queue</text>
+
+  <rect x="250" y="45" width="190" height="60" rx="6" fill="#0f766e"/>
+  <text x="345" y="68" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">High tier (drained first)</text>
+  <text x="345" y="85" font-size="9" fill="#ccfbf1" text-anchor="middle">FIFO within tier</text>
+
+  <rect x="250" y="115" width="190" height="60" rx="6" fill="#0d9488"/>
+  <text x="345" y="138" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Medium tier</text>
+  <text x="345" y="155" font-size="9" fill="#ccfbf1" text-anchor="middle">FIFO within tier</text>
+
+  <rect x="250" y="185" width="190" height="60" rx="6" fill="#5eead4"/>
+  <text x="345" y="208" font-size="11" fill="#134e4a" text-anchor="middle" font-weight="600">Low tier</text>
+  <text x="345" y="225" font-size="9" fill="#134e4a" text-anchor="middle">FIFO within tier</text>
+
+  <text x="345" y="270" font-size="9" fill="#b45309" text-anchor="middle">aging: effective priority rises</text>
+  <text x="345" y="284" font-size="9" fill="#b45309" text-anchor="middle">the longer an item waits</text>
+  <path d="M270,240 C260,220 260,180 275,175" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowPq)"/>
+
+  <!-- Consumer -->
+  <rect x="540" y="115" width="150" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="615" y="140" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Consumer</text>
+  <text x="615" y="158" font-size="9" fill="#dbeafe" text-anchor="middle">always pulls highest tier</text>
+
+  <!-- Producers -> queue -->
+  <line x1="152" y1="65" x2="248" y2="65" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrowPq)"/>
+  <line x1="152" y1="160" x2="248" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#arrowPqGray)"/>
+  <line x1="152" y1="255" x2="248" y2="210" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowPqGray)"/>
+
+  <!-- queue -> consumer -->
+  <line x1="442" y1="75" x2="538" y2="140" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arrowPq)"/>
+
+  <text x="360" y="308" font-size="11" fill="#64748b" text-anchor="middle">The consumer always drains the highest non-empty tier first; aging bounds</text>
+  <text x="360" y="318" font-size="11" fill="#64748b" text-anchor="middle">how long a low-priority item can be starved.</text>
+
+  <defs>
+    <marker id="arrowPq" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="arrowPqGray" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

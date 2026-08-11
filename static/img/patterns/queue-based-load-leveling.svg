@@ -1,0 +1,52 @@
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="320" fill="#ffffff"/>
+
+  <!-- Bursty producer -->
+  <rect x="30" y="115" width="150" height="80" rx="8" fill="#1d4ed8"/>
+  <text x="105" y="145" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Producer</text>
+  <text x="105" y="163" font-size="10" fill="#dbeafe" text-anchor="middle">bursty arrival rate</text>
+  <text x="105" y="178" font-size="10" fill="#dbeafe" text-anchor="middle">(spikes, batches)</text>
+
+  <!-- burst arrow shape (jagged) -->
+  <polyline points="30,240 60,260 90,230 120,255 150,220 180,250" fill="none" stroke="#b45309" stroke-width="2"/>
+  <text x="105" y="278" font-size="9" fill="#b45309" text-anchor="middle">arrival rate over time</text>
+
+  <!-- Queue as buffer -->
+  <rect x="255" y="90" width="150" height="130" rx="8" fill="#0f766e"/>
+  <text x="330" y="115" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Queue</text>
+  <text x="330" y="130" font-size="9" fill="#ccfbf1" text-anchor="middle">buffers the burst</text>
+  <rect x="270" y="140" width="120" height="16" rx="3" fill="#ccfbf1"/>
+  <rect x="270" y="160" width="120" height="16" rx="3" fill="#ccfbf1"/>
+  <rect x="270" y="180" width="120" height="16" rx="3" fill="#ccfbf1"/>
+  <text x="330" y="205" font-size="9" fill="#ccfbf1" text-anchor="middle">depth absorbs spikes</text>
+
+  <!-- Service -->
+  <rect x="530" y="115" width="150" height="80" rx="8" fill="#1d4ed8"/>
+  <text x="605" y="145" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Service</text>
+  <text x="605" y="163" font-size="10" fill="#dbeafe" text-anchor="middle">consumes at a fixed,</text>
+  <text x="605" y="178" font-size="10" fill="#dbeafe" text-anchor="middle">sustainable rate</text>
+
+  <!-- steady line -->
+  <line x1="530" y1="245" x2="680" y2="245" stroke="#15803d" stroke-width="2"/>
+  <text x="605" y="265" font-size="9" fill="#15803d" text-anchor="middle">steady processing rate</text>
+
+  <!-- Producer -> Queue -->
+  <line x1="182" y1="155" x2="252" y2="155" stroke="#b45309" stroke-width="2.5" marker-end="url(#arrowQl)"/>
+  <text x="217" y="145" font-size="9" fill="#b45309" text-anchor="middle">bursty writes</text>
+
+  <!-- Queue -> Service -->
+  <line x1="407" y1="155" x2="527" y2="155" stroke="#15803d" stroke-width="2.5" marker-end="url(#arrowQlGreen)"/>
+  <text x="467" y="145" font-size="9" fill="#15803d" text-anchor="middle">steady reads</text>
+
+  <text x="360" y="300" font-size="11" fill="#64748b" text-anchor="middle">The queue decouples arrival rate from processing rate: the service is sized for</text>
+  <text x="360" y="316" font-size="11" fill="#64748b" text-anchor="middle">sustainable throughput, not worst-case peak — the queue absorbs the difference.</text>
+
+  <defs>
+    <marker id="arrowQl" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arrowQlGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#15803d"/>
+    </marker>
+  </defs>
+</svg>
