@@ -1,0 +1,66 @@
+<svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="400" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">AI Code Assistant: initial high-level design</text>
+
+  <!-- Developer / editor -->
+  <rect x="20" y="165" width="120" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="80" y="188" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Editor</text>
+  <text x="80" y="204" font-size="9" fill="#dbeafe" text-anchor="middle">developer client</text>
+
+  <!-- Request router -->
+  <rect x="200" y="165" width="140" height="55" rx="8" fill="#0f766e"/>
+  <text x="270" y="188" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Request Router</text>
+  <text x="270" y="204" font-size="8" fill="#ccfbf1" text-anchor="middle">splits by shape</text>
+
+  <line x1="140" y1="185" x2="198" y2="185" stroke="#1d4ed8" stroke-width="2" marker-end="url(#caArrowBlue)"/>
+  <line x1="198" y1="203" x2="140" y2="203" stroke="#1d4ed8" stroke-width="2" marker-end="url(#caArrowBlue)"/>
+
+  <!-- Inline completion (fast path) -->
+  <rect x="400" y="70" width="150" height="50" rx="8" fill="#b45309"/>
+  <text x="475" y="91" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Inline Completion</text>
+  <text x="475" y="106" font-size="8" fill="#fde68a" text-anchor="middle">~200ms budget</text>
+
+  <!-- Codebase index -->
+  <rect x="400" y="150" width="150" height="50" rx="8" fill="#334155"/>
+  <text x="475" y="171" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Codebase Index</text>
+  <text x="475" y="186" font-size="8" fill="#cbd5e1" text-anchor="middle">chunks + call graph</text>
+
+  <!-- Tool execution -->
+  <rect x="400" y="230" width="150" height="50" rx="8" fill="#334155"/>
+  <text x="475" y="251" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Tool Execution</text>
+  <text x="475" y="266" font-size="8" fill="#cbd5e1" text-anchor="middle">sandboxed</text>
+
+  <line x1="340" y1="180" x2="398" y2="100" stroke="#0f766e" stroke-width="2" marker-end="url(#caArrowTeal)"/>
+  <line x1="340" y1="190" x2="398" y2="180" stroke="#0f766e" stroke-width="2" marker-end="url(#caArrowTeal)"/>
+  <line x1="340" y1="200" x2="398" y2="260" stroke="#0f766e" stroke-width="2" marker-end="url(#caArrowTeal)"/>
+
+  <!-- Generation + proposed diff -->
+  <rect x="610" y="150" width="150" height="55" rx="8" fill="#0f766e"/>
+  <text x="685" y="173" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Generation</text>
+  <text x="685" y="189" font-size="8" fill="#ccfbf1" text-anchor="middle">proposed diff only</text>
+
+  <line x1="550" y1="95" x2="608" y2="165" stroke="#0f766e" stroke-width="2" marker-end="url(#caArrowTeal)"/>
+  <line x1="550" y1="175" x2="608" y2="175" stroke="#0f766e" stroke-width="2" marker-end="url(#caArrowTeal)"/>
+  <line x1="550" y1="255" x2="608" y2="195" stroke="#0f766e" stroke-width="2" marker-end="url(#caArrowTeal)"/>
+
+  <line x1="685" y1="205" x2="270" y2="223" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#caArrowBlue)"/>
+  <text x="450" y="235" font-size="8" fill="#1d4ed8" text-anchor="middle">developer reviews + approves before applying</text>
+
+  <rect x="20" y="250" width="330" height="110" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="185" y="270" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Completions and chat/agentic</text>
+  <text x="185" y="284" font-size="9" fill="#334155" text-anchor="middle">requests are two structurally</text>
+  <text x="185" y="298" font-size="9" fill="#334155" text-anchor="middle">different workloads — completions</text>
+  <text x="185" y="312" font-size="9" fill="#334155" text-anchor="middle">are ~27x more frequent but far</text>
+  <text x="185" y="326" font-size="9" fill="#334155" text-anchor="middle">cheaper per request than a</text>
+  <text x="185" y="340" font-size="9" fill="#334155" text-anchor="middle">multi-step, tool-using query</text>
+
+  <defs>
+    <marker id="caArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="caArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

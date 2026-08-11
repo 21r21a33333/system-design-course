@@ -1,0 +1,61 @@
+<svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="400" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Conversational AI System: initial high-level design</text>
+
+  <!-- User -->
+  <rect x="20" y="160" width="110" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="75" y="185" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">User</text>
+  <text x="75" y="202" font-size="9" fill="#dbeafe" text-anchor="middle">streams response</text>
+
+  <!-- Gateway / safety filter -->
+  <rect x="200" y="160" width="150" height="60" rx="8" fill="#b45309"/>
+  <text x="275" y="183" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Gateway +</text>
+  <text x="275" y="199" font-size="9" fill="#fde68a" text-anchor="middle">Safety Filtering</text>
+
+  <line x1="130" y1="180" x2="198" y2="180" stroke="#1d4ed8" stroke-width="2" marker-end="url(#cgArrowBlue)"/>
+  <line x1="198" y1="200" x2="130" y2="200" stroke="#1d4ed8" stroke-width="2" marker-end="url(#cgArrowBlue)"/>
+
+  <!-- Context assembly -->
+  <rect x="400" y="80" width="150" height="55" rx="8" fill="#0f766e"/>
+  <text x="475" y="103" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Context Assembly</text>
+  <text x="475" y="119" font-size="8" fill="#ccfbf1" text-anchor="middle">fetch prior turns</text>
+
+  <!-- Conversation store -->
+  <rect x="400" y="290" width="150" height="55" rx="8" fill="#334155"/>
+  <text x="475" y="313" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Conversation Store</text>
+  <text x="475" y="329" font-size="8" fill="#cbd5e1" text-anchor="middle">append-only, per user</text>
+
+  <line x1="475" y1="135" x2="475" y2="288" stroke="#334155" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#cgArrowSlate)"/>
+
+  <line x1="350" y1="175" x2="398" y2="115" stroke="#0f766e" stroke-width="2" marker-end="url(#cgArrowTeal)"/>
+
+  <!-- Model serving -->
+  <rect x="610" y="160" width="150" height="60" rx="8" fill="#0f766e"/>
+  <text x="685" y="183" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Model Serving</text>
+  <text x="685" y="199" font-size="9" fill="#ccfbf1" text-anchor="middle">batched, streaming</text>
+
+  <line x1="550" y1="110" x2="608" y2="170" stroke="#0f766e" stroke-width="2" marker-end="url(#cgArrowTeal)"/>
+  <line x1="608" y1="200" x2="352" y2="200" stroke="#0f766e" stroke-width="2" marker-end="url(#cgArrowTeal)"/>
+  <text x="480" y="215" font-size="8" fill="#0f766e" text-anchor="middle">streamed tokens, filtered again</text>
+
+  <rect x="20" y="260" width="330" height="110" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="185" y="280" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Inference capacity is the</text>
+  <text x="185" y="294" font-size="9" fill="#334155" text-anchor="middle">scarce, expensive resource —</text>
+  <text x="185" y="308" font-size="9" fill="#334155" text-anchor="middle">everything else (gateway,</text>
+  <text x="185" y="322" font-size="9" fill="#334155" text-anchor="middle">context assembly, storage)</text>
+  <text x="185" y="336" font-size="9" fill="#334155" text-anchor="middle">is comparatively cheap and</text>
+  <text x="185" y="350" font-size="9" fill="#334155" text-anchor="middle">fast to scale by comparison</text>
+
+  <defs>
+    <marker id="cgArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="cgArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="cgArrowSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

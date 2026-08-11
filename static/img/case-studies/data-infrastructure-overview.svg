@@ -1,0 +1,73 @@
+<svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="400" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Data Infrastructure Platform: initial high-level design</text>
+
+  <!-- Producer services -->
+  <rect x="20" y="160" width="130" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="85" y="185" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Producer</text>
+  <text x="85" y="200" font-size="9" fill="#dbeafe" text-anchor="middle">Services (10k)</text>
+
+  <!-- Ingestion layer -->
+  <rect x="210" y="160" width="140" height="60" rx="8" fill="#0f766e"/>
+  <text x="280" y="183" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Ingestion Layer</text>
+  <text x="280" y="199" font-size="9" fill="#ccfbf1" text-anchor="middle">durable, append-only</text>
+
+  <line x1="150" y1="190" x2="208" y2="190" stroke="#1d4ed8" stroke-width="2" marker-end="url(#diArrowBlue)"/>
+
+  <!-- Stream processor -->
+  <rect x="410" y="80" width="140" height="55" rx="8" fill="#0f766e"/>
+  <text x="480" y="103" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Stream Processor</text>
+  <text x="480" y="119" font-size="8" fill="#ccfbf1" text-anchor="middle">minutes-fresh aggregates</text>
+
+  <!-- Batch processor -->
+  <rect x="410" y="245" width="140" height="55" rx="8" fill="#0f766e"/>
+  <text x="480" y="268" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Batch Processor</text>
+  <text x="480" y="284" font-size="8" fill="#ccfbf1" text-anchor="middle">scheduled, authoritative</text>
+
+  <line x1="350" y1="175" x2="408" y2="115" stroke="#0f766e" stroke-width="2" marker-end="url(#diArrowTeal)"/>
+  <line x1="350" y1="205" x2="408" y2="265" stroke="#0f766e" stroke-width="2" marker-end="url(#diArrowTeal)"/>
+
+  <!-- Warehouse -->
+  <rect x="610" y="160" width="150" height="60" rx="8" fill="#334155"/>
+  <text x="685" y="183" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Data Warehouse</text>
+  <text x="685" y="199" font-size="8" fill="#cbd5e1" text-anchor="middle">raw / cleaned / marts</text>
+
+  <line x1="550" y1="105" x2="608" y2="175" stroke="#0f766e" stroke-width="2" marker-end="url(#diArrowTeal)"/>
+  <line x1="550" y1="270" x2="608" y2="200" stroke="#0f766e" stroke-width="2" marker-end="url(#diArrowTeal)"/>
+
+  <!-- Analyst -->
+  <rect x="610" y="20" width="150" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="685" y="41" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Analyst</text>
+  <text x="685" y="56" font-size="8" fill="#dbeafe" text-anchor="middle">ad-hoc SQL queries</text>
+
+  <line x1="685" y1="70" x2="685" y2="158" stroke="#1d4ed8" stroke-width="2" marker-end="url(#diArrowBlue)"/>
+
+  <!-- Dashboard -->
+  <rect x="610" y="290" width="150" height="50" rx="8" fill="#b45309"/>
+  <text x="685" y="311" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Dashboard Cache</text>
+  <text x="685" y="326" font-size="8" fill="#fde68a" text-anchor="middle">pre-materialized</text>
+
+  <line x1="685" y1="220" x2="685" y2="288" stroke="#334155" stroke-width="2" marker-end="url(#diArrowSlate)"/>
+
+  <rect x="20" y="260" width="330" height="110" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="185" y="280" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Producer write is acknowledged</text>
+  <text x="185" y="294" font-size="9" fill="#334155" text-anchor="middle">the instant it's durably logged —</text>
+  <text x="185" y="308" font-size="9" fill="#334155" text-anchor="middle">everything downstream (cleaning,</text>
+  <text x="185" y="322" font-size="9" fill="#334155" text-anchor="middle">aggregation, warehouse load) is</text>
+  <text x="185" y="336" font-size="9" fill="#334155" text-anchor="middle">fully decoupled and asynchronous,</text>
+  <text x="185" y="350" font-size="9" fill="#334155" text-anchor="middle">so a slow pipeline stage never</text>
+  <text x="185" y="364" font-size="9" fill="#334155" text-anchor="middle">blocks the producing service</text>
+
+  <defs>
+    <marker id="diArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="diArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="diArrowSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

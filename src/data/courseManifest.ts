@@ -1115,6 +1115,27 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "case-studies/system-design/chatgpt",
+    "title": "Design a Conversational AI System (like ChatGPT)",
+    "path": "/docs/case-studies/system-design/chatgpt",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/code-assistant",
+    "title": "Design an AI Code Assistant",
+    "path": "/docs/case-studies/system-design/code-assistant",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/data-infrastructure",
+    "title": "Design a Data Infrastructure Platform (Ingestion, Warehousing, Analytics)",
+    "path": "/docs/case-studies/system-design/data-infrastructure",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
     "id": "case-studies/system-design/deployment-system",
     "title": "Design a Zero-Downtime Deployment System",
     "path": "/docs/case-studies/system-design/deployment-system",
@@ -1139,6 +1160,13 @@ export const courseManifest: ManifestEntry[] = [
     "id": "case-studies/system-design/instagram",
     "title": "Design Instagram (or a Photo-Sharing Feed)",
     "path": "/docs/case-studies/system-design/instagram",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/llm-support-bot",
+    "title": "Design an LLM-Powered Customer Support Bot",
+    "path": "/docs/case-studies/system-design/llm-support-bot",
     "category": "system-design-case-studies",
     "source": "supplementary"
   },
