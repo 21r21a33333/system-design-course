@@ -400,3 +400,19 @@ verified additive-only via HEAD~1 diff — definition/diagram/code/sections
 all preserved on the 3 depth-up pages (removed prose = old shallow
 How-it-works body upgraded to deep Technical-architecture, as intended).
 Build/typecheck clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Scaling (5 pages) — COMPLETE
+Commit: 5f9ad42 (all 5). 4 bare built out (horizontal-scaling, vertical-
+scaling, auto-scaling, connection-pooling) + 1 depth-up (compute-resource-
+consolidation). 4 new SVGs. h/v/auto cross-differentiated (bigger machine
+/ more machines / automation) with comparison table. Measured demos all
+independently reproduced by review: auto-scaling peak=30/breaches=0/no-
+flap, connection-pool genuine 16-thread peak==4 (== pool size, real
+std::thread::scope), consolidation 6->2 hosts 25%->75%, USL throughput
+peaks at N=31 then declines, vertical super-linear cost + ceiling.
+
+Independent review: all 10 checks pass, ZERO issues, zero edits. 17
+internal + 17 external links all resolve/200. Originality clean.
+Build/typecheck clean, manifest 121. 7 of 14 groups now complete (66
+pages: building-blocks, reliability, batch-streaming, communication,
+storage, observability, scaling).
