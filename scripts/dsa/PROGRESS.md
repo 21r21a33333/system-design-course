@@ -33,7 +33,13 @@ via the yt-notes pipeline. Branch: `dsa-course-notes` in `system-design-course`.
       heavy-light, link-cut, Euler-tour/Tarjan, centroid decomposition. Review fixes:
       e04 2D coverage event-order (Major), e09 Farach-Colton-Bender partial-block (Major),
       several CSES number/title corrections.
-- [ ] Batch 4 — L31–L40 (external memory, complexity classes, graphs start)
+- [x] **Batch 4 — L31–L40** — DONE (C++), build green, adversarial-reviewed. S02 tail
+      (external memory, complexity classes) + S03 graphs (DFS/topo, SCC/2-SAT, bridges/
+      articulation/Euler, dominator tree, MST, BFS/Dijkstra, Bellman-Ford/Floyd-Warshall,
+      graph games). Review fixes: e03 Hierholzer Euler code (Major), frame-swap copies,
+      several CSES number/title corrections.
+      NOTE: reviewers that SWAP a frame must copy the new frame file; a defensive
+      copy-missing-frames step now runs before each build.
 - [ ] Batch 5 — L41–L50 (strings, suffix structures, matchings/flows start)
 - [ ] Batch 6 — L51–L60 (flows, number theory, crypto, FFT, approximation)
 - [ ] Batch 7 — L61 (parallel algorithms) + DSA manifest wiring + final polish
