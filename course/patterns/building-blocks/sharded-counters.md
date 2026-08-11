@@ -249,6 +249,6 @@ sum but answering "how many distinct" instead of "how many total."
 ## Further reading
 
 - [Sharding pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding)
-- [Sharding counters — Google Cloud Datastore docs (archived)](https://cloud.google.com/appengine/docs/legacy/standard/python/datastore/sharding-counters)
+- [Distributed counters — Google Cloud Firestore docs](https://firebase.google.com/docs/firestore/solutions/counters)
 - [HyperLogLog — Wikipedia](https://en.wikipedia.org/wiki/HyperLogLog)
 - [Redis: counting with HyperLogLog](https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/)

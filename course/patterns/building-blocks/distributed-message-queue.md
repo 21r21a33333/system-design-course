@@ -185,7 +185,7 @@ impl GroupOffsets {
 // Route a keyed message to a partition by hashing the key, so all messages
 // sharing a key land on one partition and keep their relative order.
 pub fn partition_for(key: &str, partition_count: u32) -> u32 {
-    let mut h: u64 = 1469598103934665603; // FNV-1a offset basis
+    let mut h: u64 = 14695981039346656037; // FNV-1a offset basis
     for b in key.bytes() {
         h ^= b as u64;
         h = h.wrapping_mul(1099511628211);

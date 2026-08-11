@@ -275,7 +275,7 @@ dependency and tolerating skipped ranges when a node dies mid-block.
 ## Further reading
 
 - [Snowflake ID — Wikipedia](https://en.wikipedia.org/wiki/Snowflake_ID)
-- [Announcing Snowflake — Twitter Engineering (archived)](https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake)
+- [Snowflake — Twitter's original ID generator (source, archived)](https://github.com/twitter-archive/snowflake/tree/snowflake-2010)
 - [Universally unique identifier — Wikipedia](https://en.wikipedia.org/wiki/Universally_unique_identifier)
 - [The ULID specification](https://github.com/ulid/spec)
 - [RFC 9562: UUID versions 6, 7, and 8](https://www.rfc-editor.org/rfc/rfc9562)
