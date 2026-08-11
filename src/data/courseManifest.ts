@@ -541,6 +541,41 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/integration/ambassador",
+    "title": "Ambassador",
+    "path": "/docs/patterns/integration/ambassador",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/integration/anti-corruption-layer",
+    "title": "Anti-Corruption Layer",
+    "path": "/docs/patterns/integration/anti-corruption-layer",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/integration/gatekeeper",
+    "title": "Gatekeeper",
+    "path": "/docs/patterns/integration/gatekeeper",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/integration/quarantine",
+    "title": "Quarantine",
+    "path": "/docs/patterns/integration/quarantine",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/integration/strangler-fig",
+    "title": "Strangler Fig",
+    "path": "/docs/patterns/integration/strangler-fig",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/observability/blue-green-deployment",
     "title": "Blue-Green Deployment",
     "path": "/docs/patterns/observability/blue-green-deployment",
