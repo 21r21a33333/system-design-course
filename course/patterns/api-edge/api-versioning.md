@@ -53,6 +53,12 @@ path structure, but it's the easiest to omit by accident since it's
 just another optional parameter, silently defaulting callers to
 whatever version the server treats as default.
 
+| Placement | Example | URL stable across versions? | Cache-key friendly? | Easiest to omit by accident? |
+| --- | --- | --- | --- | --- |
+| URI path | `/v2/orders` | No — each version is a distinct URL | Yes — URL is the cache key | No — the prefix is mandatory |
+| Header / media type | `Api-Version: 2` or `Accept: …vnd.example.v2+json` | Yes | Only if caches vary on the header | Somewhat — a missing header silently defaults |
+| Query parameter | `/orders?version=2` | Mostly (path unchanged) | Yes, but the param must be in the key | Yes — just another optional param |
+
 **Backward compatibility inside a version.** Not every change needs a
 new version at all — the discipline that makes versioning tractable
 is distinguishing additive, backward-compatible changes (a new
@@ -212,3 +218,5 @@ real inside the organization.
 
 - [Software versioning — Wikipedia](https://en.wikipedia.org/wiki/Software_versioning)
 - [Web API design best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#versioning-a-restful-web-api)
+- [RFC 8594: The Sunset HTTP Header Field — IETF](https://www.rfc-editor.org/rfc/rfc8594)
+- [RFC 9745: The Deprecation HTTP Response Header Field — IETF](https://www.rfc-editor.org/rfc/rfc9745)

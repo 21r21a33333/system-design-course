@@ -220,3 +220,5 @@ different instrumentation approaches.
 ## Further reading
 
 - [Service mesh — Wikipedia](https://en.wikipedia.org/wiki/Service_mesh)
+- [Istio architecture (data plane and control plane) — Istio docs](https://istio.io/latest/docs/ops/deployment/architecture/)
+- [What's a service mesh? — CNCF / Linkerd explainer](https://linkerd.io/what-is-a-service-mesh/)

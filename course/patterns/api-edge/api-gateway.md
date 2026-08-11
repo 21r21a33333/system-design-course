@@ -105,6 +105,20 @@ compose rather than compete: it's common to run several BFFs behind one
 shared gateway, with the gateway handling cross-cutting concerns
 (TLS, auth) uniformly and each BFF handling client-specific shaping.
 
+**API Gateway vs. Service Mesh.** Both intercept traffic and enforce
+cross-cutting concerns without each service reimplementing them, which
+invites confusion — but they sit on different axes of traffic. An API
+gateway handles **north-south** traffic: requests entering the system
+from outside clients, where per-client authentication, quotas, and a
+stable public contract matter most. A
+[Service Mesh](/docs/patterns/api-edge/service-mesh) handles
+**east-west** traffic: the calls services make to each other inside the
+system, where mutual TLS between workloads, retries, and traffic
+shaping for canary rollouts matter most. They are complementary layers,
+not alternatives — a system commonly runs a gateway at its edge for
+inbound client traffic and a mesh internally for service-to-service
+calls, and neither removes the need for the other.
+
 ## Code example
 
 ```rust
@@ -219,3 +233,4 @@ as one screen loading.
 
 - [API management — Wikipedia](https://en.wikipedia.org/wiki/API_management)
 - [What is Amazon API Gateway? — AWS docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html)
+- [Gateway Aggregation pattern — Microsoft Learn](https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation)

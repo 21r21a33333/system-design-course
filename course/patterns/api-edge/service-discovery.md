@@ -245,3 +245,5 @@ device-to-worker assignment.
 
 - [Service discovery — Wikipedia](https://en.wikipedia.org/wiki/Service_discovery)
 - [Service Fabric naming service (service discovery concepts) — Microsoft Learn](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-and-communicate-with-services)
+- [Client-side vs. server-side discovery — microservices.io](https://microservices.io/patterns/client-side-discovery.html)
+- [What is service discovery? — HashiCorp Consul docs](https://developer.hashicorp.com/consul/docs/concepts/service-discovery)

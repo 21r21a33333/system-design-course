@@ -243,3 +243,4 @@ here at the granularity of an entire region's instance pool.
 - [Load balancing (computing) — Wikipedia](https://en.wikipedia.org/wiki/Load_balancing_(computing))
 - [What is load balancing? — AWS documentation](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html)
 - [Load Balancer traffic-routing methods — Azure documentation](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-load-balancing-azure)
+- [HTTP load balancing methods (round robin, least connections, hash) — NGINX docs](https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/)

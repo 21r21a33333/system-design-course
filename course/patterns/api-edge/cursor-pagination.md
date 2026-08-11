@@ -22,6 +22,14 @@ poorly at high offsets — the database still has to scan and discard all
 the rows before the offset, so `OFFSET 1000000` is far slower than
 `OFFSET 0` even though both return the same number of rows.
 
+| Dimension | Offset pagination | Cursor pagination |
+| --- | --- | --- |
+| Deep-page cost | Scans and discards all prior rows | Index seek to the anchor row, roughly constant |
+| Stability under inserts/deletes | Pages shift — rows skipped or duplicated | Anchored to a specific row, unaffected |
+| Jump to arbitrary page N | Supported directly | Not supported — only forward/backward traversal |
+| Total-count / page numbers | Natural to expose | Awkward — no notion of position |
+| Implementation simplicity | Simplest to reason about | Needs a stable, unique sort key |
+
 ## Technical architecture & implementation
 
 **Cursor construction.** A cursor is an opaque token the client treats
@@ -197,3 +205,4 @@ shift every row's position underneath them.
 ## Further reading
 
 - [Pagination — Wikipedia](https://en.wikipedia.org/wiki/Pagination)
+- [Pagination — GraphQL (cursor-based Connections model)](https://graphql.org/learn/pagination/)

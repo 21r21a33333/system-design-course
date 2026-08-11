@@ -94,6 +94,23 @@ of sidecars. A single team running one sidecar for one specific purpose
 pattern without needing a full mesh's control plane or mesh-wide policy
 machinery at all.
 
+**Sidecar vs. Gateway Offloading.** Both move a cross-cutting concern
+(TLS, auth, retries) out of application code, so they can feel like the
+same idea — the difference is *where* the offloaded logic runs relative
+to the instances it serves. [Gateway
+Offloading](/docs/patterns/api-edge/gateway-offloading) pushes the
+concern to a single shared component at the edge that fronts *many*
+backend instances, so the logic is centralized and the backends behind
+it never see it. A sidecar pushes the same kind of concern to a helper
+that is colocated *one-per-instance*, riding along with each application
+rather than sitting in front of a fleet. That placement drives the
+tradeoffs: a gateway is one place to configure and one place to fail,
+but it can't hold per-instance identity (like an instance-specific mTLS
+certificate) the way a sidecar sharing its application's network
+identity can, and it terminates concerns at the edge rather than all
+the way down at each instance — which is exactly why service meshes
+choose the sidecar placement for mutual TLS between individual services.
+
 ## Code example
 
 ```rust
@@ -196,7 +213,12 @@ how to read from its local, already-validated source.
 - [Service Mesh](/docs/patterns/api-edge/service-mesh) — a fleet of
   sidecar proxies plus a control plane, extending the sidecar idea to
   system-wide service-to-service communication.
+- [Gateway Offloading](/docs/patterns/api-edge/gateway-offloading) — the
+  same concern moved to a single shared edge component rather than a
+  colocated helper per instance; contrast the placement and its
+  tradeoffs.
 
 ## Further reading
 
 - [Sidecar pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar)
+- [Sidecar containers — Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/)

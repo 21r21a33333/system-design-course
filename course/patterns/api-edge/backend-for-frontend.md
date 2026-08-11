@@ -86,6 +86,22 @@ several BFFs, each doing client-specific aggregation, all sitting
 behind one shared gateway that still handles cross-cutting concerns
 (TLS termination, top-level auth) uniformly for all of them.
 
+**Backend for Frontend vs. Gateway Aggregation.** Both combine several
+downstream calls into one response, so the aggregation mechanics can
+look identical — but the organizing principle differs. [Gateway
+Aggregation](/docs/patterns/api-edge/gateway-aggregation) collapses a
+fan-out into a single round trip primarily to cut chattiness and
+latency, and the aggregated shape it returns is typically *generic* —
+one composed response that any client can consume. A BFF aggregates in
+service of one *specific* client's rendering needs: the same three
+downstream calls might be filtered and reshaped one way for the mobile
+BFF and another for the web BFF, because the point isn't just "fewer
+round trips" but "exactly the payload this client type wants." Put
+differently, gateway aggregation is a client-agnostic latency
+optimization that can live in a shared gateway, while a BFF is a
+client-specific shaping layer that deliberately splits per client — and
+a BFF often *uses* aggregation internally as one of its tools.
+
 ## Code example
 
 ```rust
@@ -206,7 +222,11 @@ services, not shared endpoints on one general API.
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — BFFs are often
   deployed behind a shared gateway that still handles cross-cutting
   concerns like auth and TLS termination for all of them.
+- [Gateway Aggregation](/docs/patterns/api-edge/gateway-aggregation) —
+  the client-agnostic latency optimization a BFF often uses internally;
+  a BFF adds per-client shaping on top of the raw fan-out collapse.
 
 ## Further reading
 
 - [Backends for Frontends pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/backends-for-frontends)
+- [The BFF Pattern (Backend for Frontend): An Introduction — Sam Newman](https://samnewman.io/patterns/architectural/bff/)

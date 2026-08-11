@@ -106,6 +106,22 @@ website with no authentication or per-client quotas is doing genuine
 reverse-proxy work without any of the API-management layer that would
 make it a gateway.
 
+**Reverse Proxy vs. Forward Proxy.** The two share the word "proxy" and
+the mechanic of relaying traffic on someone's behalf, but they face
+opposite directions and serve opposite parties. A reverse proxy sits in
+front of *servers* and acts on their behalf — clients think they're
+talking to the real backend, and the proxy hides how many backends
+exist and where. A forward proxy sits in front of *clients* and acts on
+their behalf — servers think they're talking to the real client, and
+the proxy hides which client actually originated the request (a
+corporate egress proxy that all employee traffic exits through is the
+classic example). Put simply: a reverse proxy is chosen and operated by
+the service being fronted, a forward proxy is chosen and operated by the
+clients making the requests. The two can even coexist on a single
+request's path — an employee's browser behind a forward proxy calling a
+website behind a reverse proxy — without either knowing the other is
+there.
+
 ## Code example
 
 ```rust
@@ -224,3 +240,4 @@ worthwhile.
 
 - [Reverse proxy — Wikipedia](https://en.wikipedia.org/wiki/Reverse_proxy)
 - [API Management overview — Microsoft Learn](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-implementation)
+- [Proxy server (forward vs. reverse) — Wikipedia](https://en.wikipedia.org/wiki/Proxy_server)
