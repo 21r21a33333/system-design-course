@@ -1,0 +1,49 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <!-- Producer -->
+  <rect x="30" y="140" width="130" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="175" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Producer</text>
+
+  <!-- Blob Store -->
+  <rect x="270" y="40" width="180" height="70" rx="8" fill="#334155"/>
+  <text x="360" y="70" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Blob Store</text>
+  <text x="360" y="90" font-size="10" fill="#cbd5e1" text-anchor="middle">holds full payload</text>
+
+  <!-- Message Bus -->
+  <rect x="270" y="230" width="180" height="70" rx="8" fill="#0f766e"/>
+  <text x="360" y="260" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Message Bus</text>
+  <text x="360" y="280" font-size="10" fill="#ccfbf1" text-anchor="middle">carries claim check only</text>
+
+  <!-- Consumer -->
+  <rect x="560" y="140" width="130" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="625" y="175" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Consumer</text>
+
+  <!-- 1. store payload -->
+  <line x1="140" y1="145" x2="280" y2="100" stroke="#334155" stroke-width="2" marker-end="url(#arrowCc)"/>
+  <text x="195" y="105" font-size="10" fill="#334155" text-anchor="middle">1. store payload</text>
+
+  <!-- 2. publish claim check -->
+  <line x1="140" y1="195" x2="280" y2="245" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowCcTeal)"/>
+  <text x="195" y="235" font-size="10" fill="#0f766e" text-anchor="middle">2. publish claim check</text>
+
+  <!-- 3. deliver claim check -->
+  <line x1="450" y1="255" x2="580" y2="195" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowCcTeal)"/>
+  <text x="545" y="235" font-size="10" fill="#0f766e" text-anchor="middle">3. deliver claim check</text>
+
+  <!-- 4. fetch payload directly -->
+  <line x1="600" y1="140" x2="410" y2="112" stroke="#b45309" stroke-width="2.5" marker-end="url(#arrowCcOrange)"/>
+  <text x="530" y="105" font-size="11" fill="#b45309" text-anchor="middle">4. fetch payload directly (on demand)</text>
+
+  <defs>
+    <marker id="arrowCc" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrowCcTeal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="arrowCcOrange" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>

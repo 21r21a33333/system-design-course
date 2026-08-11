@@ -1,0 +1,61 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <!-- Client -->
+  <rect x="30" y="130" width="130" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="165" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Client</text>
+
+  <!-- API endpoint -->
+  <rect x="290" y="40" width="170" height="60" rx="8" fill="#0f766e"/>
+  <text x="375" y="65" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">API endpoint</text>
+  <text x="375" y="83" font-size="10" fill="#ccfbf1" text-anchor="middle">enqueue + 202 Accepted</text>
+
+  <!-- Background worker -->
+  <rect x="290" y="130" width="170" height="60" rx="8" fill="#334155"/>
+  <text x="375" y="155" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Background worker</text>
+  <text x="375" y="173" font-size="10" fill="#cbd5e1" text-anchor="middle">processes job</text>
+
+  <!-- Status endpoint -->
+  <rect x="290" y="220" width="170" height="60" rx="8" fill="#0f766e"/>
+  <text x="375" y="245" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Status endpoint</text>
+  <text x="375" y="263" font-size="10" fill="#ccfbf1" text-anchor="middle">/jobs/{id}/status</text>
+
+  <!-- 1. submit request -->
+  <line x1="150" y1="128" x2="300" y2="85" stroke="#334155" stroke-width="2" marker-end="url(#arrowAr)"/>
+  <text x="200" y="95" font-size="10" fill="#334155" text-anchor="middle">1. submit</text>
+
+  <!-- 2. 202 Accepted + status URL -->
+  <line x1="290" y1="70" x2="145" y2="135" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowArTeal)"/>
+  <text x="215" y="130" font-size="10" fill="#0f766e" text-anchor="middle">2. 202 Accepted + status URL</text>
+
+  <!-- enqueue -->
+  <line x1="375" y1="102" x2="375" y2="128" stroke="#334155" stroke-width="2" marker-end="url(#arrowAr)"/>
+  <text x="420" y="118" font-size="9" fill="#334155" text-anchor="middle">enqueue</text>
+
+  <!-- 3. poll status (repeated) -->
+  <path d="M 95 192 C 95 260, 250 250, 288 250" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrowArGray)"/>
+  <text x="175" y="300" font-size="10" fill="#64748b" text-anchor="middle">3. poll status (repeated, idempotent)</text>
+
+  <!-- 4. result once complete -->
+  <path d="M 288 265 C 220 300, 130 300, 100 220" fill="none" stroke="#15803d" stroke-width="2" marker-end="url(#arrowArGreen)"/>
+  <text x="200" y="320" font-size="10" fill="#15803d" text-anchor="middle">4. result once complete</text>
+
+  <!-- worker updates status -->
+  <line x1="375" y1="192" x2="375" y2="218" stroke="#334155" stroke-width="2" marker-end="url(#arrowAr)" stroke-dasharray="4,3"/>
+  <text x="430" y="208" font-size="9" fill="#334155" text-anchor="middle">updates</text>
+
+  <defs>
+    <marker id="arrowAr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrowArTeal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="arrowArGray" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arrowArGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#15803d"/>
+    </marker>
+  </defs>
+</svg>
