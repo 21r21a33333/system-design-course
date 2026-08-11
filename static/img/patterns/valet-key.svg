@@ -1,0 +1,41 @@
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="320" fill="#ffffff"/>
+
+  <!-- Client -->
+  <rect x="30" y="130" width="130" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="165" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Client</text>
+
+  <!-- Application -->
+  <rect x="250" y="40" width="180" height="70" rx="8" fill="#0f766e"/>
+  <text x="340" y="70" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Application</text>
+  <text x="340" y="90" font-size="10" fill="#ccfbf1" text-anchor="middle">issues valet key</text>
+
+  <!-- Storage -->
+  <rect x="530" y="130" width="160" height="60" rx="8" fill="#334155"/>
+  <text x="610" y="155" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Blob Store</text>
+  <text x="610" y="173" font-size="10" fill="#cbd5e1" text-anchor="middle">validates key directly</text>
+
+  <!-- 1. request key -->
+  <line x1="130" y1="128" x2="270" y2="112" stroke="#334155" stroke-width="2" marker-end="url(#arrowVk)"/>
+  <text x="185" y="105" font-size="10" fill="#334155" text-anchor="middle">1. request key</text>
+
+  <!-- 2. key issued -->
+  <line x1="255" y1="95" x2="140" y2="140" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowVkTeal)"/>
+  <text x="200" y="140" font-size="10" fill="#0f766e" text-anchor="middle">2. scoped, time-limited key</text>
+
+  <!-- 3. direct transfer, bypassing app -->
+  <line x1="160" y1="175" x2="528" y2="165" stroke="#b45309" stroke-width="2.5" marker-end="url(#arrowVkOrange)"/>
+  <text x="345" y="205" font-size="11" fill="#b45309" text-anchor="middle">3. direct read/write — bypasses application</text>
+
+  <defs>
+    <marker id="arrowVk" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrowVkTeal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="arrowVkOrange" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,43 @@
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="320" fill="#ffffff"/>
+
+  <!-- User/Client -->
+  <rect x="30" y="130" width="130" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="165" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">User</text>
+
+  <!-- Identity Provider -->
+  <rect x="270" y="30" width="180" height="70" rx="8" fill="#334155"/>
+  <text x="360" y="60" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Identity Provider</text>
+  <text x="360" y="80" font-size="10" fill="#cbd5e1" text-anchor="middle">authenticates user</text>
+
+  <!-- Application -->
+  <rect x="270" y="220" width="180" height="70" rx="8" fill="#0f766e"/>
+  <text x="360" y="250" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Application</text>
+  <text x="360" y="270" font-size="10" fill="#ccfbf1" text-anchor="middle">verifies token, no password</text>
+
+  <!-- 1. redirect to login -->
+  <line x1="160" y1="145" x2="268" y2="80" stroke="#334155" stroke-width="2" marker-end="url(#arrowFi)"/>
+  <text x="190" y="105" font-size="10" fill="#334155" text-anchor="middle">1. redirect to login</text>
+
+  <!-- 2. credentials, direct to IdP -->
+  <line x1="268" y1="90" x2="160" y2="150" stroke="#334155" stroke-width="2" marker-end="url(#arrowFi)"/>
+  <text x="185" y="205" font-size="10" fill="#334155" text-anchor="middle">2. credentials (app never sees them)</text>
+
+  <!-- 3. signed token to app -->
+  <line x1="345" y1="102" x2="345" y2="218" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arrowFiTeal)"/>
+  <text x="470" y="165" font-size="10" fill="#0f766e" text-anchor="middle">3. signed</text>
+  <text x="470" y="180" font-size="10" fill="#0f766e" text-anchor="middle">identity token</text>
+
+  <!-- 4. authenticated session back to user -->
+  <line x1="268" y1="255" x2="160" y2="185" stroke="#334155" stroke-width="2" marker-end="url(#arrowFi)"/>
+  <text x="200" y="290" font-size="10" fill="#334155" text-anchor="middle">4. authenticated session</text>
+
+  <defs>
+    <marker id="arrowFi" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrowFiTeal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

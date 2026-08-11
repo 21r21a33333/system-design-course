@@ -1,0 +1,39 @@
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="320" fill="#ffffff"/>
+
+  <!-- Client -->
+  <rect x="30" y="130" width="130" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="160" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Client</text>
+  <text x="95" y="177" font-size="10" fill="#dbeafe" text-anchor="middle">HTTPS</text>
+
+  <!-- Gateway -->
+  <rect x="240" y="90" width="220" height="140" rx="8" fill="#0f766e"/>
+  <text x="350" y="118" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="600">Gateway</text>
+  <text x="350" y="140" font-size="10" fill="#ccfbf1" text-anchor="middle">TLS termination</text>
+  <text x="350" y="156" font-size="10" fill="#ccfbf1" text-anchor="middle">auth validation</text>
+  <text x="350" y="172" font-size="10" fill="#ccfbf1" text-anchor="middle">compression</text>
+
+  <line x1="160" y1="160" x2="238" y2="160" stroke="#334155" stroke-width="2" marker-end="url(#arrowOff)"/>
+
+  <!-- trusted internal boundary -->
+  <rect x="510" y="60" width="180" height="200" rx="8" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="600" y="50" font-size="10" fill="#64748b" text-anchor="middle">trusted internal network</text>
+
+  <!-- Backend services, no plumbing -->
+  <rect x="530" y="80" width="140" height="50" rx="8" fill="#334155"/>
+  <text x="600" y="110" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Service A</text>
+
+  <rect x="530" y="150" width="140" height="50" rx="8" fill="#334155"/>
+  <text x="600" y="180" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Service B</text>
+
+  <text x="600" y="235" font-size="10" fill="#64748b" text-anchor="middle">plain, pre-authenticated requests</text>
+
+  <line x1="460" y1="140" x2="528" y2="105" stroke="#334155" stroke-width="2" marker-end="url(#arrowOff)"/>
+  <line x1="460" y1="170" x2="528" y2="175" stroke="#334155" stroke-width="2" marker-end="url(#arrowOff)"/>
+
+  <defs>
+    <marker id="arrowOff" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>
