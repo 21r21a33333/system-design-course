@@ -229,7 +229,7 @@ implemented from scratch alongside your application.
 | --- | --- | --- | --- |
 | GPTCache | Python | Open-source semantic cache: embeds queries and serves near-duplicate hits | [Usage guide](https://gptcache.readthedocs.io/en/latest/usage.html) |
 | Portkey semantic cache | SaaS / self-host | Semantic (embedding-similarity) caching as a gateway policy | [Cache docs](https://portkey.ai/docs/product/ai-gateway/cache-simple-and-semantic) |
-| Redis LangCache | Managed / Redis | Semantic caching service for LLM responses backed by Redis vector search | [LangCache docs](https://redis.io/docs/latest/develop/ai/langcache/) |
+| Redis LangCache | Managed / Redis | Semantic caching service for LLM responses backed by Redis vector search | [LangCache docs](https://redis.io/docs/latest/develop/ai/context-engine/langcache/) |
 | LangChain caching | Python / JS | Built-in LLM response caches, including semantic cache backends | [Caching how-to](https://python.langchain.com/docs/how_to/llm_caching/) |
 
 **Example / reference:** [GPTCache usage guide](https://gptcache.readthedocs.io/en/latest/usage.html)

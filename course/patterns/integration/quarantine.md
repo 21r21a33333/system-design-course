@@ -343,7 +343,7 @@ scan-then-promote pipeline from:
 
 | Library / Tool | Language | What it gives you | Getting started |
 | --- | --- | --- | --- |
-| ClamAV | C | Open-source antivirus engine (`clamd`/`clamscan`) for the malware gate against quarantined uploads | [clamav.net/documents](https://www.clamav.net/documents/clamav-documentation) |
+| ClamAV | C | Open-source antivirus engine (`clamd`/`clamscan`) for the malware gate against quarantined uploads | [docs.clamav.net](https://docs.clamav.net/) |
 | AWS GuardDuty Malware Protection for S3 | Managed (AWS) | Automatically scans newly uploaded S3 objects for malware, tagging clean-vs-infected to drive promotion | [docs.aws.amazon.com/guardduty](https://docs.aws.amazon.com/guardduty/latest/ug/gdu-malware-protection-s3.html) |
 | VirusTotal API | REST (any language) | Multi-engine file/URL reputation lookup as an additional malware/policy gate in the pipeline | [docs.virustotal.com](https://docs.virustotal.com/reference/overview) |
 | Amazon S3 (staging bucket) | Managed (AWS) | A separate quarantine bucket with its own restricted access policy — the isolated holding area artifacts land in first | [docs.aws.amazon.com/AmazonS3 — malware scan](https://docs.aws.amazon.com/AmazonS3/latest/userguide/scan-objects-for-malware.html) |
