@@ -27,26 +27,70 @@ across them, so a client's request can be served by whichever geode is
 geographically closest, and any single region going down still leaves
 every other geode fully able to serve every client.
 
-## How it works
+## Technical architecture & implementation
 
-Each geode is a deployment of the application's services in a distinct
-geographic region, and — critically — every geode is capable of serving
-*any* request, not just requests related to its own region's data. That
-capability depends entirely on data replication: the data a geode needs
-to answer a request has to already be present locally, replicated in
-from wherever it originated, rather than fetched cross-region on demand
-(which would reintroduce the latency the whole pattern exists to avoid).
-Clients are routed to their nearest geode, typically via geographic DNS
-routing or a global load balancer, so the network hop that dominates
-latency — the client-to-server leg — is kept short, while the
-replication work of keeping every geode's data current happens
-asynchronously in the background, between geodes, off the client's
-critical path. This replication is exactly the kind of distribution
-problem [Consistent Hashing](/docs/patterns/storage/consistent-hashing)
-addresses in a different context — assigning and locating data across a
-set of nodes predictably — and geode deployments face a related
-question of how data gets distributed and kept current across regions
-so any geode can answer locally.
+**Geodes and the "any geode serves any request" property.** Each geode
+is a deployment of the application's services in a distinct geographic
+region, and — critically — every geode is capable of serving *any*
+request, not just requests tied to its own region's data. This is the
+property that distinguishes a geode from a stamp or a shard, and it
+depends entirely on data replication: the data a geode needs must already
+be present locally, replicated in from wherever it originated, rather
+than fetched cross-region on demand (which would reintroduce the very
+latency the pattern exists to remove). The application tier in each geode
+is typically stateless or works only against its local replica, so adding
+a region is "stand up the stack, attach it to the replication topology,
+add it to the router."
+
+**Geo-routing the client to the nearest geode.** Clients are steered to
+their nearest region so the dominant network hop — the client-to-server
+leg — stays short. Three mechanisms are common. **Latency/geo DNS**
+resolves the service name to the closest region's address based on the
+resolver's location or measured latency (simple, but DNS caching slows
+failover). **Anycast** advertises one IP from every region and lets
+Internet routing deliver each client to the topologically nearest one
+(fast reconvergence on a region loss, but less precise control). A
+**global load balancer** at the edge makes the routing decision
+per-connection with real health data (most control, another hop to
+operate). In all three the routing layer holds no application data — it
+only decides *which region*.
+
+**Data replication across regions.** Keeping every geode able to answer
+locally is the hard part, and the replication topology is the core design
+choice. **Active-active multi-primary** lets every region accept writes
+and replicates them to the others — lowest write latency, but two regions
+can write conflicting values to the same key concurrently, so conflicts
+must be *detected and resolved* (last-writer-wins by timestamp,
+application-defined merge, or CRDTs for data types that merge
+commutatively). **Single-primary with regional read replicas** routes all
+writes to one region and replicates outward — no write conflicts, but
+writers far from the primary pay cross-region latency. Replication is
+asynchronous and off the client's critical path, which means geodes are
+**eventually consistent**: a value written in one region is briefly
+absent or stale in another until replication catches up. The application
+must be designed to tolerate that window — read-your-writes routing,
+version vectors, or accepting bounded staleness.
+
+**Regional failover.** Because every geode can serve any request, a
+region going down is handled by simply routing its clients elsewhere.
+The routing layer health-checks each region and drops an unhealthy one
+from the candidate set; its clients fall through to their next-nearest
+healthy geode with no data loss, since that geode already holds a
+replicated copy. The catch is failover *speed*: with geo-DNS, cached
+resolutions can keep sending clients at a dead region until TTLs expire,
+which is why short TTLs, anycast, or a health-aware global balancer are
+preferred when fast regional failover matters.
+
+**Failure modes.** *Conflicting concurrent writes* in active-active
+topologies are the signature hazard — without a deliberate conflict
+policy, replication silently diverges regions. *Stale reads* during the
+replication lag window surprise clients that expect to read their own
+recent write from a different region. *Cross-region calls sneaking onto
+the hot path* — a request that "mostly" reads locally but occasionally
+reaches back to another region — quietly reintroduce the latency the
+pattern was meant to eliminate, so the local-completeness invariant must
+be enforced, not assumed. *Replication cost and lag* grow with the number
+of regions and write volume, bounding how many geodes are practical.
 
 ### How this differs from Deployment Stamps
 
@@ -70,18 +114,44 @@ group; geodes optimize for latency-to-nearest-region at the cost of the
 replication machinery needed to keep every geode's data current enough
 to answer correctly.
 
+### How this differs from a CDN
+
+A [CDN](/docs/patterns/building-blocks/cdn) also puts copies of
+something close to users to cut latency, so the two are easy to conflate
+— but they operate at different layers. A CDN caches *content* (static
+assets, and increasingly cacheable responses) at edge locations; it is a
+read-optimized cache in front of an origin, and a cache miss or any
+non-cacheable, write, or dynamic request still falls back to that origin.
+A geode replicates the *full application stack and its authoritative
+data* into each region, so a geode can serve *dynamic, stateful, write*
+requests locally — there is no origin it falls back to for the logic,
+because the logic and a live data replica are present in every region.
+Put simply: a CDN brings cached bytes close to the user; a geode brings
+the whole running service, database included, close to the user. They
+compose well — a CDN fronts a geode deployment to absorb static and
+cacheable traffic at the very edge, while the geodes behind it handle
+the dynamic, data-backed requests the CDN can't.
+
 ## Code example
 
 The snippet below models the routing decision that distinguishes a
-geode from a stamp: any geode is a valid target for any client, so
-routing picks the nearest one rather than looking up a fixed
+geode from a stamp *and* folds in regional failover: any healthy geode
+is a valid target for any client, so routing filters out unhealthy
+regions and picks the nearest survivor rather than looking up a fixed
 assignment.
 
 ```rust
+#[derive(Clone, Copy, PartialEq)]
+enum Health {
+    Up,
+    Down,
+}
+
 struct Geode {
     region: String,
-    // distance in arbitrary latency units from a given client region
+    // Latency in arbitrary units from a given client region to this geode.
     distance_from: fn(&str) -> u32,
+    health: Health,
 }
 
 struct GeodeRouter {
@@ -89,26 +159,34 @@ struct GeodeRouter {
 }
 
 impl GeodeRouter {
-    // Unlike a stamp lookup, every geode is a *candidate* for every
-    // client — the router just picks the nearest one.
-    fn nearest_for(&self, client_region: &str) -> Option<&Geode> {
+    // Unlike a stamp lookup, every geode is a *candidate* for every client,
+    // because replication keeps their data in sync. Routing skips any
+    // unhealthy region and picks the nearest healthy one — that skip is
+    // exactly regional failover: a downed region simply drops out of the
+    // candidate set and its clients fall through to their next-nearest geode.
+    fn nearest_healthy(&self, client_region: &str) -> Option<&Geode> {
         self.geodes
             .iter()
+            .filter(|g| g.health == Health::Up)
             .min_by_key(|g| (g.distance_from)(client_region))
     }
 }
 
 fn route_request(router: &GeodeRouter, client_region: &str) -> String {
-    match router.nearest_for(client_region) {
+    match router.nearest_healthy(client_region) {
         Some(geode) => format!("routing {client_region} to geode {}", geode.region),
-        None => "no geode available".to_string(),
+        None => "no healthy geode available".to_string(),
     }
 }
 ```
 
-`nearest_for` has no notion of tenant ownership at all — every geode in
-the list is equally capable of serving the request, because replication
-keeps their data in sync; the only question is which one is closest.
+`nearest_healthy` has no notion of tenant ownership at all — every
+healthy geode is equally capable of serving the request, because
+replication keeps their data in sync, so the only questions are "is it
+up?" and "is it closest?". The `filter` on health is regional failover
+expressed directly: when a region goes `Down`, it vanishes from the
+candidate set and its clients transparently fall through to their
+next-nearest geode.
 
 ## When to use it
 
@@ -136,15 +214,37 @@ keeps their data in sync; the only question is which one is closest.
   Stamps](/docs/patterns/observability/deployment-stamps), which
   partitions customers instead of replicating capability everywhere.
 
-## Real-world example
+## Use-case scenarios
 
-A global content platform runs full application stacks in several
-regions — North America, Europe, Asia-Pacific — each with a locally
-replicated copy of user and content data, and a global DNS-based router
-directs each user to their nearest geode. A user in Singapore is served
-entirely by the Asia-Pacific geode with no round trip to North America,
-and if the European geode goes offline, European users are simply
-routed to their next-nearest geode rather than losing service entirely.
+**Global content platform with active-active regions.** A platform runs
+full application stacks in several regions — North America, Europe,
+Asia-Pacific — each holding a locally replicated copy of user and content
+data, and a latency-based DNS router directs each user to their nearest
+geode. A user in Singapore is served entirely by the Asia-Pacific geode
+with no round trip to North America; if the European geode goes offline,
+health-aware routing drops it and European users fall through to their
+next-nearest geode rather than losing service. Concurrent edits to the
+same content in two regions are reconciled by a last-writer-wins policy
+on a version timestamp.
+
+**Latency-sensitive interactive API.** A collaborative or real-time
+product where every extra 100 ms of round trip is felt deploys geodes in
+the regions its users cluster in. Writes replicate active-active with
+CRDT-based merge for the collaborative document state, so two users
+editing from different regions converge without a coordinator on the hot
+path, and each user's edits commit against their local geode at
+in-region latency. A CDN fronts the geodes to serve the static app shell
+from the very edge, leaving the geodes to handle the live document
+traffic.
+
+**Multi-region resilience for a stateful service.** An organization
+whose priority is surviving a full regional outage (not just latency)
+runs geodes in three regions with data replicated across all of them.
+Because any region can serve any request from its local replica, losing
+an entire region is a routing event, not an outage: traffic reconverges
+on the remaining regions, and once the failed region is restored and its
+replica has caught up, it rejoins the candidate set and resumes serving
+its nearby clients.
 
 ## Related patterns
 
@@ -152,11 +252,24 @@ routed to their next-nearest geode rather than losing service entirely.
   also deploys multiple full copies of a stack, but partitions
   *customers* across isolated stamps rather than replicating the same
   capability for *any* client to reach the nearest copy.
+- [CDN](/docs/patterns/building-blocks/cdn) — also puts copies close to
+  users, but caches *content* in front of an origin; a geode replicates
+  the full stateful service (data included) so it can serve dynamic and
+  write requests locally with no origin to fall back to.
+- [Primary-Replica Replication](/docs/patterns/storage/primary-replica-replication) —
+  the single-primary variant of the cross-region replication a geode
+  deployment relies on to keep every region's data current.
+- [Failover](/docs/patterns/reliability/failover) — geode routing does
+  regional failover implicitly by dropping an unhealthy region from the
+  candidate set and steering its clients to the next-nearest survivor.
 - [Consistent Hashing](/docs/patterns/storage/consistent-hashing) — a
-  related concern for how data is distributed and located across nodes,
-  relevant to how a geode deployment organizes its replicated data.
+  related concern for how replicated data is distributed and located
+  across nodes within and across a geode deployment.
 
 ## Further reading
 
 - [Geode pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes)
+- [Amazon DynamoDB global tables — official docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html)
+- [AWS Global Accelerator (anycast global routing) — official docs](https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html)
+- [Conflict-free replicated data type (CRDT) — Wikipedia](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)
 - [Multi-master replication — Wikipedia](https://en.wikipedia.org/wiki/Multi-master_replication)

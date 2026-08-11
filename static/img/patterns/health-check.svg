@@ -1,0 +1,57 @@
+<svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="340" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Probe results drive load-balancer routing and orchestrator restarts</text>
+
+  <!-- load balancer -->
+  <rect x="30" y="130" width="130" height="70" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="160" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Load Balancer</text>
+  <text x="95" y="178" font-size="9" fill="#dbeafe" text-anchor="middle">routes only to</text>
+  <text x="95" y="190" font-size="9" fill="#dbeafe" text-anchor="middle">ready instances</text>
+
+  <!-- instance A healthy -->
+  <rect x="260" y="52" width="180" height="58" rx="8" fill="#15803d"/>
+  <text x="350" y="76" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Instance A — ready</text>
+  <text x="350" y="94" font-size="9" fill="#dcfce7" text-anchor="middle">/health 200 · in pool</text>
+
+  <!-- instance B not ready -->
+  <rect x="260" y="140" width="180" height="58" rx="8" fill="#b45309"/>
+  <text x="350" y="164" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Instance B — not ready</text>
+  <text x="350" y="182" font-size="9" fill="#fde68a" text-anchor="middle">readiness 503 · removed from pool</text>
+
+  <!-- instance C dead -->
+  <rect x="260" y="228" width="180" height="58" rx="8" fill="#dc2626"/>
+  <text x="350" y="252" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Instance C — deadlocked</text>
+  <text x="350" y="270" font-size="9" fill="#fee2e2" text-anchor="middle">liveness fails · restarted</text>
+
+  <!-- LB -> A (route) -->
+  <line x1="160" y1="150" x2="258" y2="88" stroke="#15803d" stroke-width="2.5" marker-end="url(#hcArrowGreen)"/>
+  <text x="205" y="112" font-size="9" fill="#15803d" text-anchor="middle">traffic</text>
+  <!-- LB -> B (no route) -->
+  <line x1="160" y1="168" x2="258" y2="168" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="205" y="160" font-size="9" fill="#94a3b8" text-anchor="middle">no traffic</text>
+  <!-- LB -> C (no route) -->
+  <line x1="160" y1="186" x2="258" y2="250" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3"/>
+
+  <!-- orchestrator -->
+  <rect x="560" y="180" width="170" height="70" rx="8" fill="#334155"/>
+  <text x="645" y="208" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Orchestrator</text>
+  <text x="645" y="226" font-size="9" fill="#cbd5e1" text-anchor="middle">restarts on failed</text>
+  <text x="645" y="238" font-size="9" fill="#cbd5e1" text-anchor="middle">liveness probe</text>
+
+  <!-- orchestrator -> C restart -->
+  <line x1="560" y1="220" x2="442" y2="258" stroke="#dc2626" stroke-width="2.5" marker-end="url(#hcArrowRed)"/>
+  <text x="505" y="252" font-size="9" fill="#dc2626" text-anchor="middle">restart</text>
+
+  <rect x="30" y="300" width="700" height="28" rx="8" fill="none" stroke="#64748b" stroke-width="1"/>
+  <text x="380" y="318" font-size="9" fill="#334155" text-anchor="middle">Liveness failure = restart the process; readiness failure = remove from the pool without restarting.</text>
+
+  <defs>
+    <marker id="hcArrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/>
+    </marker>
+    <marker id="hcArrowRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+</svg>

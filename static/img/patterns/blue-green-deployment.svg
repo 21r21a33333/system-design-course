@@ -1,0 +1,51 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <text x="360" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Router flips all traffic from blue to green in one atomic step after the health gate passes</text>
+
+  <!-- Client -->
+  <rect x="24" y="140" width="110" height="58" rx="8" fill="#334155"/>
+  <text x="79" y="166" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Clients</text>
+  <text x="79" y="184" font-size="9" fill="#cbd5e1" text-anchor="middle">100% traffic</text>
+
+  <!-- Router -->
+  <rect x="190" y="138" width="120" height="62" rx="8" fill="#1d4ed8"/>
+  <text x="250" y="163" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Router / LB</text>
+  <text x="250" y="181" font-size="9" fill="#dbeafe" text-anchor="middle">active pointer</text>
+
+  <!-- Blue env (was active, now standby) -->
+  <rect x="440" y="56" width="240" height="66" rx="8" fill="#1d4ed8" opacity="0.35"/>
+  <rect x="440" y="56" width="240" height="66" rx="8" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="560" y="82" font-size="12" fill="#1e3a8a" text-anchor="middle" font-weight="600">Blue — v1 (kept warm)</text>
+  <text x="560" y="100" font-size="9" fill="#334155" text-anchor="middle">idle standby, ready for instant rollback</text>
+
+  <!-- Green env (new active) -->
+  <rect x="440" y="216" width="240" height="66" rx="8" fill="#15803d"/>
+  <text x="560" y="242" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Green — v2 (new active)</text>
+  <text x="560" y="260" font-size="9" fill="#dcfce7" text-anchor="middle">smoke-tested, health gate passed</text>
+
+  <!-- client -> router -->
+  <line x1="134" y1="169" x2="188" y2="169" stroke="#334155" stroke-width="2.5" marker-end="url(#bgArrowSlate)"/>
+
+  <!-- router -> blue (old route, now off) -->
+  <line x1="310" y1="150" x2="438" y2="92" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="368" y="118" font-size="9" fill="#94a3b8" text-anchor="middle">old route (off)</text>
+
+  <!-- router -> green (new route) -->
+  <line x1="310" y1="188" x2="438" y2="245" stroke="#15803d" stroke-width="3" marker-end="url(#bgArrowGreen)"/>
+  <text x="360" y="228" font-size="9" fill="#15803d" text-anchor="middle" font-weight="600">cut over</text>
+
+  <!-- rollback hint -->
+  <path d="M660 216 C700 180 700 158 662 122" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#bgArrowRed)"/>
+  <text x="705" y="172" font-size="9" fill="#dc2626" text-anchor="middle" transform="rotate(90 705 172)">rollback = flip back</text>
+
+  <!-- shared DB note -->
+  <rect x="24" y="292" width="672" height="34" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="360" y="313" font-size="9" fill="#334155" text-anchor="middle">Both envs share one database — schema migrations must be backward-compatible (expand/contract) so v1 and v2 both work against it</text>
+
+  <defs>
+    <marker id="bgArrowSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/></marker>
+    <marker id="bgArrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/></marker>
+    <marker id="bgArrowRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/></marker>
+  </defs>
+</svg>
