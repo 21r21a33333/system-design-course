@@ -58,47 +58,192 @@ The structural bet this design makes is that **ingestion durability and processi
 
 ### Use case: Producer service emits events without ever being blocked by this platform
 
-A production service placing an order or logging a page view cannot be made to wait on a downstream analytics pipeline's health — if the ingestion layer is slow or briefly unavailable, that must never become the order-placement flow's problem too. The ingestion layer is therefore built as a durable, append-only, high-throughput log: a producer's publish call is acknowledged as soon as the event is durably written to the log (typically replicated across a small number of nodes for durability), and that acknowledgment is the full extent of the platform's synchronous contract with the producer. Everything downstream of that point — cleaning, transformation, aggregation, loading into the warehouse — happens asynchronously, entirely decoupled from the producer's own request path, in the same spirit as [Queue-Based Load Leveling](/docs/patterns/batch-streaming/queue-based-load-leveling): the producer's write rate and the platform's processing rate are allowed to differ, with the durable log absorbing the difference rather than forcing them to match in real time.
+A production service placing an order or logging a page view cannot be made to wait on a downstream analytics pipeline's health.
 
-This also means the ingestion layer's failure mode under sustained overload has to be graceful rather than catastrophic — [Backpressure](/docs/patterns/batch-streaming/backpressure) is applied between the log and its downstream consumers (stream and batch processors read at their own sustainable pace, buffered by the log's retention window), not between producers and the log itself, since pushing backpressure back onto producers is exactly the coupling this design exists to avoid.
+**Core spec: durable append-only log as the synchronous contract boundary**
+
+```
+producer.publish(event) -> ack
+  1. event is appended to the ingestion log, replicated across a small
+     number of nodes for durability
+  2. ack is returned to the producer as soon as the append is durable
+     — nothing downstream of this point is on the producer's critical path
+  3. cleaning, transformation, aggregation, warehouse loading all happen
+     asynchronously, reading from the log at their own pace
+```
+
+**Data structures:**
+* `ingestion_log` record — `event_id`, `event_type`, `producer_id`, `payload` (raw, as sent), `event_time`, `ingested_at`, `offset` (monotonically increasing, per-partition)
+
+**Trade-offs:**
+* Everything downstream of the ack is decoupled from the producer's own request path, in the same spirit as [Queue-Based Load Leveling](/docs/patterns/batch-streaming/queue-based-load-leveling): the producer's write rate and the platform's processing rate are allowed to differ, with the durable log absorbing the difference rather than forcing them to match in real time.
+* [Backpressure](/docs/patterns/batch-streaming/backpressure) is applied between the log and its downstream consumers (stream and batch processors read at their own sustainable pace, buffered by the log's retention window), not between producers and the log itself — pushing backpressure back onto producers is exactly the coupling this design exists to avoid. Apache Kafka's [durability semantics](https://kafka.apache.org/documentation/#semantics) are a real, well-documented version of this exact append-ack-then-decouple contract.
 
 ### Use case: Platform organizes ingested events into a queryable warehouse, handling schema differences and late data
 
-Raw events arrive with whatever shape their producing service happens to emit, and that shape drifts over time as services evolve independently — a field gets renamed, a new optional field gets added, an old client version keeps sending an outdated schema for months after a new one ships. Rather than rejecting or crashing on a schema mismatch, ingested events are first landed into a **raw layer** essentially as-is (preserving whatever the producer actually sent, since that's the only copy that can be reprocessed later if a downstream transformation turns out to be wrong), and a separate transformation stage reads from the raw layer and writes into a **cleaned/conformed layer** with an explicit, versioned schema — normalizing field names, coercing types, and handling multiple schema versions from the same event type side by side rather than assuming every event of a given type looks identical.
+Raw events arrive with whatever shape their producing service happens to emit, and that shape drifts over time as services evolve independently.
 
-Late and out-of-order events are handled by writing to time-partitioned tables keyed by the event's own timestamp, not by arrival time — an event describing something that happened three hours ago but arrived just now is written into the partition for three hours ago, and any aggregate covering that partition is either held open for a bounded grace window before being considered final, or is explicitly recomputed once enough late data has trickled in. This is the same underlying idea [Event Sourcing](/docs/patterns/storage/event-sourcing) relies on — the raw, ordered log of what happened is the durable source of truth, and every derived table (cleaned, aggregated) is a replayable, reproducible view built from it, not an independently-maintained copy that can silently drift from the source.
+**Core spec: layered tables (raw → conformed → aggregated), partitioned by event time**
+
+```
+raw_events            (event_time-partitioned, schema-on-read, append-only)
+    │  transform stage: normalize field names, coerce types,
+    │  resolve multiple schema versions of the same event_type
+    ▼
+conformed_events       (explicit versioned schema, event_time-partitioned)
+    │  aggregation stage: batch or stream, per Lambda/Kappa below
+    ▼
+business_marts         (pre-aggregated to the grain analysts/dashboards query)
+```
+
+* A late event (something that happened three hours ago but arrived just now) is written into the *event-time* partition for three hours ago, not the partition for now
+* An aggregate covering a partition is either held open for a bounded grace window before being considered final, or explicitly recomputed once enough late data has trickled in
+
+**Data structures:**
+* `conformed_events` — `event_id`, `event_type`, `schema_version`, normalized typed fields, `event_time` (partition key), `ingested_at`
+* `business_marts` table — pre-aggregated rows at a fixed grain (e.g. `date`, `region`, `metric_name`, `value`)
+
+**Trade-offs:**
+* The raw layer preserves exactly what the producer sent, since that's the only copy that can be reprocessed later if a downstream transformation turns out to be wrong — this is the same underlying idea [Event Sourcing](/docs/patterns/storage/event-sourcing) relies on: the raw, ordered log is the durable source of truth, and every derived table is a replayable view built from it, not an independently-maintained copy that can silently drift.
+* Partitioning by event time rather than arrival time is what makes late data correct instead of merely accepted — an aggregate that partitioned by arrival time would silently attribute a delayed mobile-client event to the wrong hour's numbers.
 
 ### Use case: Platform supports both batch and streaming processing over the same event data
 
-Step 1 treats latency as bimodal: a small set of metrics genuinely need minutes-fresh answers, while the overwhelming majority of analytics tolerate — and actually prefer — the completeness and correctness of a full recomputation over the raw log. Forcing everything through a single processing path means either the slow, correct path is too slow for the metrics that need freshness, or the fast, continuously-updating path's necessary approximations (bounded windows, best-effort handling of very late data) end up silently degrading the analytics that were never asked to tolerate them.
+Step 1 treats latency as bimodal: a small set of metrics genuinely need minutes-fresh answers, while the overwhelming majority of analytics tolerate — and actually prefer — the completeness of a full recomputation over the raw log. Real systems name this tradeoff directly as **[Lambda architecture](https://en.wikipedia.org/wiki/Lambda_architecture) vs. Kappa architecture**, and it's worth naming both explicitly rather than picking one silently.
 
-This is the exact tradeoff [Lambda & Kappa Architecture](/docs/patterns/batch-streaming/lambda-kappa-architecture) names directly. This design takes the **Lambda** shape: a batch layer runs [MapReduce](/docs/patterns/batch-streaming/mapreduce)-style jobs (a framework like Apache Spark is a common real engine for this) over complete, time-partitioned raw data on a schedule, producing the authoritative, eventually-consistent aggregates that back most analyst queries and dashboards, while a separate [Stream Processing](/docs/patterns/batch-streaming/stream-processing) layer (Apache Flink or Kafka Streams are two well-known real systems built for this role) maintains a much smaller set of windowed, continuously-updating aggregates for the handful of metrics that genuinely need minutes-fresh answers. The two paths are allowed to briefly disagree — the streaming layer's fast numbers for the last few minutes and the batch layer's eventual, fully-reconciled numbers for the same window are not required to match instant-to-instant, only to converge once the batch layer catches up — which is an explicit, accepted tradeoff rather than an oversight, and one this design can afford specifically because Step 1 scopes the freshness-sensitive metric set to be small.
+**Lambda architecture** runs two separate processing paths against the same raw event log: a **batch layer** ([MapReduce](/docs/patterns/batch-streaming/mapreduce)-style jobs, commonly on a framework like Apache Spark) that periodically recomputes complete, authoritative aggregates from full historical partitions, and a **speed/stream layer** ([Stream Processing](/docs/patterns/batch-streaming/stream-processing), commonly Apache Flink or Kafka Streams) that maintains a much smaller set of windowed, continuously-updating aggregates for the handful of metrics that need minutes-fresh answers. A serving layer merges the two: recent numbers come from the fast, approximate stream path; anything the batch layer has already recomputed supersedes it.
+
+**Kappa architecture** drops the batch path entirely and treats the stream processor as the only processing model — a "batch recompute" is just replaying the same durable log from an earlier offset through the identical stream-processing logic, not a separately maintained job.
+
+**The gotcha:** Lambda's two-path shape has a specific, well-known failure mode — **the batch codebase and the stream codebase can silently diverge in their business logic**. A filter, a join condition, or a rounding rule gets fixed in the stream job during an incident but the equivalent fix never lands in the batch job (or lands differently), and the two paths start producing different numbers for the same underlying data depending on which one processed it — a discrepancy that's easy to ship unnoticed because both paths still run and both still produce *a* number, just not the *same* number. This divergence risk is exactly why most real systems now default to **Kappa**: reprocessing-from-log through one shared code path can't diverge from itself. Below is a simplified Kappa-style stream processor with a genuine replay/reprocess capability — the same `transform_fn` and windowing logic serve both live traffic and historical reprocessing:
+
+```python
+class WindowedAggregate:
+    """A single time-windowed aggregate (e.g. orders per 5-minute window),
+    keyed by window start. Holds only current computed state — state is
+    always re-derivable from the log at a given offset, never a second
+    independently-maintained copy.
+    """
+
+    def __init__(self, window_size_seconds):
+        self.window_size_seconds = window_size_seconds
+        self.windows = {}  # window_start -> running count
+
+    def _window_start(self, event_time):
+        return event_time - (event_time % self.window_size_seconds)
+
+    def apply(self, event):
+        w = self._window_start(event.event_time)
+        self.windows[w] = self.windows.get(w, 0) + 1
+        return w, self.windows[w]
+
+
+class KappaStreamProcessor:
+    """Stream-only processing: one code path handles both live traffic and
+    historical reprocessing. Reprocessing = replaying the durable log from
+    an earlier offset through the *same* transform_fn, not a second,
+    separately-maintained batch job that can drift from this one.
+    """
+
+    def __init__(self, log, transform_fn, window_size_seconds=300):
+        self.log = log                      # append-only, offset-addressable event log
+        self.transform_fn = transform_fn    # business logic, shared by both modes
+        self.aggregate = WindowedAggregate(window_size_seconds)
+        self.committed_offset = -1
+
+    def process_one(self, event):
+        """The single shared code path for both live consumption and replay."""
+        transformed = self.transform_fn(event)
+        if transformed is None:
+            self.committed_offset = event.offset
+            return None
+        window_start, count = self.aggregate.apply(transformed)
+        self.committed_offset = event.offset
+        return (window_start, count)
+
+    def run_live(self, poll_batch):
+        """Live mode: consume newly-arrived events from the log's current tail."""
+        return [self.process_one(event) for event in poll_batch]
+
+    def reprocess(self, from_offset, to_offset=None):
+        """Batch-equivalent: replay historical events from the durable log
+        through the identical transform_fn used in run_live. This is the
+        Kappa answer to 'redo what the batch layer would have done' —
+        there's no second codebase to keep in sync, just a different
+        starting offset into the same log and a fresh aggregate state.
+        """
+        self.aggregate = WindowedAggregate(self.aggregate.window_size_seconds)
+        for event in self.log.read_range(from_offset, to_offset):
+            self.process_one(event)
+        return self.aggregate.windows
+```
+
+**Data structures:**
+* `Event` — `event_id`, `event_type`, `payload`, `event_time`, `offset` (position in the durable log)
+* `WindowedAggregate.windows` — `window_start -> count`, the only persisted state, always rebuildable from the log
+
+**Trade-offs:**
+* Kappa's single-codepath guarantee only holds if reprocessing genuinely re-runs the *same* `transform_fn` — a design that keeps a "quick patch" path for live traffic and a slower, separately-maintained reprocessing script has quietly reintroduced Lambda's divergence risk under a different name.
+* Kappa asks the stream layer to also be the system of record for full historical correctness, including replaying years of retained history through logic built for minutes-old data — this is why log retention (how far back `reprocess` can actually go) becomes a first-class capacity constraint under Kappa in a way it isn't under Lambda, where the batch layer reads from separately-retained historical storage instead of the stream's own retention window.
+* This design defaults to Kappa's shape specifically because most of Step 1's query volume tolerates the latency of a full reprocess run, and a single shared code path removes an entire class of "which path is right" incidents; a Lambda-style dedicated batch layer is still the better trade for a platform whose historical-correctness jobs need to reach further back than any affordable stream-log retention window would allow. See [Lambda & Kappa Architecture](/docs/patterns/batch-streaming/lambda-kappa-architecture) and Confluent's [engineering discussion of the Kappa shape](https://milinda.pathirage.org/kappa-architecture.com/) for the original framing.
 
 ### Use case: Analyst runs ad-hoc queries against the warehouse
 
-An analyst's query is a read against the conformed and aggregated warehouse layers, not against the raw ingestion log — the whole point of the transformation and aggregation stages upstream is that an analyst should never need to know which of 10,000 producing services an event originally came from, or reason about the raw log's out-of-order arrival quirks directly. The warehouse organizes data into progressively more aggregated layers (raw, cleaned, business-level marts), and an analyst's query typically targets the layer whose grain best matches the question being asked — a query about daily active users by region reads from a table already aggregated to that grain, rather than re-scanning billions of raw events every time the same shape of question is asked. This layered-table structure is the same underlying idea as [Materialized View](/docs/patterns/storage/materialized-view): expensive aggregation work happens once, on a schedule, off the interactive query path, and an analyst's query reads an already-computed result rather than triggering that aggregation itself.
+**Core spec: query targets the layer whose grain matches the question**
+
+```
+$ curl -X POST https://data-platform.example/api/v1/query \
+    -d '{"sql": "SELECT region, SUM(revenue) FROM business_marts.daily_revenue WHERE date >= '\''2026-08-01'\'' GROUP BY region"}'
+```
+
+An analyst's query is a read against `conformed_events` or `business_marts`, never against `raw_events` directly — a query about daily active users by region reads from a table already aggregated to that grain, rather than re-scanning billions of raw events every time the same shape of question is asked.
+
+**Data structures:** same layered tables as above; no new storage for this use case.
+
+**Trade-offs:**
+* This layered-table structure is the same underlying idea as [Materialized View](/docs/patterns/storage/materialized-view): expensive aggregation work happens once, on a schedule, off the interactive query path, and an analyst's query reads an already-computed result rather than triggering that aggregation itself.
+* An analyst who genuinely needs raw-grain data (an investigation, not a standard report) can still query `raw_events` directly — the layering is a default routing choice for the common case, not a hard access restriction.
 
 ### Use case: Dashboard displays frequently-viewed metrics without re-running an expensive query per page view
 
-Step 1's math makes the dashboard-refresh case explicit: roughly 192,000 of the platform's ~202,000 daily analytics queries are scheduled dashboard refreshes hitting a comparatively small, well-known set of metrics, not novel ad-hoc questions. Running a fresh warehouse scan on every one of those refreshes would waste enormous query capacity re-deriving the same handful of numbers over and over. Instead, a dashboard's underlying metrics are computed once per refresh interval (by the same batch or streaming aggregation jobs already producing the warehouse's business-level tables) and the *result* — not the query — is what's cached and served on page load, following the same shape as [Materialized View](/docs/patterns/storage/materialized-view) and this course's Query Cache case study: a dashboard page load is a cache read against a recently pre-computed value, and the expensive aggregation work is decoupled entirely from any individual user opening the dashboard.
+Step 1's math makes this explicit: roughly 192,000 of the platform's ~202,000 daily analytics queries are scheduled dashboard refreshes hitting a comparatively small, well-known set of metrics, not novel ad-hoc questions.
+
+**Core spec: pre-compute once per refresh interval, cache the result (not the query)**
+
+```
+1. business_marts is refreshed once per interval by the batch/stream
+   aggregation jobs already producing the warehouse's aggregated tables
+2. dashboard_cache[metric_id] = latest computed value + computed_at
+3. GET /dashboard/:id -> read dashboard_cache, no warehouse scan triggered
+```
+
+**Data structures:** `dashboard_cache` — `metric_id`, `value`, `computed_at`, `refresh_interval_seconds`.
+
+**Trade-offs:**
+* Running a fresh warehouse scan on every one of ~192,000 daily refreshes would waste enormous query capacity re-deriving the same handful of numbers over and over — computing once and serving the cached result to every page load decouples that cost from the number of viewers.
+* Follows the same shape as [Materialized View](/docs/patterns/storage/materialized-view): a dashboard page load is a cache read against a recently pre-computed value, and the expensive aggregation work is decoupled entirely from any individual user opening the dashboard.
 
 ## Step 4: Scale the design
 
 ![Data Infrastructure Platform scaled architecture](/img/case-studies/data-infrastructure-scaled.svg)
 
-**Ingestion scales by partitioning the log across many nodes, keyed by event type or producing source, so no single partition has to absorb the platform's full ~1,000,000 events/sec peak alone.** See [Sharding](/docs/patterns/storage/sharding). Because most downstream processing (both batch partitioning and stream windowing) is naturally scoped per event type or time window rather than needing a global ordering across all event types, partitioning the ingestion log this way doesn't complicate correctness the way it would for a system (like this course's Payment System case study) where a single global ordering genuinely matters.
-
-**The warehouse itself is partitioned primarily by time, since almost every query — dashboard or ad-hoc — is scoped to a bounded date range rather than the entire multi-year history.** A query asking about last week's numbers should only ever scan last week's partitions, not the ~630 TB/year of full retained history; time-based partitioning is what keeps a typical analyst query's actual scanned data small relative to the warehouse's total size, which is the main lever available for keeping ad-hoc query latency in the seconds-to-low-minutes range Step 1 targets even as total warehouse size grows year over year.
-
-**The batch and stream processing tiers scale independently of each other and of the ingestion tier, which is a deliberate consequence of decoupling them through the durable log in the first place.** A slow or temporarily backed-up batch job never blocks stream processing from continuing to update its own fast-path aggregates, and neither one ever blocks ingestion from continuing to accept new events — each tier reads from the log (or from an upstream layer) at its own pace and only [Backpressure](/docs/patterns/batch-streaming/backpressure)-signals the stage immediately upstream of it if it falls behind, never signaling all the way back to the original producing service.
-
-**Compute for the batch layer is the platform's biggest and most elastic cost driver, and it's also the easiest tier to scale cost-effectively, because it's not latency-sensitive.** A nightly batch job that takes six hours instead of four is rarely user-visible the way a slow dashboard load is, which means batch compute capacity can be scaled up and down aggressively around its scheduled run windows rather than kept provisioned at a constant, peak-sized level around the clock — a very different cost profile from the ingestion tier, which has to be sized for sustained peak acceptance rate at all times since a producer's write can never be made to wait.
-
-**Retention and deletion have to be enforced consistently across every layer a piece of data touches, not just the raw layer it landed in first.** Because the raw layer feeds cleaned tables, which feed aggregates, which feed cached dashboard results, a compliance-driven deletion of a given record (or a given user's data) has to propagate through every derived layer it influenced, not just be deleted at the source — this is a materially harder problem than deleting a single row from a single table, and it's why retention policy is treated as a first-class property of every layer's schema and job design, not an afterthought bolted onto the raw layer alone.
+* **Ingestion scales by partitioning the log across many nodes, keyed by event type or producing source**, so no single partition has to absorb the platform's full ~1,000,000 events/sec peak alone. See [Sharding](/docs/patterns/storage/sharding). Most downstream processing is naturally scoped per event type or time window rather than needing a global ordering across all event types, so partitioning the log this way doesn't complicate correctness the way it would for a system (like this course's Payment System case study) where a single global ordering genuinely matters.
+* **The warehouse is partitioned primarily by time**, since almost every query — dashboard or ad-hoc — is scoped to a bounded date range rather than the entire multi-year history. A query about last week's numbers should only scan last week's partitions, not the ~630 TB/year of full retained history — this is the main lever for keeping ad-hoc query latency in the seconds-to-low-minutes range Step 1 targets as total warehouse size grows year over year.
+* **The stream-processing tier scales independently of ingestion, a deliberate consequence of decoupling them through the durable log.** A temporarily backed-up reprocessing run never blocks live stream consumption from continuing to update current aggregates, and neither one ever blocks ingestion from accepting new events — each stage reads from the log at its own pace and only [Backpressure](/docs/patterns/batch-streaming/backpressure)-signals the stage immediately upstream of it, never signaling back to the original producing service.
+* **Reprocessing compute is the platform's most elastic cost driver, and the easiest tier to scale cost-effectively, because it's rarely latency-sensitive.** A reprocessing run that takes six hours instead of four is rarely user-visible the way a slow dashboard load is, so reprocessing capacity can be scaled up and down aggressively around actual replay windows rather than kept provisioned at a constant, peak-sized level — a very different cost profile from live stream ingestion, which has to be sized for sustained peak acceptance rate at all times since a producer's write can never be made to wait.
+* **Retention and deletion have to be enforced consistently across every layer a piece of data touches, not just the raw layer it landed in first.** Because `raw_events` feeds `conformed_events`, which feeds `business_marts`, which feeds `dashboard_cache`, a compliance-driven deletion of a given record has to propagate through every derived layer it influenced — a materially harder problem than deleting a single row from a single table, and why retention policy is a first-class property of every layer's schema and job design, not an afterthought bolted onto the raw layer alone.
 
 ## Additional talking points
 
-* **Why this design chooses Lambda's two-path shape over a Kappa-style single-stream-only pipeline.** A pure Kappa architecture — treating stream processing as the only processing model and re-deriving batch-style results by replaying the stream — is appealing for its single-codepath simplicity, but it asks the streaming layer to also be the platform's system of record for full historical correctness, including gracefully replaying years of retained history through the same continuously-updating windowed logic built for minutes-old data. This design instead keeps a dedicated batch layer specifically because most of its query volume (Step 1's ~202,000 daily analytics queries, the overwhelming majority of them dashboard refreshes and ad-hoc queries that tolerate hours of lag) is better served by a slower, simpler, more obviously-correct full recomputation than by trusting a streaming system's approximations for data that was never time-sensitive to begin with.
-* **Schema evolution as an ongoing, permanent process, not a one-time migration.** With 10,000 independently-deployed producing sources, there is no moment where "the schema" is stable — some fraction of producers are always mid-migration to a new event shape. The conformed layer's versioned-schema handling isn't a workaround for a temporary transition period; it's a permanent, load-bearing part of the design that has to keep working indefinitely, since a platform this size never actually reaches a state where every producer agrees on one schema at once.
-* **The relationship between this platform and the feature stores AI-serving systems rely on.** A [Feature Store](/docs/patterns/ai-infra/feature-store)'s offline store is frequently built directly on top of a data warehouse exactly like the one this design produces — the point-in-time-correct historical feature values a model-training pipeline needs are a specialized read pattern against the same kind of time-partitioned, event-derived tables this platform already maintains, which is why organizations that have already built solid data infrastructure typically find a feature store a comparatively thin layer to add on top, rather than a system built from scratch.
-* **Cost as a first-class design constraint, not an afterthought.** Storing years of raw and derived event data at hundreds of terabytes to low petabytes a year is expensive regardless of the underlying storage technology, and a platform at this scale typically tiers storage deliberately — recent, frequently-queried partitions on faster and more expensive storage, older partitions on slower and cheaper storage — trading a slower scan for rarely-touched historical data against meaningfully lower steady-state cost, a tradeoff that's rarely worth making for the freshest, most-queried data but pays off clearly for data past a certain age.
+* **Why Kappa's "one code path" guarantee is only as strong as the discipline behind it.** Nothing stops a team from hand-patching a live stream job's logic without ever running the equivalent reprocess, which reintroduces Lambda-style drift by a different mechanism — Kappa removes the *structural* cause of divergence (two codebases) but doesn't remove the *operational* cause (an unreplayed hotfix), which is why this design treats "every logic change ships as a change to `transform_fn`, verified by a reprocess run over a recent window before being trusted" as a process requirement, not just an architectural one.
+* **Schema evolution as an ongoing, permanent process, not a one-time migration.** With 10,000 independently-deployed producing sources, there is no moment where "the schema" is stable — some fraction of producers are always mid-migration to a new event shape. The conformed layer's versioned-schema handling is a permanent, load-bearing part of the design, since a platform this size never actually reaches a state where every producer agrees on one schema at once.
+* **The relationship between this platform and the feature stores AI-serving systems rely on.** A [Feature Store](/docs/patterns/ai-infra/feature-store)'s offline store is frequently built directly on top of a data warehouse exactly like the one this design produces — the point-in-time-correct historical feature values a model-training pipeline needs are a specialized read pattern against the same kind of time-partitioned, event-derived tables this platform already maintains.
+* **Cost as a first-class design constraint, not an afterthought.** Storing years of raw and derived event data at hundreds of terabytes to low petabytes a year is expensive regardless of underlying storage technology, and a platform at this scale typically tiers storage deliberately — recent, frequently-queried partitions on faster and more expensive storage, older partitions on slower and cheaper storage — a tradeoff that pays off clearly for data past a certain age even though it's rarely worth making for the freshest, most-queried data.
+
+## Source(s) and further reading
+
+* [Lambda architecture — Wikipedia](https://en.wikipedia.org/wiki/Lambda_architecture) — the two-path (batch + speed layer) shape, including its well-documented criticism around maintaining duplicate logic
+* [Kappa Architecture — Milinda Pathirage](https://milinda.pathirage.org/kappa-architecture.com/) — the original write-up proposing stream-only reprocessing-from-log as Lambda's alternative
+* [Apache Kafka: Durability and semantics](https://kafka.apache.org/documentation/#semantics) — a real, documented version of the append-ack-then-decouple ingestion contract this design's log tier relies on
+* [MapReduce](/docs/patterns/batch-streaming/mapreduce) — the batch-aggregation shape referenced under Lambda's batch layer
+* [Lambda & Kappa Architecture](/docs/patterns/batch-streaming/lambda-kappa-architecture) — this course's own pattern page naming both shapes directly
