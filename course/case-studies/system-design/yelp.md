@@ -85,6 +85,72 @@ CREATE INDEX idx_businesses_geohash_category ON businesses (geohash, category);
 
 A geohash encodes a lat/lng pair into a base-32 string where each additional character narrows the cell to a smaller region — a 7-character geohash covers roughly a 150m x 150m cell, a reasonable precision for "nearby" urban search. Businesses sharing a geohash prefix are geographically close, so `idx_businesses_geohash` turns "what's near this point" into an equality/prefix lookup instead of a full-table distance scan. Google's [S2](https://s2geometry.io/) and Uber's [H3](https://h3geo.org/) are two real, widely-used alternatives to geohash — both cover the sphere with cells too, with different trade-offs around cell shape uniformity, but the indexing idea (map 2D coordinates to a 1D sortable/indexable key) is the same across all three.
 
+The encoding itself works by repeatedly bisecting the lat/lng ranges and recording which half each coordinate fell in — 5 bits per output character, alternating between longitude and latitude bisections:
+
+```python
+_BASE32 = "0123456789bcdefghjkmnpqrstuvwxyz"
+
+def geohash_encode(lat, lng, precision):
+    lat_range, lng_range = [-90.0, 90.0], [-180.0, 180.0]
+    out, bit, ch, even_bit = [], 0, 0, True
+    while len(out) < precision:
+        if even_bit:
+            mid = (lng_range[0] + lng_range[1]) / 2
+            if lng >= mid:
+                ch |= (1 << (4 - bit)); lng_range[0] = mid
+            else:
+                lng_range[1] = mid
+        else:
+            mid = (lat_range[0] + lat_range[1]) / 2
+            if lat >= mid:
+                ch |= (1 << (4 - bit)); lat_range[0] = mid
+            else:
+                lat_range[1] = mid
+        even_bit = not even_bit
+        if bit < 4:
+            bit += 1
+        else:
+            out.append(_BASE32[ch]); bit, ch = 0, 0
+    return "".join(out)
+
+def geohash_decode_bbox(geohash):
+    """Reverse the bisection to recover the lat/lng box this cell covers."""
+    lat_range, lng_range = [-90.0, 90.0], [-180.0, 180.0]
+    even_bit = True
+    for c in geohash:
+        for n in range(4, -1, -1):
+            bit = (_BASE32.index(c) >> n) & 1
+            if even_bit:
+                mid = (lng_range[0] + lng_range[1]) / 2
+                lng_range[0 if bit else 1] = mid
+            else:
+                mid = (lat_range[0] + lat_range[1]) / 2
+                lat_range[0 if bit else 1] = mid
+            even_bit = not even_bit
+    return lat_range, lng_range
+
+def geohash_neighbors(cell):
+    """The actual fix for the boundary problem: step just past each edge
+    and corner of this cell's bounding box and re-encode at the same
+    precision -- gives the 8 real adjacent cells regardless of which
+    direction a nearby point crossed the boundary in."""
+    lat_range, lng_range = geohash_decode_bbox(cell)
+    lat_span, lng_span = lat_range[1] - lat_range[0], lng_range[1] - lng_range[0]
+    center_lat = (lat_range[0] + lat_range[1]) / 2
+    center_lng = (lng_range[0] + lng_range[1]) / 2
+    neighbors = []
+    for d_lat in (-1, 0, 1):
+        for d_lng in (-1, 0, 1):
+            if d_lat == 0 and d_lng == 0:
+                continue  # skip the center cell -- already queried separately
+            probe_lat = max(-90.0, min(90.0, center_lat + d_lat * lat_span))
+            probe_lng = ((center_lng + d_lng * lng_span + 180) % 360) - 180
+            neighbors.append(geohash_encode(probe_lat, probe_lng, len(cell)))
+    return neighbors
+```
+
+With the encoding and its inverse in place, `nearby_search` can actually query the 9-cell neighborhood the gotcha below requires, not just describe it:
+
 ```python
 def nearby_search(lat, lng, precision, index, radius_km, category=None):
     center_cell = geohash_encode(lat, lng, precision)
@@ -103,12 +169,24 @@ def nearby_search(lat, lng, precision, index, radius_km, category=None):
             results.append((biz, d))
 
     return sorted(results, key=lambda r: r[1])
+
+def haversine_distance(lat1, lng1, lat2, lng2):
+    """Great-circle distance in km -- the 9-cell candidate set from geohash
+    is approximate by construction, so every candidate still needs this
+    exact check against the requested radius before being returned."""
+    import math
+    r = 6371.0  # earth's mean radius, km
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    d_phi = math.radians(lat2 - lat1)
+    d_lambda = math.radians(lng2 - lng1)
+    a = math.sin(d_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2) ** 2
+    return 2 * r * math.asin(math.sqrt(a))
 ```
 
 **Data structures:**
 * `spatial_index`: `geohash_cell -> [business_id, business_id, ...]`, kept largely in memory across the search fleet since it's queried far more than it's updated
 * `businesses` table: as in the DDL above, `business_id` primary, `geohash` indexed for cell lookups
-* `geohash_neighbors(cell)`: a pure function returning the 8 adjacent cells for a given geohash string — no storage, computed per query
+* `geohash_neighbors(cell)`: the 8 adjacent cells for a given geohash string, computed above by stepping past each edge/corner of the cell's bounding box and re-encoding — no storage, computed per query
 
 **Trade-offs:**
 * **The gotcha — this is "the boundary problem," and it's the specific trap a naive geohash implementation falls into:** two businesses can be meters apart in the real world yet fall into different geohash cells if they're near a cell edge — geohash cells are a rigid grid overlaid on the earth, and physical proximity doesn't respect grid lines. A query that looks up only the searcher's own cell will silently miss real nearby results sitting just across a boundary, and worse, this failure is invisible in testing unless a test case happens to place a point near an edge. The fix, shown in `nearby_search` above, is to always query the current cell **plus its 8 neighboring cells** (`geohash_neighbors`) — 9 cells total — never just one. This is the single most commonly cited gotcha in real geospatial-indexing write-ups for exactly this reason: it's easy to implement a version that passes casual testing and still returns wrong results in production.
