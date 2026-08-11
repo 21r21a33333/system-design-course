@@ -604,9 +604,37 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/consistency/choreography",
+    "title": "Choreography",
+    "path": "/docs/patterns/consistency/choreography",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/consistency/compensating-transaction",
+    "title": "Compensating Transaction",
+    "path": "/docs/patterns/consistency/compensating-transaction",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/consistency/paxos",
+    "title": "Paxos",
+    "path": "/docs/patterns/consistency/paxos",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/consistency/quorum",
     "title": "Quorum",
     "path": "/docs/patterns/consistency/quorum",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/consistency/raft",
+    "title": "Raft",
+    "path": "/docs/patterns/consistency/raft",
     "category": "design-patterns",
     "source": "supplementary"
   },
