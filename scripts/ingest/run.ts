@@ -101,6 +101,24 @@ function main(): void {
     source: 'supplementary' as const,
   }));
   manifest.push(...patternEntries);
+
+  // Original (non-primer) full system-design case studies live alongside the
+  // 8 primer-sourced ones in the same directory. copySystemDesignCaseStudies
+  // only ever (re)writes the primer's 8 known filenames, so these are safe
+  // from being overwritten by a future `npm run ingest` re-run — but they
+  // still need their own manifest scan since buildManifest only knows about
+  // SYSTEM_DESIGN_CASE_STUDIES, the primer's hardcoded list.
+  const primerCaseStudySlugs = new Set(SYSTEM_DESIGN_CASE_STUDIES.map((s) => `case-studies/system-design/${s.slug}`));
+  const supplementaryCaseStudyEntries = scanAuthoredMarkdown(path.join(REPO_ROOT, 'course'), 'case-studies/system-design')
+    .filter((p) => !primerCaseStudySlugs.has(p.id))
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      path: `/docs/${p.id}`,
+      category: 'system-design-case-studies' as const,
+      source: 'supplementary' as const,
+    }));
+  manifest.push(...supplementaryCaseStudyEntries);
   // course/intro.md is generated separately above (not part of CONCEPT_SECTIONS) but
   // still gets a Mark-as-complete toggle via the Task 8 DocItem swizzle, so it needs
   // a manifest entry to be counted toward dashboard progress and category lists.
@@ -126,6 +144,13 @@ function main(): void {
   if (patternEntries.length !== expectedPatternCount) {
     throw new Error(
       `Supplementary pattern count mismatch: expected ${expectedPatternCount}, got ${patternEntries.length}`,
+    );
+  }
+
+  const expectedSupplementaryCaseStudyCount = 0;
+  if (supplementaryCaseStudyEntries.length !== expectedSupplementaryCaseStudyCount) {
+    throw new Error(
+      `Supplementary case study count mismatch: expected ${expectedSupplementaryCaseStudyCount}, got ${supplementaryCaseStudyEntries.length}`,
     );
   }
 
