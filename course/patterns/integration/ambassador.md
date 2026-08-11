@@ -277,4 +277,4 @@ provider-agnostic.
 
 - [Ambassador pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/ambassador)
 - [The Distributed System ToolKit: Patterns for Composite Containers — Kubernetes blog](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/) (introduces the ambassador container pattern)
-- [Envoy proxy — architecture overview](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/intro/what_is_envoy) (a proxy commonly deployed in the ambassador/sidecar role)
+- [Envoy proxy — What is Envoy](https://www.envoyproxy.io/docs/envoy/latest/intro/what_is_envoy) (a proxy commonly deployed in the ambassador/sidecar role)
