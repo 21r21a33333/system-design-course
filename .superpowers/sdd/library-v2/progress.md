@@ -785,3 +785,95 @@ and confirmed all 4 occurrences are plain-text bullets, never inside
 markdown link syntax. `npm run typecheck` and `npm run build` both
 clean, zero broken links. Committed as a single `feat(patterns):`
 commit (a875cb5).
+
+## Phase 5.3: Policy retrofit + cross-links — Antipatterns (10 pages)
+
+Retrofitted the 10 Antipatterns pages under the relaxed real-vendor-
+naming policy: `course/patterns/antipatterns/{busy-database,
+busy-front-end,chatty-io,extraneous-fetching,improper-instantiation,
+monolithic-persistence,no-caching,noisy-neighbor,retry-storm,
+synchronous-io}.md`.
+
+Real-tech grounding added (one concrete, verified-accurate mention per
+file, additive only): busy-database — PostgreSQL and SQL Server's
+trigger/stored-procedure dispatch capability as the mechanism that
+makes a workflow-engine-in-the-database possible; busy-front-end —
+Ruby on Rails' Active Job + Sidekiq and Laravel's queue system as
+mainstream frameworks that make background-job offloading a first-
+class convention; chatty-io — Hibernate's `JOIN FETCH` and Django's
+`select_related`/`prefetch_related` as ORM opt-outs from lazy N+1
+loading, plus GraphQL's single-request graph-resolution model as the
+network-level antidote; extraneous-fetching — the relational projection
+operation and general query-review guidance against unqualified
+`SELECT *` (kept intentionally generic after an initial PostgreSQL/
+MySQL-specific doc-page claim didn't hold up under direct content
+verification — see below); improper-instantiation — .NET's `HttpClient`
+socket-exhaustion case, the field's canonical documented example of
+this exact antipattern, grounded in Microsoft's own HttpClient
+guidelines page; monolithic-persistence — "polyglot persistence" named
+directly, with Elasticsearch/OpenSearch + Redis alongside a relational
+store as the concrete mixed-store shape; no-caching — Redis and
+Memcached named as the products that exist to be the missing layer,
+tied to the thundering-herd failure mode it prevents; noisy-neighbor —
+AWS's burstable EC2 CPU-credit mechanism and provisioned-IOPS EBS as a
+documented, production per-tenant isolation mechanism; retry-storm —
+kept to a generic description of the synchronized-retry/oscillating-
+recovery dynamic (no specific named historical outage was cited, per
+the task's own instruction, since none could be confirmed with
+sufficient confidence) but grounded the *mechanism* by pointing at the
+already-cited AWS backoff-with-jitter guidance as the documented source
+of the jitter countermeasure; synchronous-io — Node.js's own
+documentation of its single-threaded, non-blocking event-loop rationale.
+
+One claim was caught and corrected during verification: an initial
+extraneous-fetching.md draft asserted that PostgreSQL's "Don't Do This"
+wiki and MySQL's optimization docs explicitly call out `SELECT *`
+guidance by name — direct content-fetch of both pages showed neither
+has a dedicated `SELECT *` section (Postgres's only incidental
+mentions are inside unrelated `BETWEEN`/`NOT IN` examples; MySQL's
+optimization page doesn't mention it at all). Rewrote to a claim fully
+supported by what was actually verified (the relational projection
+operation + general practice) rather than attributing specific wording
+to specific vendor docs that don't actually say it.
+
+Cross-reference links added to each page's Further reading, all URLs
+curl-verified live (200) both when first found and again in a final
+recheck pass before finishing: roadmap.sh/system-design added once per
+file (confirmed all 10 antipattern names — busy database, busy front
+end, chatty I/O, extraneous fetching, improper instantiation,
+monolithic persistence, no caching, noisy neighbor, retry storm,
+synchronous I/O — appear as named topics on the live page via direct
+curl+grep, matching the task's prior research); no DesignGurus or
+Educative links added to any of the 10 files, per the task's own
+instruction that neither source's public module list covers
+antipatterns as a topic — confirmed no genuine match exists rather than
+forcing one. Azure Architecture Center antipatterns-catalog links were
+already present on all 10 pages pre-retrofit — checked first via grep,
+not duplicated, each re-verified live. Additional real-tech doc links
+added alongside roadmap.sh where the grounding claim warranted a
+citable source: Rails Active Job Guides (busy-front-end), GraphQL
+official site (chatty-io), Wikipedia's Projection (relational algebra)
+(extraneous-fetching), .NET HttpClient guidelines (improper-
+instantiation), Thundering herd problem — Wikipedia (no-caching, in
+addition to the pre-existing chatty-io citation), AWS burstable-
+performance-instances docs (noisy-neighbor), Node.js blocking-vs-non-
+blocking docs (synchronous-io). monolithic-persistence and retry-storm
+got roadmap.sh only, since their grounding claims were already
+supported by existing citations (Wikipedia's Polyglot persistence page;
+the pre-existing AWS backoff-with-jitter link) with nothing further to
+add.
+
+Read all 10 files in full before editing and again in full after, to
+confirm additions read naturally with no duplication. Confirmed via
+`git diff` that all 10 files' diffs are purely additive (102
+insertions, 9 deletions — all 9 deletions are line-rewrap artifacts
+from paragraphs that were extended with more sentences, same content
+preserved, nothing removed or weakened; verified by inspecting every
+removed line directly). Grepped all 10 files for "designgurus" and
+"educative" (case-insensitive) — zero hits, as required. `npm run
+typecheck` and `npm run build` both clean, zero broken links. All 29
+external URLs across the 10 files re-verified live via curl in a final
+pass (two Wikipedia URLs returned transient 429 rate-limit responses
+on the first pass, confirmed 200 on retry with a short delay — not
+broken links). Committed as a single `feat(patterns):` commit
+(793f319).
