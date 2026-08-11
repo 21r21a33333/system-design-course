@@ -442,3 +442,23 @@ links resolve/live. Security logic (federated-identity token validation
 incl alg-confusion warning; valet-key scope/expiry binding) verified
 correct. No stray artifacts under api-edge/static. Build/typecheck clean,
 manifest 121. 8 of 14 groups complete (80 pages).
+
+### Phase 3 (relaunched) — Group: Distributed Consistency (9 pages) — COMPLETE
+Commits: e72a7d6 (all 9) + review-fix. 4 depth-ups (paxos, raft,
+choreography, compensating-transaction) + 5 v3 light-enhanced (leader-
+election, quorum, saga +choreo-vs-orchestration table, two-phase-commit
++2PC-vs-3PC-vs-consensus, vector-clocks +vs-lamport-vs-version-vectors).
+2 new consensus SVGs (paxos-phases, raft-log).
+
+Independent review (expert consensus scrutiny): ACCURACY PASS — Paxos
+Phase-2 adoption rule, majority-overlap safety, dueling-proposer
+livelock; Raft previous-term commit rule (the most-mis-stated fact)
+stated CORRECTLY, plus election restriction + Log Matching; consensus-
+vs-2PC direction correct (consensus tolerates minority via majority
+quorum; 2PC needs unanimous + blocks on coordinator). Re-ran all 4
+invariants (paxos chosen-value-immutable, raft stale-log-loses-vote +
+majority-commit, choreography compensation-on-failure, compensating-txn
+reverse-order-only-completed) — all hold. 5 light-enhances additive-only.
+17 external URLs 200. Fixed 1 malformed pre-existing SVG entity (&le; ->
+&#8804; in vector-clocks.svg). Build/typecheck clean, manifest 121. 9 of
+14 groups complete (89 pages).
