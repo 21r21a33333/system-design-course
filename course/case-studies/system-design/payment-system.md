@@ -59,57 +59,239 @@ The structural bet this design makes, more explicitly than almost any other syst
 
 ## Step 3: Design core components
 
+### Use case: Ledger records every payment as balanced double-entry rows
+
+Before covering how a charge gets processed, it's worth covering how a payment's *money movement* is actually represented in storage, because this is a distinct concern from making a request safe to retry (covered next) — real payment systems treat it as its own named schema pattern.
+
+**Core spec: schema + the double-entry invariant**
+
+```sql
+CREATE TABLE accounts (
+    account_id    BIGINT       PRIMARY KEY,
+    account_type  VARCHAR(32)  NOT NULL,   -- e.g. 'customer', 'merchant', 'platform_fees'
+    currency      CHAR(3)      NOT NULL
+);
+
+CREATE TABLE ledger_entries (
+    entry_id      BIGINT       PRIMARY KEY,
+    payment_id    BIGINT       NOT NULL,   -- groups the entries belonging to one payment
+    account_id    BIGINT       NOT NULL REFERENCES accounts(account_id),
+    entry_type    ENUM('debit', 'credit') NOT NULL,
+    amount_cents  BIGINT       NOT NULL,   -- always positive; sign comes from entry_type
+    currency      CHAR(3)      NOT NULL,
+    created_at    TIMESTAMP    NOT NULL,
+    INDEX idx_payment (payment_id),        -- "show me every entry for this payment"
+    INDEX idx_account_time (account_id, created_at)  -- "show me this account's history"
+);
+```
+
+* Every payment writes **at least two rows**, never one: a `debit` against the customer's account and a matching `credit` against the merchant's (minus a platform-fee split, which is itself another balanced debit/credit pair against a `platform_fees` account) — this is [double-entry bookkeeping](https://en.wikipedia.org/wiki/Double-entry_bookkeeping), and the schema's entire job is to make it structurally impossible to record money leaving one place without recording where it went.
+* `idx_payment` supports the single most common query on this table — "show every ledger row for payment X" (used by the status-query and refund use cases below) — and `idx_account_time` supports the second most common one — "show this account's transaction history in order," the same access-time-locality reasoning the TinyURL and WhatsApp case studies apply to their own hot indexes.
+* A payment's "current state" is never stored as a single mutable balance field — it's *derived* by summing `ledger_entries` for that `account_id`, the same append-only-log-is-authoritative shape this course's Google Docs case study uses for edit history.
+
+**Core algorithm: the reconciliation invariant check**
+
+```python
+def check_ledger_balanced(entries):
+    """The double-entry invariant: for any set of ledger entries (a
+    single payment's entries, or the whole ledger), total debits must
+    equal total credits. A real reconciliation job runs this against
+    the full ledger periodically; here it's shown against one
+    payment's entries as the minimal case that demonstrates the check.
+
+    Returns (is_balanced, total_debits, total_credits). Raises nothing
+    on imbalance -- the caller decides how to react (page an operator,
+    halt further writes against the account, etc.), which is why this
+    function reports rather than throws.
+    """
+    total_debits = sum(e["amount_cents"] for e in entries if e["entry_type"] == "debit")
+    total_credits = sum(e["amount_cents"] for e in entries if e["entry_type"] == "credit")
+    return total_debits == total_credits, total_debits, total_credits
+
+
+def record_payment(ledger, payment_id, customer_account, merchant_account, amount_cents, now):
+    """Writes a balanced pair of ledger entries for one payment. This
+    is the only way money moves in this design -- there is no single-
+    row "set balance = X" write path.
+    """
+    entries = [
+        {"entry_id": ledger.next_id(), "payment_id": payment_id,
+         "account_id": customer_account, "entry_type": "debit",
+         "amount_cents": amount_cents, "created_at": now},
+        {"entry_id": ledger.next_id(), "payment_id": payment_id,
+         "account_id": merchant_account, "entry_type": "credit",
+         "amount_cents": amount_cents, "created_at": now},
+    ]
+    balanced, debits, credits = check_ledger_balanced(entries)
+    if not balanced:
+        # In real code this would abort the transaction rather than write
+        # a known-broken pair -- included here to make the invariant load-bearing,
+        # not just decorative.
+        raise ValueError(f"refusing to write unbalanced entries: debits={debits} credits={credits}")
+    ledger.write_all(entries)
+    return entries
+```
+
+**Data structures:** `accounts` and `ledger_entries` above are the durable core of this use case.
+
+**Trade-offs:**
+* **The gotcha:** it's tempting to model a payment as a single row with a `status` column and an `amount`, and treat "where did the money go" as implicit — but that throws away the one property that makes a financial ledger auditable: that money is never created or destroyed, only moved between named accounts, and that this is checkable mechanically (`check_ledger_balanced`), not just asserted in a design doc. A broken invariant (say, a bug that writes a debit without its matching credit) is exactly the kind of defect a periodic reconciliation job running `check_ledger_balanced` across the full ledger is built to catch — see the reconciliation talking point below for how this runs continuously, not just at write time.
+* This is a genuinely separate concern from *idempotency* (covered next): double-entry accounting is about representing money movement so it's structurally auditable and mechanically checkable; idempotency is about making sure a single logical charge is never accidentally executed twice. A system needs both — a payment recorded exactly once, and recorded as a balanced pair of entries every time.
+
 ### Use case: Merchant submits a payment request, exactly once
 
 The core problem here is that "exactly once" isn't a property the network gives you for free — a request can time out on the merchant's side after the payment service already successfully charged the gateway, and the merchant, seeing no response, has no way to know whether to retry or not. If retrying safely isn't built in, the merchant is forced to choose between "maybe double-charge the customer" and "maybe never actually charge them," and both are unacceptable outcomes for a payment system.
 
-The fix is [Idempotency](/docs/patterns/reliability/idempotency), applied as the first thing that happens on every request, not as an afterthought: the merchant generates a unique idempotency key for each logical payment attempt (not per HTTP request — the *same* key is reused across retries of what the merchant considers the same logical charge) and includes it with the request. The payment service's very first action is a lookup against the durable idempotency store: `has this key been recorded before?`
+**Core spec: idempotency-key protocol**
+
+The fix is [Idempotency](/docs/patterns/reliability/idempotency), applied as the first thing that happens on every request, not as an afterthought: the merchant generates a unique idempotency key for each logical payment attempt (not per HTTP request — the *same* key is reused across retries of what the merchant considers the same logical charge) and includes it with the request, the same mechanism [Stripe's idempotent-requests API](https://stripe.com/docs/idempotency) uses in production. The payment service's very first action is a lookup against the durable idempotency store: `has this key been recorded before?`
 
 * If no: the payment service atomically records the key as "in progress" (this atomicity matters — two concurrent requests with the same brand-new key must not both proceed to charge the gateway; the store needs to guarantee only one of them wins the insert, with the other blocking or reading the winner's eventual result), then proceeds to call the gateway
 * If yes, and the prior attempt reached a terminal state (succeeded/failed): return the previously recorded outcome immediately, without calling the gateway again — this is what makes retrying always safe from the merchant's point of view, no matter how many times a request is resent
 * If yes, but the prior attempt is still "in progress" (a genuinely concurrent retry racing the original, still-inflight request): the safest response is to have the caller wait or poll, since concluding failure and letting a second gateway call proceed reintroduces exactly the double-charge risk idempotency exists to prevent
 
-This is the single most load-bearing mechanism in the whole design, and it's why Step 1 states correctness as more important than raw throughput: every other component in this system exists to support this guarantee reliably, not to make it faster at the expense of weakening it.
+**Data structures:** `idempotency_keys` — `idempotency_key` (PK), `payment_id`, `status` (`in_progress`/`succeeded`/`failed`), `response_snapshot` (the exact response body to replay on a retry), `created_at`.
+
+**Trade-offs:**
+* This is the single most load-bearing mechanism in the whole design, and it's why Step 1 states correctness as more important than raw throughput: every other component in this system exists to support this guarantee reliably, not to make it faster at the expense of weakening it.
+* This is distinct from the double-entry ledger above: idempotency guarantees a *single logical charge* is only ever processed once; the ledger guarantees that *whenever* money moves, it's recorded as a structurally balanced, auditable pair of entries. Neither substitutes for the other.
+
+**REST API:**
+
+```
+$ curl -X POST https://payments.example/api/v1/charges \
+    -H "Idempotency-Key: 8f3a1c90-charge-order-44210" \
+    -d '{"amount_cents": 4999, "currency": "USD", "customer_account": "cus_882", "merchant_account": "mer_101"}'
+```
+
+Response:
+
+```json
+{
+  "payment_id": "pay_77213",
+  "status": "succeeded",
+  "amount_cents": 4999,
+  "currency": "USD",
+  "gateway_reference_id": "ch_1AbCdEfGhIjK",
+  "created_at": "2026-08-11T14:02:31Z"
+}
+```
 
 ### Use case: Service coordinates with an external payment gateway/processor
 
 The call to the external gateway is the one step in this workflow this system doesn't fully control — it can be slow, it can time out, and worst of all, a timeout is genuinely ambiguous: the gateway may have processed the charge successfully and the *response* was lost, or the charge may never have reached the gateway at all, and from the payment service's side these look identical. This ambiguity is exactly why the ledger write recording "processing" happens *before* the gateway call, not after: if the payment service crashes or the gateway call times out with no clear answer, there's a durable, already-committed record that a charge was attempted against this idempotency key, and a recovery process can follow up — querying the gateway for the actual outcome of that specific attempt (most gateways support exactly this kind of reconciliation query, keyed by a reference ID the payment service generates and passes along) rather than blindly retrying and risking a duplicate charge.
 
-This reconciliation step is a small, deliberate exception to "always trust the idempotency store": on ambiguous gateway timeout, the system's next move is to *ask the gateway what actually happened* before deciding the outcome to record, rather than guessing. Only once that's resolved does the ledger transition to a terminal status and the idempotency store gets the outcome that future retries will be served.
+**Data structures:** reuses `idempotency_keys.status` (an intermediate `ambiguous_pending_reconciliation` status, distinct from `in_progress`, is worth adding specifically for this case, so a background reconciler can find and resolve these without conflating them with genuinely-still-inflight requests).
+
+**Trade-offs:**
+* This reconciliation step is a small, deliberate exception to "always trust the idempotency store": on ambiguous gateway timeout, the system's next move is to *ask the gateway what actually happened* before deciding the outcome to record, rather than guessing. Only once that's resolved does the ledger transition to a terminal status and the idempotency store gets the outcome that future retries will be served.
 
 ### Use case: Multi-step payment workflow stays consistent (reserve, charge, record)
 
 A payment often isn't a single atomic action even internally — a fuller workflow might validate the order, reserve the amount, call the gateway, and then update order status in a separate order-management system entirely. These steps can span services with their own databases, and holding a distributed lock across all of them for the duration of an external gateway call (which, per Step 1, can take seconds) is exactly the scenario [Two-Phase Commit](/docs/patterns/consistency/two-phase-commit) handles poorly — its blocking coordinator model assumes fast, tightly-coupled participants, not a slow external dependency this system doesn't control the latency of.
 
+**Core spec: saga state machine (reserve → charge → confirm)**
+
+```
+                    ┌───────────┐
+   order validated  │ RESERVED  │  <- funds/order amount held locally,
+   ─────────────────▶           │     no external gateway call yet
+                    └─────┬─────┘
+                          │ gateway charge attempted
+                          ▼
+                    ┌───────────┐
+                    │ CHARGING  │  <- idempotency-guarded gateway call
+                    │           │     in flight (previous use case)
+                    └─────┬─────┘
+                    success│  │failure / ambiguous-timeout unresolved
+                          ▼  ▼
+              ┌───────────┐  ┌────────────────────┐
+              │ CONFIRMED │  │ COMPENSATING        │
+              │ (order    │  │ release reservation │
+              │  marked   │  │ (see below for why  │
+              │  paid)    │  │ a successful charge │
+              └───────────┘  │ has NO compensation)│
+                              └──────────┬──────────┘
+                                         ▼
+                                   ┌───────────┐
+                                   │ CANCELLED │
+                                   └───────────┘
+
+Named rollback branches:
+  * RESERVED -> gateway charge never attempted (validation failed
+    after reservation) -> compensate: release reservation -> CANCELLED
+  * CHARGING -> gateway declines the charge -> compensate: release
+    reservation -> CANCELLED (no money moved, so no refund needed)
+  * CHARGING -> gateway call succeeds but a LATER step fails (e.g.
+    order-management write fails) -> the charge itself is NOT
+    compensated automatically; see the refund use case below
+```
+
 Instead, this workflow is a natural fit for the [Saga](/docs/patterns/consistency/saga) pattern: each step (reserve order amount, charge via gateway, mark order paid) is its own local transaction, committed independently, with an explicit compensating action defined for each — if the gateway charge fails after an order amount was reserved, the compensation releases that reservation, rather than leaving it held against a payment that never completed. This mirrors the checkout example [Saga](/docs/patterns/consistency/saga) itself uses, and the reason it fits payments specifically is the same reason it doesn't fit here as cleanly for the *idempotency* problem: a saga's compensations handle "how do we undo a partially-completed multi-step workflow," which is a different question from "how do we guarantee a single step, the gateway charge, only ever happens once" — idempotency and sagas solve adjacent but distinct problems, and this design needs both: idempotency to make the charge step itself safe to retry, and a saga to keep the surrounding multi-step workflow consistent when some later step fails after the charge already succeeded.
 
-One step in this saga deserves special attention: **a successful gateway charge has no clean compensating action** in the way "release a reservation" does — refunding money is a real, externally visible, and sometimes non-instant action, not a silent internal rollback, and it may fail or be delayed itself. This is precisely the "no meaningful compensating action" edge case the saga pattern itself calls out, and it's why a completed charge that later needs to be undone (a downstream step failed, an order was fraudulent) is modeled as its own explicit, auditable **refund** operation — described next — rather than an automatic, invisible saga compensation.
+**Data structures:** `saga_state` — `payment_id`, `current_stage` (`reserved`/`charging`/`confirmed`/`compensating`/`cancelled`), `updated_at` — a small state-machine record separate from both the ledger and the idempotency store, since it tracks workflow progress, not money movement or retry-safety.
+
+**Trade-offs:**
+* One step in this saga deserves special attention: **a successful gateway charge has no clean compensating action** in the way "release a reservation" does — refunding money is a real, externally visible, and sometimes non-instant action, not a silent internal rollback, and it may fail or be delayed itself. This is precisely the "no meaningful compensating action" edge case the saga pattern itself calls out, and it's why a completed charge that later needs to be undone (a downstream step failed, an order was fraudulent) is modeled as its own explicit, auditable **refund** operation — described next — rather than an automatic, invisible saga compensation.
 
 ### Use case: Merchant queries payment status
 
-Because every payment's state transitions are written durably to the ledger before being acted on or reported (per the use cases above), answering "what's the status of payment X" is a simple, strongly-consistent read against the ledger keyed by `payment_id` or `idempotency_key` — there's no separate status-tracking subsystem to keep in sync, since the ledger *is* the source of truth for status by construction. This is worth contrasting with most other systems in this course, where the read path is heavily cached and only eventually consistent with the write path — here, a merchant checking payment status needs the actual current truth, not a recent approximation, since a stale "processing" status when the payment actually already failed could lead a merchant to ship an order that was never paid for.
+Because every payment's state transitions are written durably to the ledger before being acted on or reported (per the use cases above), answering "what's the status of payment X" is a simple, strongly-consistent read against the ledger keyed by `payment_id` or `idempotency_key` — there's no separate status-tracking subsystem to keep in sync, since the ledger *is* the source of truth for status by construction.
+
+**REST API:**
+
+```
+$ curl https://payments.example/api/v1/charges/pay_77213 \
+    -H "Authorization: Bearer <token>"
+```
+
+Response:
+
+```json
+{
+  "payment_id": "pay_77213",
+  "status": "succeeded",
+  "ledger_entries": [
+    {"account_id": "cus_882", "entry_type": "debit", "amount_cents": 4999},
+    {"account_id": "mer_101", "entry_type": "credit", "amount_cents": 4999}
+  ],
+  "updated_at": "2026-08-11T14:02:33Z"
+}
+```
+
+**Trade-offs:**
+* This is worth contrasting with most other systems in this course, where the read path is heavily cached and only eventually consistent with the write path — here, a merchant checking payment status needs the actual current truth, not a recent approximation, since a stale "processing" status when the payment actually already failed could lead a merchant to ship an order that was never paid for.
 
 ### Use case: Service supports refunds against a completed payment
 
-A refund is deliberately modeled as its own new, explicit, idempotent operation — not a mutation of the original payment record — for the same durability and auditability reasons the ledger never overwrites records in place. A refund request carries its own idempotency key (so a retried refund request doesn't double-refund the customer, exactly mirroring the original charge's idempotency handling), references the original `payment_id` it's refunding, and is recorded as a new ledger entry linked to that original payment, so the ledger's history reads as "charged, then refunded" rather than losing the fact that a charge ever happened. This also naturally supports partial refunds and multiple refund attempts against the same payment without ambiguity about what the "current" state of a payment even means — the ledger is a sequence of linked, immutable events, and current status is whatever's derived from reading that sequence, similar in spirit to how this course's Google Docs case study treats an edit history log, not the latest snapshot alone, as the authoritative record.
+A refund is deliberately modeled as its own new, explicit, idempotent operation — not a mutation of the original payment record — for the same durability and auditability reasons the ledger never overwrites records in place. A refund request carries its own idempotency key (so a retried refund request doesn't double-refund the customer, exactly mirroring the original charge's idempotency handling), references the original `payment_id` it's refunding, and is recorded as a new pair of ledger entries (a debit against the merchant's account, a credit back to the customer's — the exact reverse of the original charge's pair) linked to that original payment.
+
+**Data structures:** a refund reuses `ledger_entries` (a new `payment_id`-linked pair, tagged with a `refund_of_payment_id` reference column) and `idempotency_keys` — no separate refund table, since a refund is structurally just another balanced ledger write.
+
+**Trade-offs:**
+* This also naturally supports partial refunds and multiple refund attempts against the same payment without ambiguity about what the "current" state of a payment even means — the ledger is a sequence of linked, immutable events, and current status is whatever's derived from reading that sequence, similar in spirit to how this course's Google Docs case study treats an edit history log, not the latest snapshot alone, as the authoritative record.
 
 ## Step 4: Scale the design
 
 ![Payment System scaled architecture](/img/case-studies/payment-system-scaled.svg)
 
-**The idempotency store needs strong consistency, not just high availability, because its entire job is preventing a race between two concurrent attempts at the same logical charge.** A key-insertion check that can return "not found" to two simultaneous requests for the same new key, letting both proceed to charge the gateway, defeats the mechanism entirely — so this component is deliberately built for correctness under concurrent writes to the same key (a conditional, atomic insert) rather than optimized purely for horizontal read throughput the way this course's more read-heavy case studies' hot paths are. Given the comparatively low request volume Step 1 calculates (under a thousand/sec even at peak), this is a reasonable place to spend consistency budget that a much higher-throughput system couldn't as easily afford.
-
-**The ledger scales by sharding on `payment_id` (or merchant_id), since almost every read and write is scoped to a single payment or a single merchant's payments, not queried across the whole dataset** — see [Sharding](/docs/patterns/storage/sharding). Because the ledger is append-heavy with no in-place mutation, this avoids the write-contention concerns a frequently-updated-in-place data model would introduce under sharding.
-
-**The gateway integration is the natural place for [Circuit Breaker](/docs/patterns/reliability/circuit-breaker) and [Retry with Backoff](/docs/patterns/reliability/retry-with-backoff), applied carefully.** A struggling or unresponsive gateway shouldn't be hammered with retries that make its own recovery harder, and a circuit breaker that trips after repeated failures protects both sides — but retries against the gateway call specifically must never bypass the idempotency and reconciliation logic in Step 3, since a naive "retry the whole request" without checking the idempotency store first is exactly the double-charge bug this entire design exists to prevent. The retry target here is "retry checking what happened," not "retry blindly re-attempting the charge."
-
-**Ledger writes and idempotency-key checks are on the critical path and are not deferred to an asynchronous queue the way, say, a click-count increment might be elsewhere in this course** — because the correctness guarantee this design makes depends on the ledger reflecting "processing" *before* the gateway is called, not eventually, that specific write cannot be made asynchronous without reopening the exact ambiguity window Step 3 works to close. This is a deliberate divergence from the "keep writes off the hot path" instinct that shows up in several other case studies in this course (WhatsApp's presence updates, TinyURL's click counts) — those are recoverable, best-effort counters; a payment's status transition is not.
-
-**Read replicas serve the status-query use case at scale without touching the primary ledger's write path**, since status reads (Step 3) vastly outnumber the payment writes themselves in most systems (merchants and support tooling checking on a payment far more often than the payment itself is created) — see [Primary-Replica Replication](/docs/patterns/storage/primary-replica-replication), with the caveat that a status check immediately following a just-submitted payment may need to read from the primary or tolerate a brief replication lag, since a merchant polling status right after submission is exactly the case where staleness is most visible and least acceptable.
+* **The idempotency store needs strong consistency, not just high availability, because its entire job is preventing a race between two concurrent attempts at the same logical charge.** A key-insertion check that can return "not found" to two simultaneous requests for the same new key, letting both proceed to charge the gateway, defeats the mechanism entirely — so this component is deliberately built for correctness under concurrent writes to the same key (a conditional, atomic insert) rather than optimized purely for horizontal read throughput. Given the comparatively low request volume Step 1 calculates (under a thousand/sec even at peak), this is a reasonable place to spend consistency budget that a much higher-throughput system couldn't as easily afford.
+* **The ledger scales by sharding on `payment_id` (or merchant_id), since almost every read and write is scoped to a single payment or a single merchant's payments, not queried across the whole dataset** — see [Sharding](/docs/patterns/storage/sharding). Because the ledger is append-heavy with no in-place mutation, this avoids the write-contention concerns a frequently-updated-in-place data model would introduce under sharding.
+* **The gateway integration is the natural place for [Circuit Breaker](/docs/patterns/reliability/circuit-breaker) and [Retry with Backoff](/docs/patterns/reliability/retry-with-backoff), applied carefully.** A struggling or unresponsive gateway shouldn't be hammered with retries that make its own recovery harder, and a circuit breaker that trips after repeated failures protects both sides — but retries against the gateway call specifically must never bypass the idempotency and reconciliation logic in Step 3, since a naive "retry the whole request" without checking the idempotency store first is exactly the double-charge bug this entire design exists to prevent.
+* **Ledger writes and idempotency-key checks are on the critical path and are not deferred to an asynchronous queue the way, say, a click-count increment might be elsewhere in this course** — because the correctness guarantee this design makes depends on the ledger reflecting "processing" *before* the gateway is called, not eventually, that specific write cannot be made asynchronous without reopening the exact ambiguity window Step 3 works to close. This is a deliberate divergence from the "keep writes off the hot path" instinct that shows up in several other case studies in this course (WhatsApp's presence updates, TinyURL's click counts) — those are recoverable, best-effort counters; a payment's status transition is not.
+* **Read replicas serve the status-query use case at scale without touching the primary ledger's write path**, since status reads vastly outnumber the payment writes themselves in most systems — see [Primary-Replica Replication](/docs/patterns/storage/primary-replica-replication), with the caveat that a status check immediately following a just-submitted payment may need to read from the primary or tolerate a brief replication lag.
 
 ## Additional talking points
 
 * **Why idempotency and sagas are both necessary and neither is a substitute for the other.** It's tempting to think a saga's compensating actions handle "safety" broadly, but a saga only handles *undoing a multi-step workflow after a later step fails* — it says nothing about what happens if the same charge step is invoked twice due to a retry. Conversely, idempotency alone handles "this exact operation happens once" but says nothing about coordinating multiple different operations (reserve, charge, mark-paid) across services. This design needs idempotency *within* the charge step and a saga *around* the multi-step workflow the charge step is part of — they operate at different granularities and solve different problems.
 * **Why this design doesn't reach for two-phase commit even though "exactly once" sounds like a strict-atomicity problem.** The instinct to reach for [Two-Phase Commit](/docs/patterns/consistency/two-phase-commit) when correctness matters this much is understandable, but 2PC's blocking coordinator model assumes participants that can hold locks for a bounded, short window — an external gateway call that can legitimately take seconds and that this system doesn't control the failure modes of is precisely the case 2PC's own "when not to use it" guidance rules out. Idempotency plus a saga achieves the needed correctness without requiring the gateway to participate in a distributed locking protocol it was never built to support.
-* **Reconciliation as an ongoing background process, not just a failure-path afterthought.** Beyond handling ambiguous timeouts inline, a production payment system typically runs periodic reconciliation jobs that compare its own ledger against the gateway's own record of settled transactions, to catch any drift (a payment the ledger thinks failed that the gateway actually settled, or vice versa) that pure request-time handling might miss — a defense-in-depth layer on top of, not a replacement for, the request-time idempotency and reconciliation logic in Step 3.
+* **Reconciliation as an ongoing background process, not just a failure-path afterthought.** Beyond handling ambiguous timeouts inline, a production payment system typically runs periodic reconciliation jobs — invoking something like `check_ledger_balanced` above across the full ledger, not just one payment's entries — that also compare the ledger against the gateway's own record of settled transactions, to catch any drift (a payment the ledger thinks failed that the gateway actually settled, or vice versa) that pure request-time handling might miss. This is a defense-in-depth layer on top of, not a replacement for, the request-time idempotency and reconciliation logic in Step 3.
 * **Fraud detection and risk scoring** are a substantial system in their own right, deliberately out of scope here — but worth naming as a real component that would sit in front of or alongside the charge flow in a production system, typically evaluated before the gateway call is made so an obviously fraudulent request never reaches the point of moving money at all.
+
+## Source(s) and further reading
+
+* [Double-entry bookkeeping — Wikipedia](https://en.wikipedia.org/wiki/Double-entry_bookkeeping) — the accounting principle this design's ledger schema is built on, including the balanced-invariant this case study's reconciliation check implements
+* [Idempotent Requests — Stripe API docs](https://stripe.com/docs/idempotency) — a real, production idempotency-key protocol matching the mechanism this design's charge use case implements
+* [Saga](/docs/patterns/consistency/saga) — the compensating-transaction pattern behind this design's reserve/charge/confirm state machine
+* [Idempotency](/docs/patterns/reliability/idempotency) — the general pattern behind this design's most load-bearing mechanism
+* [Two-Phase Commit](/docs/patterns/consistency/two-phase-commit) — the alternative this design explicitly weighs and rejects, and why
