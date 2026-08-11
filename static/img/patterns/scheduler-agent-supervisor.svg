@@ -1,0 +1,68 @@
+<svg viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="780" height="340" fill="#ffffff"/>
+
+  <!-- Scheduler: sequences steps -->
+  <rect x="30" y="30" width="140" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="100" y="56" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Scheduler</text>
+  <text x="100" y="73" font-size="9" fill="#dbeafe" text-anchor="middle">sequences the steps</text>
+
+  <!-- Step 1: Agent success -->
+  <rect x="230" y="30" width="140" height="55" rx="8" fill="#0f766e"/>
+  <text x="300" y="53" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Agent 1</text>
+  <text x="300" y="70" font-size="9" fill="#ccfbf1" text-anchor="middle">book flight — OK</text>
+
+  <line x1="170" y1="60" x2="228" y2="58" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrowSas1)"/>
+
+  <!-- Step 2: Agent fails -->
+  <rect x="430" y="30" width="140" height="55" rx="8" fill="#b45309"/>
+  <text x="500" y="53" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Agent 2</text>
+  <text x="500" y="70" font-size="9" fill="#fef3c7" text-anchor="middle">book hotel — fails</text>
+
+  <line x1="370" y1="58" x2="428" y2="58" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrowSas1)"/>
+
+  <!-- Step 3: pending -->
+  <rect x="610" y="30" width="140" height="55" rx="8" fill="#334155"/>
+  <text x="680" y="53" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Agent 3</text>
+  <text x="680" y="70" font-size="9" fill="#cbd5e1" text-anchor="middle">book car — pending</text>
+
+  <line x1="570" y1="58" x2="608" y2="58" stroke="#64748b" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrowSasSlate)"/>
+
+  <!-- Supervisor -->
+  <rect x="300" y="180" width="180" height="70" rx="8" fill="#0d9488"/>
+  <text x="390" y="208" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Supervisor</text>
+  <text x="390" y="225" font-size="9" fill="#ccfbf1" text-anchor="middle">tracks step state,</text>
+  <text x="390" y="239" font-size="9" fill="#ccfbf1" text-anchor="middle">decides retry vs. compensate</text>
+
+  <line x1="500" y1="85" x2="410" y2="178" stroke="#b45309" stroke-width="2" marker-end="url(#arrowSasOrange)"/>
+  <text x="475" y="140" font-size="9" fill="#b45309" text-anchor="middle">failure observed</text>
+
+  <!-- retry loop -->
+  <line x1="330" y1="180" x2="330" y2="130" stroke="#0d9488" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowSasTeal)"/>
+  <text x="240" y="150" font-size="9" fill="#0d9488" text-anchor="middle">retry via Agent 2</text>
+
+  <!-- compensating action -->
+  <rect x="30" y="220" width="180" height="55" rx="8" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="120" y="243" font-size="10" fill="#dc2626" text-anchor="middle">Compensating action</text>
+  <text x="120" y="258" font-size="9" fill="#dc2626" text-anchor="middle">undo Agent 1's booking</text>
+
+  <line x1="300" y1="230" x2="212" y2="245" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowSasRed)"/>
+  <text x="255" y="270" font-size="8" fill="#dc2626" text-anchor="middle">if retries exhausted</text>
+
+  <defs>
+    <marker id="arrowSas1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="arrowSasSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arrowSasOrange" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arrowSasTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0d9488"/>
+    </marker>
+    <marker id="arrowSasRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+</svg>

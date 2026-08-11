@@ -1,0 +1,51 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <!-- Client -->
+  <rect x="30" y="120" width="120" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="90" y="146" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Client</text>
+  <text x="90" y="163" font-size="9" fill="#dbeafe" text-anchor="middle">requests a page</text>
+
+  <!-- CDN edge -->
+  <rect x="220" y="120" width="130" height="60" rx="8" fill="#334155"/>
+  <text x="285" y="146" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">CDN Edge</text>
+  <text x="285" y="163" font-size="9" fill="#cbd5e1" text-anchor="middle">caches by key</text>
+
+  <line x1="150" y1="150" x2="218" y2="150" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrowSch1)"/>
+
+  <!-- static path (teal, the pattern) -->
+  <rect x="420" y="60" width="160" height="60" rx="8" fill="#0f766e"/>
+  <text x="500" y="86" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Static Host</text>
+  <text x="500" y="104" font-size="9" fill="#ccfbf1" text-anchor="middle">HTML / JS / CSS / images</text>
+  <text x="500" y="30" font-size="10" fill="#0f766e" text-anchor="middle" font-weight="600">static assets — no app code runs</text>
+
+  <line x1="350" y1="135" x2="418" y2="95" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowSchTeal)"/>
+
+  <!-- dynamic path (orange, cost-avoided contrast) -->
+  <rect x="420" y="210" width="160" height="60" rx="8" fill="#334155"/>
+  <text x="500" y="236" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">App Server</text>
+  <text x="500" y="254" font-size="9" fill="#cbd5e1" text-anchor="middle">only genuinely dynamic requests</text>
+
+  <line x1="350" y1="165" x2="418" y2="225" stroke="#334155" stroke-width="2" marker-end="url(#arrowSch1)"/>
+  <text x="385" y="205" font-size="9" fill="#334155" text-anchor="middle">/api/*</text>
+
+  <!-- avoided cost annotation -->
+  <rect x="420" y="120" width="160" height="1" fill="none"/>
+  <text x="500" y="150" font-size="9" fill="#b45309" text-anchor="middle" font-style="italic">no static-file requests reach here</text>
+
+  <!-- blob store -->
+  <rect x="620" y="60" width="110" height="60" rx="8" fill="#0d9488"/>
+  <text x="675" y="86" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Blob Store</text>
+  <text x="675" y="104" font-size="9" fill="#ccfbf1" text-anchor="middle">origin objects</text>
+  <line x1="580" y1="90" x2="618" y2="90" stroke="#0d9488" stroke-width="2" marker-end="url(#arrowSchTeal)"/>
+  <text x="599" y="80" font-size="8" fill="#0d9488" text-anchor="middle">miss</text>
+
+  <defs>
+    <marker id="arrowSch1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrowSchTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

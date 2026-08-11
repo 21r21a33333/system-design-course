@@ -122,7 +122,7 @@ function main(): void {
     }
   }
 
-  const expectedPatternCount = 85;
+  const expectedPatternCount = 91;
   if (patternEntries.length !== expectedPatternCount) {
     throw new Error(
       `Supplementary pattern count mismatch: expected ${expectedPatternCount}, got ${patternEntries.length}`,
