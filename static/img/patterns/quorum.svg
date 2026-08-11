@@ -1,0 +1,40 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">W + R &gt; N guarantees every read quorum overlaps every write quorum on one node</text>
+
+  <!-- N=5 replicas -->
+  <circle cx="150" cy="120" r="36" fill="#0f766e"/>
+  <text x="150" y="118" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Node 1</text>
+  <text x="150" y="132" font-size="8" fill="#ccfbf1" text-anchor="middle">write</text>
+
+  <circle cx="270" cy="90" r="36" fill="#0f766e"/>
+  <text x="270" y="88" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Node 2</text>
+  <text x="270" y="102" font-size="8" fill="#ccfbf1" text-anchor="middle">write</text>
+
+  <circle cx="390" cy="70" r="36" fill="#0f766e"/>
+  <text x="390" y="68" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Node 3</text>
+  <text x="390" y="82" font-size="8" fill="#ccfbf1" text-anchor="middle">write + read</text>
+
+  <circle cx="510" cy="90" r="36" fill="#1d4ed8"/>
+  <text x="510" y="88" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Node 4</text>
+  <text x="510" y="102" font-size="8" fill="#dbeafe" text-anchor="middle">read</text>
+
+  <circle cx="610" cy="130" r="36" fill="#1d4ed8"/>
+  <text x="610" y="128" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Node 5</text>
+  <text x="610" y="142" font-size="8" fill="#dbeafe" text-anchor="middle">read</text>
+
+  <text x="150" y="175" font-size="8.5" fill="#0f766e" text-anchor="middle">W = 3 (nodes 1,2,3)</text>
+  <text x="590" y="185" font-size="8.5" fill="#1d4ed8" text-anchor="middle">R = 3 (nodes 3,4,5)</text>
+
+  <!-- overlap highlight -->
+  <circle cx="390" cy="70" r="40" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="3,2"/>
+  <text x="390" y="30" font-size="9.5" fill="#b45309" text-anchor="middle" font-weight="600">overlap node — guaranteed by W+R &gt; N</text>
+
+  <rect x="130" y="240" width="500" height="55" rx="8" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="380" y="260" font-size="9.5" fill="#334155" text-anchor="middle" font-weight="600">N=5, W=3, R=3: W+R=6 &gt; 5, so any 3-node write set</text>
+  <text x="380" y="275" font-size="9.5" fill="#334155" text-anchor="middle">and any 3-node read set must share at least one node</text>
+  <text x="380" y="288" font-size="9.5" fill="#334155" text-anchor="middle">(pigeonhole principle)</text>
+
+  <defs/>
+</svg>

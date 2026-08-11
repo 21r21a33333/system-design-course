@@ -9,6 +9,8 @@ acknowledge a read or write before the operation counts as successful,
 sized so that every read set and every write set are guaranteed to
 overlap on at least one node that has the latest value.
 
+![Quorum diagram](/img/patterns/quorum.svg)
+
 ## Problem it solves
 
 In a replicated system with N copies of the data, requiring every
@@ -23,23 +25,120 @@ many nodes must participate in a write (W) and a read (R) out of N
 total replicas, trading off consistency, availability, and latency
 without going to either extreme.
 
-## How it works
+## Technical architecture & implementation
 
-A write is sent to all N replicas but is only considered successful
-once W of them acknowledge it; a read is sent to (at least) R replicas
-and the most recent value among their responses is returned. The key
-invariant is choosing W and R such that **W + R > N**. Because any W
-nodes and any R nodes drawn from the same pool of N must share at least
-one common node (by the pigeonhole principle), every read quorum is
-guaranteed to overlap with every prior write quorum on at least one
-node — so at least one of the nodes a read contacts will have the
-latest acknowledged write, and the read can identify and return the
-most recent version (typically using a version number or timestamp to
-tell which response is newest). Common configurations include W=N,
-R=1 (fast reads, slower writes), W=1, R=N (fast writes, slower reads),
-or a balanced majority quorum such as W=R=⌈(N+1)/2⌉, which also
-tolerates the failure of up to ⌊(N-1)/2⌋ nodes while still completing
-operations.
+**Write path.** A client's write is sent to all N replicas
+concurrently, not one at a time — sending them sequentially would make
+write latency the sum of every replica's response time rather than
+just the slowest of the first W to respond, which defeats the purpose
+of tuning W for a latency target in the first place. The write is
+considered successful the moment W of the N replicas acknowledge it;
+the remaining N-W replicas may still be catching up (or briefly
+unreachable) without blocking the client, which is what makes W < N
+configurations more available than requiring every replica to
+acknowledge.
+
+**Read path and version reconciliation.** A read is likewise sent to
+(at least) R replicas concurrently, and the coordinator handling the
+read waits for R responses before returning. Because different
+replicas may hold different versions of the value (some caught up to
+the latest write, some lagging), the read has to determine which
+response is actually newest — typically via a version number, a
+timestamp, or (in systems that need to detect genuinely concurrent,
+conflicting writes rather than just picking the latest) a mechanism
+like [Vector Clocks](/docs/patterns/consistency/vector-clocks). The
+**W + R > N invariant** is what guarantees this comparison is
+meaningful at all: because any W-sized write set and any R-sized read
+set drawn from the same N nodes must share at least one common node
+(the pigeonhole principle — W + R exceeding N means the two sets can't
+be fully disjoint), every read is mathematically guaranteed to contact
+at least one replica that has the most recent acknowledged write, so
+the newest version among the R responses really is the latest one, not
+just the latest one that happened to be sampled.
+
+**Tuning W and R.** The choice of W and R relative to N is a genuine
+trade-off knob, not just a correctness parameter. W=N, R=1 makes reads
+maximally fast and available (any single replica answers) at the cost
+of every write needing every replica to be up; W=1, R=N inverts that
+trade for fast, available writes at the cost of slow, less available
+reads. A balanced majority quorum, W=R = a bit over half of N, splits
+the cost between the two operations and additionally tolerates just
+under half of N failing while still satisfying both quorums — which is
+why it's the most common default when neither reads nor writes are
+clearly more latency-sensitive than the other.
+
+**Failure modes.** The most direct failure is choosing **W + R ≤ N**,
+which breaks the overlap guarantee entirely — read and write quorums
+can then be fully disjoint sets of nodes, so a read can complete
+successfully while never contacting the replica that has the latest
+write, silently returning stale data with no error to signal it
+happened. A second, subtler failure mode is a **sloppy quorum** (used
+by some systems during a partition to keep accepting writes by
+substituting a healthy-but-non-canonical node for an unreachable one)
+trading strict overlap guarantees for availability during the outage —
+this is a deliberate, documented trade-off in systems that support it,
+but silently changes the consistency guarantee for any operation that
+falls back to it, which callers relying on strict quorum overlap need
+to be aware of. A third is **clock or version-tag disagreement** across
+replicas: if the mechanism used to decide "which response is newest"
+is itself unreliable (e.g. relying on wall-clock timestamps that
+aren't synchronized), the read can pick the wrong version as "latest"
+even though the overlap guarantee correctly delivered the right data
+among the R responses.
+
+## Code example
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+#[derive(Clone, Copy, Debug)]
+struct VersionedValue {
+    version: u64,
+    value: u32,
+}
+
+struct Replica {
+    id: u32,
+    stored: VersionedValue,
+}
+
+// Sends the write to every replica concurrently and returns once W
+// acknowledgments have arrived — not once all N have, which is what
+// lets W < N configurations stay available despite a slow or
+// unreachable replica among the remaining N - W.
+fn quorum_write(replicas: &[Replica], new_value: VersionedValue, w: usize) -> usize {
+    let (tx, rx) = mpsc::channel();
+
+    for replica in replicas {
+        let tx = tx.clone();
+        let id = replica.id;
+        thread::spawn(move || {
+            // In a real system this would be a network write; here the
+            // ack is immediate, but the point is that all N fire at once.
+            tx.send(id).expect("channel open");
+            let _ = new_value; // would be persisted by this replica
+        });
+    }
+    drop(tx);
+
+    rx.iter().take(w).count()
+}
+
+// Reads from R replicas and returns the highest version among them —
+// valid only because W + R > N guarantees at least one of these R
+// replicas has the most recent acknowledged write.
+fn quorum_read(responses: &[VersionedValue]) -> Option<VersionedValue> {
+    responses.iter().max_by_key(|v| v.version).copied()
+}
+```
+
+`quorum_write` fires all N sends concurrently and stops counting once W
+acknowledgments arrive, mirroring how a real quorum write doesn't wait
+on stragglers beyond the W it needs; `quorum_read` trusts the highest
+version number among the R responses it receives specifically because
+the W + R > N invariant guarantees one of those R replicas is
+guaranteed to hold it.
 
 ## When to use it
 
@@ -68,17 +167,36 @@ operations.
   mechanism (timestamps, version vectors) to resolve conflicting
   responses.
 
-## Real-world example
+## Use-case scenarios
 
-Amazon DynamoDB offers a choice between eventually consistent reads
-(cheaper, may return stale data shortly after a write) and strongly
-consistent reads (always reflect the most recent successful write),
-letting applications pick the right trade-off per request. Apache
-Cassandra, built on the same Dynamo lineage, exposes this trade-off
-more directly: clients choose a consistency level per request — such as
-`ONE`, `QUORUM`, or `ALL` — that determines how many of the N replicas
-must respond, and operators commonly pair `QUORUM` writes with `QUORUM`
-reads specifically to get the W + R > N overlap guarantee.
+**Shopping-cart service tuning per-operation consistency.** An
+e-commerce platform's shopping-cart service replicates cart state
+across 5 nodes. Adding an item to the cart uses a low W (fast,
+available writes, since losing a rare concurrent add is low-stakes and
+recoverable) while reading the cart at checkout uses a higher R,
+trading a little more read latency for a much stronger guarantee that
+checkout sees every item the customer actually added — the same
+underlying replica set, tuned differently per operation based on which
+one's correctness matters more.
+
+**IoT sensor telemetry system prioritizing write availability.** A
+fleet-tracking platform ingests location pings from thousands of
+vehicles into a replicated store with N=3 per shard. Writes use W=1 so
+ingestion never stalls even if two of the three replicas in a shard are
+temporarily unreachable — losing a small amount of read freshness is
+acceptable for a live-tracking dashboard that refreshes every few
+seconds anyway, and the low W keeps write throughput high under heavy,
+continuous ingestion load.
+
+**Distributed configuration store requiring strong read guarantees.**
+A feature-flag service used to gate a payment-critical code path
+replicates its flag values across 5 nodes with a majority quorum,
+W=R=3. Because a stale read here could mean a payment path runs with
+an outdated flag value, the service accepts the extra latency of
+contacting 3 replicas on every read in exchange for the mathematical
+guarantee that any read quorum overlaps any prior write quorum,
+ensuring a flag flip is visible to every subsequent read once the write
+that made it has been acknowledged.
 
 ## Related patterns
 

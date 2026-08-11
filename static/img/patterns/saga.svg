@@ -1,0 +1,51 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Forward steps commit locally; a failure runs compensations in reverse order</text>
+
+  <!-- Forward steps -->
+  <rect x="40" y="60" width="140" height="50" rx="8" fill="#0f766e"/>
+  <text x="110" y="82" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">Reserve inventory</text>
+  <text x="110" y="98" font-size="8.5" fill="#ccfbf1" text-anchor="middle">committed</text>
+
+  <rect x="220" y="60" width="140" height="50" rx="8" fill="#0f766e"/>
+  <text x="290" y="82" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">Charge payment</text>
+  <text x="290" y="98" font-size="8.5" fill="#ccfbf1" text-anchor="middle">committed</text>
+
+  <rect x="400" y="60" width="140" height="50" rx="8" fill="#b45309"/>
+  <text x="470" y="82" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">Create shipment</text>
+  <text x="470" y="98" font-size="8.5" fill="#fef3c7" text-anchor="middle">FAILS</text>
+
+  <line x1="180" y1="85" x2="218" y2="85" stroke="#0f766e" stroke-width="2" marker-end="url(#sagaArrowTeal)"/>
+  <line x1="360" y1="85" x2="398" y2="85" stroke="#0f766e" stroke-width="2" marker-end="url(#sagaArrowTeal)"/>
+
+  <!-- Compensations, reverse order -->
+  <rect x="220" y="170" width="140" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="290" y="192" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">Refund payment</text>
+  <text x="290" y="208" font-size="8.5" fill="#dbeafe" text-anchor="middle">compensation 1</text>
+
+  <rect x="40" y="170" width="140" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="110" y="192" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">Release inventory</text>
+  <text x="110" y="208" font-size="8.5" fill="#dbeafe" text-anchor="middle">compensation 2</text>
+
+  <line x1="470" y1="110" x2="330" y2="168" stroke="#b45309" stroke-width="2" marker-end="url(#sagaArrowAmber)"/>
+  <text x="410" y="145" font-size="8.5" fill="#b45309" text-anchor="middle">triggers undo,</text>
+  <text x="410" y="157" font-size="8.5" fill="#b45309" text-anchor="middle">reverse order</text>
+  <line x1="220" y1="195" x2="182" y2="195" stroke="#1d4ed8" stroke-width="2" marker-end="url(#sagaArrowBlue)"/>
+
+  <rect x="130" y="255" width="500" height="45" rx="8" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="380" y="273" font-size="9.5" fill="#334155" text-anchor="middle" font-weight="600">Sequencing (choreography vs. orchestration) is a separate choice</text>
+  <text x="380" y="287" font-size="9.5" fill="#334155" text-anchor="middle">from what a saga step and its compensation actually are</text>
+
+  <defs>
+    <marker id="sagaArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="sagaArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="sagaArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+</svg>

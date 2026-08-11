@@ -1,0 +1,41 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">A sidecar shares its main process's lifecycle and host, but runs as a separate process</text>
+
+  <!-- Pod/host boundary -->
+  <rect x="230" y="60" width="300" height="170" rx="10" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="380" y="80" font-size="9.5" fill="#64748b" text-anchor="middle">same host / pod — shared lifecycle</text>
+
+  <!-- Main app -->
+  <rect x="255" y="100" width="250" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="380" y="123" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Application process</text>
+  <text x="380" y="140" font-size="9" fill="#dbeafe" text-anchor="middle">business logic only</text>
+
+  <line x1="380" y1="155" x2="380" y2="175" stroke="#334155" stroke-width="2" marker-end="url(#scArrowGray)"/>
+
+  <!-- Sidecar -->
+  <rect x="255" y="178" width="250" height="45" rx="8" fill="#0f766e"/>
+  <text x="380" y="197" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Sidecar process</text>
+  <text x="380" y="212" font-size="8.5" fill="#ccfbf1" text-anchor="middle">TLS, retries, logging, discovery</text>
+
+  <!-- External calls -->
+  <rect x="600" y="163" width="120" height="42" rx="8" fill="#334155"/>
+  <text x="660" y="189" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Network / peers</text>
+
+  <line x1="505" y1="200" x2="598" y2="184" stroke="#0f766e" stroke-width="2" marker-end="url(#scArrowTeal)"/>
+  <text x="565" y="170" font-size="8" fill="#0f766e" text-anchor="middle">all traffic via sidecar</text>
+
+  <rect x="40" y="255" width="640" height="50" rx="8" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="360" y="273" font-size="9.5" fill="#b45309" text-anchor="middle" font-weight="600">Sidecar crash-loops independently of the app — app may look "up" while</text>
+  <text x="360" y="288" font-size="9.5" fill="#b45309" text-anchor="middle">losing retries, mTLS, or discovery until the sidecar is restarted too</text>
+
+  <defs>
+    <marker id="scArrowGray" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#334155"/>
+    </marker>
+    <marker id="scArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

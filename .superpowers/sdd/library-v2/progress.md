@@ -162,4 +162,92 @@ io->Asynchronous Request-Reply. Manifest bumped 111->121, ingest run
 confirmed 121 design-patterns entries. Typecheck and build both clean,
 zero broken links.
 
-## PHASE 2 TASK B COMPLETE.
+Review: rustc compiled all 20/20 snippets clean, but caught one that
+compiled while being logically wrong — synchronous-io.md's "fix"
+started 3 futures then `.await`ed them one at a time, which in Rust
+polls each to completion before the next starts (NOT concurrent), while
+the prose claimed concurrency. rustc can't catch this class of bug
+(no type error, just wrong runtime behavior). Fixed by replacing with
+genuine `thread::spawn` + `.join()` concurrency (std-only, no async
+runtime dependency needed for a bare-rustc-verified snippet) — verified
+both blocks recompile clean, commit `6787865`. All 9 other pages, all
+required "Related patterns" mappings (incl. retry-storm's mandated dual
+link to Circuit Breaker + Retry with Backoff), citations, and structure
+passed with no other findings.
+
+## PHASE 2 COMPLETE — 25 pages added across this phase (Phase 1 + 2),
+## manifest at 121 (was 91 at phase start).
+
+## Phase 3 — deep-rewrite pass, 91 pre-existing pages -> v3
+Split into 12 sub-tasks: 3.1-3.8 full build-out (60 pages, no
+img/code yet), 3.9-3.12 v3-sections-only (31 pages from the prior
+"more-patterns" phase, already have img/code, just need Technical
+Architecture depth-up + Use-Case Scenarios expansion). No manifest/
+count changes in any Phase 3 task — page count stays 121 throughout,
+only existing pages edited in place.
+
+### Phase 3.1 — Full build-out: ai-infra (7 pages) — COMPLETE
+Commit `2df8a62`. feature-store, gpu-auto-scaling, llm-gateway,
+model-serving, rag-pipeline, semantic-caching, vector-database-sharding.
+Added diagram+code+v3 sections; preserved existing Problem/When-to/
+When-not-to/Related/Further-reading verbatim (confirmed byte-identical
+via reviewer diff against pre-edit HEAD). Review: clean, no fixes —
+notably the reviewer empirically timing-verified two concurrency claims
+(gpu-auto-scaling's dual thread::spawn checks, vector-database-sharding's
+thread::scope scatter-gather) by compiling+running the snippets with
+timing assertions, not just reading them, after a prior task in this
+phase shipped Rust that compiled but wasn't actually concurrent. Zero
+disallowed citations, all use-case scenarios distinct, manifest
+untouched at 121, build/typecheck clean.
+
+### Phase 3.2 — Full build-out: api-edge + consistency (9 pages) — COMPLETE
+api-gateway, backend-for-frontend, cursor-pagination, service-mesh,
+sidecar (api-edge); quorum, saga, two-phase-commit, vector-clocks
+(consistency). Added diagram+code+v3 sections to each; preserved
+existing Problem/When-to/When-not-to/Related/Further-reading verbatim,
+confirmed via a section-by-section diff against pre-edit HEAD (all 9
+byte-identical, not just eyeballed). Caught and self-corrected a
+placement bug mid-task: the diagram image was initially inserted after
+the "Problem it solves" paragraph instead of before the `## Problem it
+solves` heading (per feature-store.md/gpu-auto-scaling.md's actual
+layout) on 8 of 9 files — fixed before the preserve-section diff, which
+is what originally surfaced it.
+
+Cross-page consistency checks done deliberately per the task brief:
+api-gateway.md's "vs. Reverse Proxy" framing was written to mutually
+match reverse-proxy.md's pre-existing "vs. API Gateway" text (both
+describe the same mechanical-superset relationship, no contradiction).
+saga.md's "Sequencing: choreography or orchestration" section was
+written to match, not duplicate, choreography.md's and
+compensating-transaction.md's existing "Relationship to saga.md" notes
+— saga.md links out to both pages for depth rather than re-explaining
+their content, and the reverse-order-compensation / two-sequencing-
+options framing is identical across all three pages.
+
+Concurrency claims were made in three pages (quorum, two-phase-commit)
+and empirically verified, not just read — a prior phase's bug (sequential
+`.await` masquerading as concurrent) was the specific failure mode this
+guards against:
+- two-phase-commit's `prepare_phase` (thread::spawn per participant):
+  3 participants at 200ms simulated prepare each measured ~205ms
+  concurrent vs. ~612ms run sequentially (2.98x), confirming prepare
+  really does cost "slowest participant" not "sum of participants."
+- quorum's `quorum_write` (thread::spawn per replica, stop at W acks):
+  5 replicas with staggered 50/60/70/500/600ms delays and W=3 returned
+  in ~71ms, proving it doesn't block on the two 500ms+ stragglers.
+Non-concurrent logic (cursor-pagination's stability under inserts,
+saga's reverse-order-compensation-only-of-completed-steps, vector-
+clocks' happened-before/concurrent/equal detection) was also run against
+targeted test harnesses beyond bare rustc compilation, not just read.
+All 9/9 Rust snippets compile clean under `rustc --edition 2021
+--crate-type lib` (only expected dead-code warnings) and were logic-
+verified this way. Zero disallowed-domain citations (grep clean across
+all 9 files); Istio/Kong prose mentions from the pre-existing "Real-world
+example" sections were dropped when those sections were replaced with
+original use-case scenarios, rather than carried forward. 8-gram
+duplication check across all 9 files found zero copy-pasted prose —
+the only n-gram overlaps are short, intentional mutual-differentiation
+phrasings (api-gateway.md<->backend-for-frontend.md, service-
+mesh.md<->sidecar.md) restating the same relationship consistently from
+each side. Manifest untouched at 121, `npm run typecheck` and `npm run
+build` both clean with zero broken links.

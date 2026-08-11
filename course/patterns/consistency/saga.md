@@ -9,6 +9,8 @@ service, where every step has a matching compensating action that
 undoes it — used to keep a multi-step workflow consistent across
 services without a single distributed transaction.
 
+![Saga diagram](/img/patterns/saga.svg)
+
 ## Problem it solves
 
 A workflow like checkout — reserve inventory, charge a payment, create a
@@ -24,33 +26,110 @@ guarantees that if any step fails partway through, the steps that
 already succeeded are explicitly undone, so the system never ends up
 in a state where inventory was reserved but payment was never taken.
 
-## How it works
+## Technical architecture & implementation
 
-Each step in the saga is a normal local transaction against a single
-service's own database, immediately committed — no cross-service locks
-are held. Alongside every step, the design defines a compensating
-transaction that semantically reverses it (e.g. "release the reserved
-inventory" undoes "reserve inventory"; a full monetary refund undoes a
-charge). If a step fails, the saga runs the compensating actions for
-every step that already succeeded, in reverse order, bringing the
-system back to a consistent state — not necessarily the exact original
-state, since compensations are business-level undo actions, not a
-storage-level rollback.
+**Steps and compensations.** Each step in a saga is a normal local
+transaction against a single service's own database, committed
+immediately with no cross-service locks held — this is the structural
+difference from [Two-Phase Commit](/docs/patterns/consistency/two-phase-commit),
+which holds every participant's locks open for the whole transaction's
+duration. Alongside every step, the saga's design defines a
+[Compensating Transaction](/docs/patterns/consistency/compensating-transaction):
+a separate operation, chosen for its business-level effect rather than
+a mechanical reversal, that semantically undoes the step ("release the
+reserved inventory" undoes "reserve inventory"; a refund undoes a
+charge). If a step fails, the saga runs the compensating action for
+every step that already succeeded, in reverse order, which is what
+brings the system back to a consistent state — not necessarily the
+exact original state, since a compensation is a new operation recorded
+alongside the original one, not a storage-level rollback that erases it
+ever happened.
 
-There are two ways to sequence the steps. In **choreography**, there's
-no central coordinator: each service publishes an event when it
-finishes its step, and the next service in the workflow subscribes to
-that event and reacts by performing its own step (and, on failure,
-publishing a failure event that upstream services listen for to trigger
-their own compensations). In **orchestration**, a central orchestrator
-component explicitly calls each service in sequence, tracks the
-saga's state, and — on failure — calls the compensating action on each
-already-completed step itself. Choreography avoids a single point of
-failure and extra infrastructure but becomes hard to follow as the
-number of steps grows, since the workflow logic is implicit and spread
-across every participant; orchestration keeps the workflow logic in one
-place and easy to reason about, at the cost of that orchestrator being
-a new component every step now depends on.
+**Sequencing: choreography or orchestration.** A saga's steps have to
+be sequenced by something, and there are two established ways to do
+that, covered in depth on their own pages. In
+[Choreography](/docs/patterns/consistency/choreography), there's no
+central coordinator: each service publishes an event when it finishes
+its step, the next service subscribes to that event and reacts by
+performing its own step, and a failure event triggers upstream services
+to run their own compensations — the saga's progress emerges from
+independent event handlers, with no single component holding the full
+sequence. In orchestration, a central orchestrator component explicitly
+calls each service in turn, tracks the saga's state, and — on
+failure — calls the compensating action on each already-completed step
+itself, keeping the workflow logic in one place at the cost of that
+orchestrator being a new shared dependency every step now has. This
+choice is genuinely orthogonal to what a saga *is*: the steps, their
+compensations, and the reverse-order undo behavior on failure are the
+same regardless of which sequencing style drives them.
+
+**Failure modes.** The saga's honest limit is a step with **no
+meaningful compensating action** — an already-sent notification or an
+irreversible physical side effect can't be undone, only mitigated or
+flagged after the fact, and a saga design has to identify these steps
+ahead of time rather than discovering the gap during an actual failure.
+A second failure mode is **compensation failure itself** — the undo
+action can fail just as the forward action can (a refund call times
+out, a release-inventory call 404s because the record was already
+modified by something else), and a saga needs its own retry or
+dead-letter handling for compensations, since a failed compensation
+leaves the system in exactly the inconsistent state the pattern exists
+to prevent. A third, more subtle failure mode is a **lack of
+isolation**: because each step commits independently and immediately,
+another process can observe an intermediate state partway through the
+saga — for example, seeing inventory as reserved before payment has
+actually been confirmed — which is a real, visible window a saga does
+not close, unlike an atomic-commit protocol that hides intermediate
+state entirely until the final decision.
+
+## Code example
+
+```rust
+struct SagaStep {
+    name: &'static str,
+    forward: fn() -> Result<(), String>,
+    compensate: fn() -> Result<(), String>,
+}
+
+// Runs each step in order; on the first failure, compensates every
+// already-succeeded step in reverse order — the core saga guarantee,
+// independent of whether a choreography or orchestration sequencer
+// is what triggered each step in a real deployment.
+fn run_saga(steps: &[SagaStep]) -> Result<(), String> {
+    let mut completed: Vec<&SagaStep> = Vec::new();
+
+    for step in steps {
+        match (step.forward)() {
+            Ok(()) => {
+                println!("{}: committed", step.name);
+                completed.push(step);
+            }
+            Err(e) => {
+                println!("{}: failed ({e}), compensating", step.name);
+                for done in completed.iter().rev() {
+                    match (done.compensate)() {
+                        Ok(()) => println!("{}: compensated", done.name),
+                        Err(ce) => println!("{}: compensation FAILED ({ce})", done.name),
+                    }
+                }
+                return Err(format!("saga aborted at {}: {e}", step.name));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn reserve_inventory() -> Result<(), String> { Ok(()) }
+fn release_inventory() -> Result<(), String> { Ok(()) }
+fn charge_payment() -> Result<(), String> { Err("card_declined".into()) }
+fn refund_payment() -> Result<(), String> { Ok(()) }
+```
+
+Calling `run_saga` on `[reserve_inventory/release_inventory,
+charge_payment/refund_payment]` commits the inventory reservation, then
+fails on the payment charge, then compensates in reverse order —
+running `release_inventory`'s compensation, since it's the only step
+that had already committed by the time the failure happened.
 
 ## When to use it
 
@@ -78,17 +157,38 @@ a new component every step now depends on.
   a normal local transaction already provides all the guarantees
   needed — a saga adds real complexity that isn't justified there.
 
-## Real-world example
+## Use-case scenarios
 
-A typical order-checkout saga: reserve inventory for the ordered items,
-then charge the customer's payment method, then create the shipment.
-If the payment charge fails after inventory was already reserved, the
-saga runs the compensating action for that step — releasing the
-reserved inventory — so the items become available to other customers
-again instead of being held indefinitely against an order that never
-completed; if inventory reservation itself fails, the saga simply stops
-before any payment is attempted, since no compensating action is
-needed for a step that never ran.
+**E-commerce checkout across independently owned services.** An
+online retailer's checkout spans an inventory service, a payment
+service, and a shipping service, each owned by a different team with
+its own database. The saga reserves inventory, then charges the
+customer's payment method, then creates a shipment; if the payment
+charge fails after inventory was already reserved, the saga runs that
+step's compensating action — releasing the reserved inventory — so the
+items become available to other customers instead of being held
+indefinitely against an order that never completed.
+
+**Travel-booking flow spanning third-party providers.** A trip-booking
+platform needs to reserve a flight seat with one airline's API and a
+hotel room with a separate hotel-chain API as part of the same
+booking. Because both are external systems the platform doesn't
+control and can't lock across, a saga reserves the flight, then
+attempts the hotel booking; if the hotel booking fails, the saga calls
+the airline's own cancellation endpoint as the flight step's
+compensation — a distinct, independent call the airline exposes for
+exactly this purpose, not a rollback into the airline's own database.
+
+**Multi-region account provisioning at a SaaS platform.** Provisioning
+a new enterprise customer account touches a billing service, an
+identity/access-management service, and a regional data-storage
+allocation service, each of which may be deployed in a different
+region with its own database. A saga runs each provisioning step as
+its own local transaction; if regional storage allocation fails after
+billing and identity setup already succeeded, the saga compensates by
+deleting the identity records and voiding the billing setup, in reverse
+order, rather than leaving a half-provisioned account that bills the
+customer for infrastructure they can't actually use yet.
 
 ## Related patterns
 
