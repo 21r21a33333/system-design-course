@@ -63,6 +63,17 @@ choice is genuinely orthogonal to what a saga *is*: the steps, their
 compensations, and the reverse-order undo behavior on failure are the
 same regardless of which sequencing style drives them.
 
+The two styles trade central control against coupling:
+
+| Aspect | Choreography | Orchestration |
+| --- | --- | --- |
+| Sequencing logic | Distributed across each service's event handlers | Centralized in one orchestrator component |
+| Coupling | Services couple to events, not to each other directly | Every step couples to the orchestrator |
+| Where the flow lives | Emergent — no single place shows the whole saga | Explicit — the full sequence is in one component |
+| Adding or reordering a step | Touches the affected services' subscriptions | Changes the orchestrator's flow definition |
+| Single point of failure | None specific to the saga | The orchestrator (must itself be made reliable) |
+| Best fit | Few steps, loosely coupled event-driven services | Many steps, complex branching, or auditability needs |
+
 **Failure modes.** The saga's honest limit is a step with **no
 meaningful compensating action** — an already-sent notification or an
 irreversible physical side effect can't be undone, only mitigated or
@@ -203,3 +214,4 @@ customer for infrastructure they can't actually use yet.
 
 - [Saga design pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/saga)
 - [Long-running transaction and compensation — Wikipedia](https://en.wikipedia.org/wiki/Long-running_transaction)
+- [Sagas — Hector Garcia-Molina & Kenneth Salem (SIGMOD 1987)](https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf) — the original paper that introduced the saga concept and its compensating-transaction model.

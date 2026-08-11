@@ -77,6 +77,28 @@ prevent. This is why the durable log write during prepare isn't
 optional — skipping it reopens the correctness gap the whole protocol
 is built to close.
 
+**2PC vs. 3PC vs. consensus.** The blocking problem motivated two
+distinct families of alternatives. **Three-phase commit (3PC)** inserts
+an extra "pre-commit" round between the vote and the final commit, so a
+participant that loses the coordinator after it has heard *pre-commit*
+can safely proceed rather than block — 3PC is non-blocking under
+crash-stop failures, but it assumes bounded message delay and a
+reliable failure detector, and it still misbehaves under network
+partitions, which is why it is rarely deployed in practice. The
+**consensus** family — [Raft](/docs/patterns/consistency/raft) and
+[Paxos](/docs/patterns/consistency/paxos) — attacks the problem from the
+other side: instead of a single coordinator whose failure strands
+everyone, the commit decision is itself replicated through a quorum, so
+the decision survives the loss of any minority of nodes and no single
+node's failure blocks progress. The practical trade-off is that 2PC
+gives cross-resource atomicity with a simple coordinator but blocks on
+coordinator failure, whereas consensus keeps making progress through
+failures but agrees on one replicated log rather than atomically
+committing across heterogeneous resource managers; modern distributed
+databases often combine them — running 2PC *across* shards while each
+shard's participant is itself a consensus-replicated group, so the
+coordinator's own state is fault-tolerant.
+
 ## Code example
 
 ```rust
@@ -204,8 +226,13 @@ completes quickly, keeping the blocking window short.
 - [Quorum](/docs/patterns/consistency/quorum) — a different mechanism for
   getting distributed nodes to agree, built around a minimum number of
   acknowledgments rather than unanimous voting.
+- [Raft](/docs/patterns/consistency/raft) and
+  [Paxos](/docs/patterns/consistency/paxos) — consensus protocols that
+  avoid 2PC's blocking-on-coordinator-failure weakness by replicating the
+  commit decision through a quorum rather than trusting one coordinator.
 
 ## Further reading
 
 - [Two-phase commit protocol — Wikipedia](https://en.wikipedia.org/wiki/Two-phase_commit_protocol)
 - [Saga distributed transactions — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/saga)
+- [Three-phase commit protocol — Wikipedia](https://en.wikipedia.org/wiki/Three-phase_commit_protocol) — the non-blocking (under crash-stop) variant that adds a pre-commit round, and why it still fails under partitions.

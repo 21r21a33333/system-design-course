@@ -220,3 +220,4 @@ work.
 
 - [Leader Election pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election)
 - [Leader election — Wikipedia](https://en.wikipedia.org/wiki/Leader_election)
+- [The Chubby lock service for loosely-coupled distributed systems — Mike Burrows, Google (OSDI 2006)](https://research.google/pubs/the-chubby-lock-service-for-loosely-coupled-distributed-systems/) — the canonical description of lease-based leader election and locking backed by a consensus-replicated store.
