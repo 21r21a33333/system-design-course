@@ -520,6 +520,13 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/building-blocks/pipes-and-filters",
+    "title": "Pipes and Filters",
+    "path": "/docs/patterns/building-blocks/pipes-and-filters",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/building-blocks/rate-limiter",
     "title": "Rate Limiter",
     "path": "/docs/patterns/building-blocks/rate-limiter",
@@ -670,6 +677,13 @@ export const courseManifest: ManifestEntry[] = [
     "id": "patterns/consistency/compensating-transaction",
     "title": "Compensating Transaction",
     "path": "/docs/patterns/consistency/compensating-transaction",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/consistency/leader-election",
+    "title": "Leader Election",
+    "path": "/docs/patterns/consistency/leader-election",
     "category": "design-patterns",
     "source": "supplementary"
   },
@@ -828,6 +842,13 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/reliability/failover",
+    "title": "Failover",
+    "path": "/docs/patterns/reliability/failover",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/reliability/graceful-degradation",
     "title": "Graceful Degradation",
     "path": "/docs/patterns/reliability/graceful-degradation",
@@ -912,6 +933,13 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/storage/federation",
+    "title": "Federation",
+    "path": "/docs/patterns/storage/federation",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/storage/index-table",
     "title": "Index Table",
     "path": "/docs/patterns/storage/index-table",
@@ -922,6 +950,13 @@ export const courseManifest: ManifestEntry[] = [
     "id": "patterns/storage/materialized-view",
     "title": "Materialized View",
     "path": "/docs/patterns/storage/materialized-view",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/storage/primary-replica-replication",
+    "title": "Primary-Replica Replication",
+    "path": "/docs/patterns/storage/primary-replica-replication",
     "category": "design-patterns",
     "source": "supplementary"
   },

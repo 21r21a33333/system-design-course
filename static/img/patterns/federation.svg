@@ -1,0 +1,40 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Split by function, not by key — each federate is a fully independent store</text>
+
+  <!-- Router / gateway -->
+  <rect x="300" y="55" width="160" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="380" y="79" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Request Router</text>
+  <text x="380" y="97" font-size="9" fill="#dbeafe" text-anchor="middle">routes by domain</text>
+
+  <!-- Users federate -->
+  <rect x="60" y="180" width="160" height="65" rx="8" fill="#0f766e"/>
+  <text x="140" y="205" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Users</text>
+  <text x="140" y="223" font-size="9" fill="#ccfbf1" text-anchor="middle">own schema + engine</text>
+
+  <!-- Orders federate -->
+  <rect x="300" y="180" width="160" height="65" rx="8" fill="#0f766e"/>
+  <text x="380" y="205" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Orders</text>
+  <text x="380" y="223" font-size="9" fill="#ccfbf1" text-anchor="middle">own schema + engine</text>
+
+  <!-- Inventory federate -->
+  <rect x="540" y="180" width="160" height="65" rx="8" fill="#0f766e"/>
+  <text x="620" y="205" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Inventory</text>
+  <text x="620" y="223" font-size="9" fill="#ccfbf1" text-anchor="middle">own schema + engine</text>
+
+  <!-- router -> federates -->
+  <line x1="340" y1="112" x2="150" y2="178" stroke="#1d4ed8" stroke-width="2" marker-end="url(#fedArrowBlue)"/>
+  <line x1="380" y1="112" x2="380" y2="178" stroke="#1d4ed8" stroke-width="2" marker-end="url(#fedArrowBlue)"/>
+  <line x1="420" y1="112" x2="610" y2="178" stroke="#1d4ed8" stroke-width="2" marker-end="url(#fedArrowBlue)"/>
+
+  <!-- cross-domain aggregation note -->
+  <path d="M 140 245 Q 260 280 380 245" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4,3" fill="none"/>
+  <text x="260" y="288" font-size="9" fill="#b45309" text-anchor="middle">cross-domain read: query both, assemble in app code</text>
+
+  <defs>
+    <marker id="fedArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+</svg>

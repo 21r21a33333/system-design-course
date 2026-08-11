@@ -1,0 +1,56 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Sustained health-check failure triggers promotion of the standby</text>
+
+  <!-- Client -->
+  <rect x="30" y="120" width="120" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="90" y="146" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Client</text>
+  <text x="90" y="164" font-size="9" fill="#dbeafe" text-anchor="middle">traffic</text>
+
+  <!-- old active (failed) -->
+  <rect x="280" y="60" width="160" height="60" rx="8" fill="#dc2626"/>
+  <text x="360" y="86" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Active (failed)</text>
+  <text x="360" y="104" font-size="9" fill="#fee2e2" text-anchor="middle">missed heartbeats</text>
+
+  <!-- new active (promoted standby) -->
+  <rect x="280" y="190" width="160" height="60" rx="8" fill="#0f766e"/>
+  <text x="360" y="216" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Standby → Active</text>
+  <text x="360" y="234" font-size="9" fill="#ccfbf1" text-anchor="middle">promoted, epoch+1</text>
+
+  <!-- controller -->
+  <rect x="560" y="125" width="150" height="55" rx="8" fill="#334155"/>
+  <text x="635" y="145" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Failover Controller</text>
+  <text x="635" y="163" font-size="9" fill="#cbd5e1" text-anchor="middle">health checks both</text>
+
+  <!-- controller -> old active check (failing) -->
+  <line x1="560" y1="140" x2="442" y2="100" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#foArrowRed)"/>
+  <text x="510" y="110" font-size="9" fill="#dc2626" text-anchor="middle">check fails x N</text>
+
+  <!-- controller -> standby promote -->
+  <line x1="560" y1="165" x2="442" y2="210" stroke="#0f766e" stroke-width="2" marker-end="url(#foArrowTeal)"/>
+  <text x="510" y="235" font-size="9" fill="#0f766e" text-anchor="middle">promote</text>
+
+  <!-- client -> old active (crossed out) -->
+  <line x1="150" y1="130" x2="278" y2="95" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,3"/>
+  <text x="200" y="105" font-size="9" fill="#94a3b8" text-anchor="middle">old route</text>
+
+  <!-- client -> new active -->
+  <line x1="150" y1="160" x2="278" y2="215" stroke="#1d4ed8" stroke-width="2.5" marker-end="url(#foArrowBlue)"/>
+  <text x="200" y="200" font-size="9" fill="#1d4ed8" text-anchor="middle">redirected</text>
+
+  <rect x="30" y="270" width="700" height="35" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="380" y="292" font-size="9" fill="#334155" text-anchor="middle">fencing on the epoch stops the old active from acting if it comes back mid-partition</text>
+
+  <defs>
+    <marker id="foArrowRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="foArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="foArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+</svg>
