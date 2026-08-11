@@ -240,6 +240,19 @@ rolls back the deploy, then redrives the DLQ so every message the buggy
 version rejected is reprocessed correctly by the restored version, with
 no data lost.
 
+## Production libraries & getting started
+
+A DLQ is a broker feature, not a library you import — you configure it on the queue and use the broker's client to consume/redrive it. Kafka is the exception: the core broker has no native DLQ, so the DLQ lives in the framework consuming it (Kafka Connect's error-DLQ, or Spring Kafka's dead-letter topics).
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Amazon SQS DLQ | any (AWS SDK) | Broker-native DLQ via `maxReceiveCount` + built-in redrive | [SQS DLQ docs](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html) · [JS SDK](https://github.com/aws/aws-sdk-js-v3) |
+| RabbitMQ dead-letter exchange | any (AMQP client) | Route rejected/expired/over-limit messages to a DLX to preserve them | [DLX docs](https://www.rabbitmq.com/docs/dlx) (browser-live; 403 to curl) |
+| Azure Service Bus DLQ | any (Azure SDK) | Built-in per-entity dead-letter sub-queue with reason metadata | [Service Bus DLQ docs](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dead-letter-queues) |
+| Kafka Connect error DLQ | JVM / config | `errors.deadletterqueue.topic.name` routes unprocessable records to a DLQ topic | [Confluent deep dive](https://www.confluent.io/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues/) |
+| Spring Kafka (DLT) | Java/Kotlin | `DeadLetterPublishingRecoverer` + `@RetryableTopic` produce a dead-letter topic after retries | [error-handling docs](https://docs.spring.io/spring-kafka/reference/kafka/annotation-error-handling.html) |
+| BullMQ failed set | JS/TS (Redis) | Jobs that exhaust attempts move to a `failed` set for inspection/retry | [retrying failing jobs](https://docs.bullmq.io/guide/retrying-failing-jobs) |
+
 ## Related patterns
 
 - [Retry with Backoff](/docs/patterns/reliability/retry-with-backoff) —

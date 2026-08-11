@@ -273,6 +273,21 @@ connections and block order placement, the two paths get *separate* bounded
 connection pools. An analytics spike saturates only the analytics pool;
 order placement keeps its guaranteed connections and stays responsive.
 
+## Production libraries & getting started
+
+resilience4j (Java) and Polly (.NET) ship a dedicated Bulkhead abstraction; in most other languages you build the same semaphore-based isolation directly on the standard concurrency primitive.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| cockatiel (bulkhead) | JS/TS | A bulkhead policy capping concurrent executions with a bounded queue | [github.com/connor4312/cockatiel](https://github.com/connor4312/cockatiel) ([npm](https://www.npmjs.com/package/cockatiel)) |
+| `tokio::sync::Semaphore` | Rust | Permit-based bounded concurrency for isolating a dependency's async calls | [docs.rs/tokio — Semaphore](https://docs.rs/tokio/latest/tokio/sync/struct.Semaphore.html) |
+| `golang.org/x/sync/semaphore` | Go | Weighted semaphore for capping in-flight calls per compartment | [pkg.go.dev — x/sync/semaphore](https://pkg.go.dev/golang.org/x/sync/semaphore) |
+| `asyncio.Semaphore` | Python (async) | Built-in semaphore to bound concurrent coroutines to a dependency | [docs.python.org — asyncio.Semaphore](https://docs.python.org/3/library/asyncio-sync.html#asyncio.Semaphore) |
+| resilience4j Bulkhead | Java | Canonical semaphore and thread-pool bulkhead implementations | [resilience4j.readme.io — Bulkhead](https://resilience4j.readme.io/docs/bulkhead) |
+| Polly | .NET | Canonical rate-limiter/bulkhead isolation strategy for .NET | [pollydocs.org](https://www.pollydocs.org/) |
+
+**Example / reference:** [Netflix Hystrix — How it Works](https://github.com/Netflix/Hystrix/wiki/How-it-Works)
+
 ## Related patterns
 
 - [Circuit Breaker](/docs/patterns/reliability/circuit-breaker) — the

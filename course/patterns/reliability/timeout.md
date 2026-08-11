@@ -228,6 +228,20 @@ recommendations hops only 300 ms — they fail fast against the shrunken
 budget instead of letting the user wait four seconds for a response the
 client already gave up on.
 
+## Production libraries & getting started
+
+Timeouts are usually a first-class primitive of the language runtime or HTTP client rather than a separate library — prefer the built-in deadline/cancellation mechanism so the abort propagates.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| `AbortSignal.timeout` / `AbortController` | JS/TS | Built-in cancellation signal that aborts `fetch` and other async work on a deadline | [MDN — AbortSignal.timeout](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static), [MDN — AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) |
+| `tokio::time::timeout` | Rust | Wraps any future so it resolves to an error once the duration elapses | [docs.rs/tokio — timeout](https://docs.rs/tokio/latest/tokio/time/fn.timeout.html) |
+| `context.WithTimeout` | Go | Deadline-carrying context that cancels downstream work; the idiomatic propagation model | [pkg.go.dev — context.WithTimeout](https://pkg.go.dev/context#WithTimeout), [Go blog — Context](https://go.dev/blog/context) |
+| `asyncio.timeout` | Python (async) | Async context manager that cancels the enclosed coroutine on expiry | [docs.python.org — asyncio.timeout](https://docs.python.org/3/library/asyncio-task.html#asyncio.timeout) |
+| httpx `Timeout` | Python | Fine-grained connect/read/write/pool timeouts for HTTP clients | [python-httpx.org — Timeouts](https://www.python-httpx.org/advanced/timeouts/) |
+
+**Example / reference:** [Reliable microservices data exchange / gRPC deadlines — grpc.io](https://grpc.io/blog/deadlines/)
+
 ## Related patterns
 
 - [Retry with Backoff](/docs/patterns/reliability/retry-with-backoff) —

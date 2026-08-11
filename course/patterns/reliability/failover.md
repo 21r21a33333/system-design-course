@@ -206,6 +206,19 @@ snapshot — a failover measured in minutes rather than seconds, which is
 an acceptable trade for not paying to keep a duplicate cluster running
 around the clock for a workload that only needs to complete once a day.
 
+## Production libraries & getting started
+
+Failover is operated at the infrastructure layer, not dropped in as a library — the "implementation" is a database HA manager, a proxy with health checks, or an orchestrator that promotes a standby and reroutes traffic. The table lists the systems that actually perform failover, by the component they protect.
+
+| Library / Tool | Layer | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Patroni | Postgres HA | Template for a HA Postgres cluster with automatic leader election + promotion | [docs](https://patroni.readthedocs.io/en/latest/) · [repo](https://github.com/zalando/patroni) |
+| repmgr | Postgres HA | Replication + automatic failover management for Postgres primaries/standbys | [docs](https://repmgr.org/docs/current/index.html) |
+| Redis Sentinel | Redis HA | Monitors a master, elects and promotes a replica, updates clients on failover | [Sentinel docs](https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/) |
+| HAProxy + keepalived | Load balancer / VIP | Health-checked backend removal + VRRP floating IP so a standby LB takes over | [HAProxy docs](https://docs.haproxy.org/) · [keepalived](https://www.keepalived.org/) |
+| Kubernetes | Orchestrator | Liveness/readiness probes + Deployments reschedule failed pods automatically | [probes docs](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) |
+| Amazon RDS Multi-AZ | Managed DB | Cloud-managed synchronous standby with automatic cross-AZ failover | [Multi-AZ docs](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html) |
+
 ## Related patterns
 
 - [Primary-Replica Replication](/docs/patterns/storage/primary-replica-replication) —

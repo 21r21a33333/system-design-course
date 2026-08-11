@@ -286,6 +286,22 @@ absorbed by retry, but if the replica goes fully down, the breaker trips
 and short-circuits the retry loop, so the service stops piling retry
 traffic onto a dead replica and fails fast to a fallback replica or cache.
 
+## Production libraries & getting started
+
+Most languages have a mature breaker library; resilience4j (Java) and Polly (.NET) are the canonical references the rest tend to mirror.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| opossum | JS/TS | Breaker with fallback, half-open probing, and per-breaker stats/events | [nodeshift.dev/opossum](https://nodeshift.dev/opossum/) ([npm](https://www.npmjs.com/package/opossum)) |
+| failsafe-rs (`failsafe`) | Rust | Composable breaker policies (consecutive-count and failure-rate) | [docs.rs/failsafe](https://docs.rs/failsafe/latest/failsafe/) |
+| sony/gobreaker | Go | Small, widely-used breaker with a configurable trip predicate | [pkg.go.dev/sony/gobreaker](https://pkg.go.dev/github.com/sony/gobreaker) |
+| pybreaker | Python | Thread-safe breaker with listeners and pluggable storage | [pypi.org/project/pybreaker](https://pypi.org/project/pybreaker/) |
+| aiobreaker | Python (async) | asyncio-native breaker for `async`/`await` call sites | [pypi.org/project/aiobreaker](https://pypi.org/project/aiobreaker/) |
+| resilience4j CircuitBreaker | Java | Canonical rate-based sliding-window breaker | [resilience4j.readme.io — CircuitBreaker](https://resilience4j.readme.io/docs/circuitbreaker) |
+| Polly | .NET | Canonical breaker + fallback strategies for .NET | [pollydocs.org — Circuit breaker](https://www.pollydocs.org/strategies/circuit-breaker) |
+
+**Example / reference:** [Netflix Hystrix — How it Works](https://github.com/Netflix/Hystrix/wiki/How-it-Works)
+
 ## Related patterns
 
 - [Retry with Backoff](/docs/patterns/reliability/retry-with-backoff) —

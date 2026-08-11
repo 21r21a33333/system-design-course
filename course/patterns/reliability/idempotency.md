@@ -250,6 +250,20 @@ recognized and acknowledged without re-running its handler, so a
 "payment.succeeded" event fulfills the order exactly once even if the
 provider delivers it three times.
 
+## Production libraries & getting started
+
+Idempotency is usually assembled from two parts: middleware that reads an idempotency key off the request, and a dedup store (a DB unique constraint or a Redis `SET NX`) that records the first result. The table lists key-aware middleware plus the primitives the technique rests on.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| express-idempotency | JS/TS | Express middleware that caches the first response per `Idempotency-Key` and replays it on retries | [npm](https://www.npmjs.com/package/express-idempotency) |
+| Svix idempotency | JS/TS / language-agnostic | Idempotency-key handling for webhook/event APIs, with a documented key + dedup-window model to copy | [docs](https://docs.svix.com/idempotency) |
+| axum-idempotent | Rust | Tower/axum layer that deduplicates by client key or request hash and caches the response | [docs.rs](https://docs.rs/axum-idempotent) |
+| django-idempotency-key | Python | Django/DRF middleware storing key to response in a cache backend | [PyPI](https://pypi.org/project/django-idempotency-key/) |
+| Redis `SET key val NX` | any (via client) | Atomic claim-the-key primitive — the SETNX dedup store under a hand-rolled idempotency layer | [Redis SET docs](https://redis.io/docs/latest/commands/set/) |
+
+**Example / reference:** [Stripe idempotent requests](https://docs.stripe.com/api/idempotent_requests) — the canonical `Idempotency-Key` header design (key to stored result, ~24h TTL, payload-fingerprint conflict).
+
 ## Related patterns
 
 - [Retry with Backoff](/docs/patterns/reliability/retry-with-backoff) —

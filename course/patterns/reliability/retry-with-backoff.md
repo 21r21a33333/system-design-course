@@ -230,6 +230,24 @@ small cap, and if the event still won't process, it routes to a
 later inspection rather than retrying forever and blocking the partition —
 retry handles the transient case, the DLQ handles the poison-message case.
 
+## Production libraries & getting started
+
+Reach for a library rather than hand-rolling the delay math — these implement exponential backoff, jitter, retryable-error classification, and attempt caps for you.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| p-retry | JS/TS | Promise-based retry over exponential backoff with an abort signal | [github.com/sindresorhus/p-retry](https://github.com/sindresorhus/p-retry) ([npm](https://www.npmjs.com/package/p-retry)) |
+| cockatiel | JS/TS | Retry, backoff, and jitter as composable resilience policies | [github.com/connor4312/cockatiel](https://github.com/connor4312/cockatiel) ([npm](https://www.npmjs.com/package/cockatiel)) |
+| backon | Rust | Backoff schedules (exponential, constant) for sync and async retries | [docs.rs/backon](https://docs.rs/backon/latest/backon/) |
+| tokio-retry | Rust | Retry futures on a tokio runtime with pluggable backoff strategies | [docs.rs/tokio-retry](https://docs.rs/tokio-retry/latest/tokio_retry/) |
+| cenkalti/backoff | Go | Exponential backoff with full jitter and context support | [pkg.go.dev/cenkalti/backoff](https://pkg.go.dev/github.com/cenkalti/backoff/v4) |
+| avast/retry-go | Go | Ergonomic retry wrapper with configurable delay and retry-if predicates | [pkg.go.dev/avast/retry-go](https://pkg.go.dev/github.com/avast/retry-go) |
+| tenacity | Python | Declarative retry decorators with wait/stop/retry policies | [tenacity.readthedocs.io](https://tenacity.readthedocs.io/en/latest/) |
+| backoff | Python | Decorator-based exponential/fibonacci backoff with jitter | [pypi.org/project/backoff](https://pypi.org/project/backoff/) |
+| resilience4j Retry | Java | Canonical retry module with backoff and result/exception predicates | [resilience4j.readme.io — Retry](https://resilience4j.readme.io/docs/retry) |
+
+**Example / reference:** [Timeouts, retries, and backoff with jitter — Amazon Builders' Library](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+
 ## Related patterns
 
 - [Timeout](/docs/patterns/reliability/timeout) — a retry only makes sense

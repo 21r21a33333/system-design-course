@@ -224,6 +224,19 @@ resolution and disabling non-essential features like preview thumbnails —
 so streams keep playing at reduced quality instead of buffering to a
 stop. A reduced experience, deliberately chosen over an unavailable one.
 
+## Production libraries & getting started
+
+Graceful degradation comes in two flavors: reactive fallbacks (a resilience library returns a substitute when a call fails) and proactive kill-switches (a feature-flag system lets operators shed a non-critical feature during an incident). The table covers both, plus the stale-cache fallback that a warm [cache](/docs/patterns/caching/cache-aside) provides.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| cockatiel | JS/TS | `fallback` policy (plus retry/circuit-breaker) to return a default when a call fails | [npm](https://www.npmjs.com/package/cockatiel) |
+| resilience4j | Java/JVM | Fallback via decorators/`@CircuitBreaker(fallbackMethod=...)` for degraded responses | [getting started](https://resilience4j.readme.io/docs/getting-started) |
+| Polly | .NET | Fallback strategy returning a substitute value/response on failure | [fallback docs](https://www.pollydocs.org/strategies/fallback.html) |
+| OpenFeature | JS/TS, Go, Java, Python, ... | Vendor-neutral feature-flag API — the kill-switch layer for manual degradation | [reference](https://openfeature.dev/docs/reference/intro) |
+| Unleash | JS/TS, Go, Java, Python, Rust, ... | Self-hostable flag service to toggle expensive features off under load | [quickstart](https://docs.getunleash.io/quickstart) |
+| LaunchDarkly / Flagsmith | multi-language SDKs | Managed/self-host flag platforms for load-shedding kill-switches | [LaunchDarkly](https://launchdarkly.com/docs/home/getting-started) · [Flagsmith](https://docs.flagsmith.com/) |
+
 ## Related patterns
 
 - [Circuit Breaker](/docs/patterns/reliability/circuit-breaker) — detects
