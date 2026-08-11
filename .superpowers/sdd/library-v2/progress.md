@@ -339,3 +339,23 @@ lib mechanisms by reading, 26 internal links resolve, SVGs valid+on-
 palette, originality verbatim-search clean, curled 19 external URLs —
 1 dead (LinkedIn "The Log" engineering.linkedin.com 404 -> migrated
 linkedin.com/blog canonical), fixed. Build/typecheck clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Communication (9 pages) — COMPLETE
+Commit: f62f940 (all 9). 5 bare built out (websockets, server-sent-
+events, webhooks, pub-sub, event-driven-architecture) + 4 depth-ups
+(asynchronous-request-reply, claim-check, grpc-bidirectional-streaming,
+messaging-bridge). 5 new SVGs. WS/SSE/webhooks cross-differentiation
+(bidirectional / one-way / server-to-server) and pub-sub-vs-EDA framing
+consistent; EDA links (not duplicates) event-sourcing/cqrs/choreography/
+saga. Comparison tables (WS-vs-SSE-vs-polling, event styles, RPC types).
+Notable fix: grpc snippet was a trivial SEQUENTIAL echo — replaced with
+a genuine 3-real-thread duplex demo (~97ms interleaved vs ~150ms serial).
+
+Independent review: all 10 checks pass, ZERO issues, zero fixes. Re-ran
+grpc concurrency 3x (93/101/97ms — genuinely concurrent, real threads).
+Exercised all 9 snippets with assertion drivers (SSE wire bytes exact,
+webhook sign/verify rejects tampered/stale/wrong-secret, pub-sub own-copy
+fan-out, EDA dedup+dead-letter, claim-check integrity, async submit
+idempotency, bridge ack-after-confirm). 27 internal links resolve, 26
+external URLs all 200, originality verbatim-search clean, SVGs valid+on-
+palette. Build/typecheck clean, manifest 121.
