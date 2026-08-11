@@ -513,9 +513,37 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/communication/asynchronous-request-reply",
+    "title": "Asynchronous Request-Reply",
+    "path": "/docs/patterns/communication/asynchronous-request-reply",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/communication/claim-check",
+    "title": "Claim Check",
+    "path": "/docs/patterns/communication/claim-check",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/communication/event-driven-architecture",
     "title": "Event-Driven Architecture",
     "path": "/docs/patterns/communication/event-driven-architecture",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/communication/grpc-bidirectional-streaming",
+    "title": "gRPC Bidirectional Streaming",
+    "path": "/docs/patterns/communication/grpc-bidirectional-streaming",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/communication/messaging-bridge",
+    "title": "Messaging Bridge",
+    "path": "/docs/patterns/communication/messaging-bridge",
     "category": "design-patterns",
     "source": "supplementary"
   },
