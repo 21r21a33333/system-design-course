@@ -39,13 +39,14 @@ it forwards packets to a chosen backend without parsing anything above
 the transport layer, which makes it fast and protocol-agnostic but
 blind to the actual content of a request. An application-layer (Layer
 7) balancer terminates the connection, reads the request itself —
-path, headers, cookies — and can route on that content: sending
-`/video/*` to instances provisioned for media streaming and
-`/api/billing/*` to a separate, more tightly secured pool, or reading
-a session cookie to keep a given client pinned to the same backend
-instance. That visibility costs more compute per request than
-Layer 4's blind forwarding, but it's what enables any routing decision
-smarter than pure load distribution.
+path, headers, cookies — and can route on that content: a multi-tenant
+SaaS product can inspect the `Host` header or a `tenant_id` cookie and
+send each customer's traffic to the specific instance pool holding
+their provisioned resources, or hold a client on the same backend
+across a whole session by pinning on a session cookie. That visibility
+costs more compute per request than Layer 4's blind forwarding, but
+it's what enables any routing decision smarter than pure load
+distribution.
 
 **Distribution algorithms.** The policy that decides which specific
 instance gets the next request has several common shapes. **Round

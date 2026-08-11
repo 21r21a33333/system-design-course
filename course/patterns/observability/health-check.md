@@ -70,7 +70,7 @@ load-balanced endpoints until it passes again.
 
 ## Related patterns
 
-- [Load Balancer](/docs/concepts/load-balancer) — the primer's component that most directly consumes health check results to decide routing.
+- [Load Balancing](/docs/patterns/api-edge/load-balancing) — the component that most directly consumes health check results to decide routing.
 - [Circuit Breaker](/docs/patterns/reliability/circuit-breaker) — a client-side complement that reacts to failures a health check may not yet have caught.
 - [Graceful Degradation](/docs/patterns/reliability/graceful-degradation) — what a service does internally when a dependency it depends on is unhealthy.
 

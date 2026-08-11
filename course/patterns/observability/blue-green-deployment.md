@@ -65,7 +65,7 @@ blue/green cutover for web application environments.
 ## Related patterns
 
 - [Canary Deployment](/docs/patterns/observability/canary-deployment) — a gradual alternative to blue-green's instant, all-at-once cutover.
-- [Load Balancer](/docs/concepts/load-balancer) — the mechanism most commonly used to perform the traffic switch.
+- [Load Balancing](/docs/patterns/api-edge/load-balancing) — the mechanism most commonly used to perform the traffic switch.
 - [Health Check](/docs/patterns/observability/health-check) — used to verify the green environment before cutover.
 
 ## Further reading

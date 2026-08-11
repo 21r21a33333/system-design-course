@@ -68,8 +68,8 @@ limiting as a plugin-based proxy in front of microservices.
 
 ## Related patterns
 
-- [Reverse Proxy](/docs/concepts/reverse-proxy) — the primer's broader
-  treatment of the proxying mechanism an API gateway is built on.
+- [Reverse Proxy](/docs/patterns/api-edge/reverse-proxy) — the broader
+  pattern covering the proxying mechanism an API gateway is built on.
 - [Backend for Frontend](/docs/patterns/api-edge/backend-for-frontend) —
   a variant that splits the gateway per client type instead of sharing
   one gateway across all clients.

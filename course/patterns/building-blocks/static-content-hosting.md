@@ -41,7 +41,7 @@ beyond "does this key exist," no middleware, no server-side rendering.
 Because the files are immutable once published (a new deploy uploads
 new files, typically under new, content-hashed names, rather than
 overwriting the old ones in place), they're maximally cacheable: a
-[CDN](/docs/concepts/cdn) sitting in front of the static host can cache
+[CDN](/docs/patterns/building-blocks/cdn) sitting in front of the static host can cache
 each asset at edge locations close to users and serve the overwhelming
 majority of requests without ever reaching the origin storage after the
 first request for a given file. The application server is left to
@@ -127,7 +127,7 @@ JavaScript bundle itself.
 
 - [Blob Store](/docs/patterns/building-blocks/blob-store) — the storage
   layer static content hosting is typically built on top of.
-- [CDN](/docs/concepts/cdn) — the primer's treatment of caching and
+- [CDN](/docs/patterns/building-blocks/cdn) — the pattern covering caching and
   distributing content at the edge, which pairs naturally in front of a
   static host to push assets even closer to users.
 

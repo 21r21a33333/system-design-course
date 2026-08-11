@@ -69,8 +69,8 @@ launching more identical instances rather than resizing an existing one.
 - [Vertical Scaling](/docs/patterns/scaling/vertical-scaling) — the
   simpler alternative of making one machine bigger instead of adding
   more; often applied first before horizontal scaling becomes necessary.
-- [Load Balancer](/docs/concepts/load-balancer) — the primer's treatment
-  of the component that distributes requests across a horizontally
+- [Load Balancing](/docs/patterns/api-edge/load-balancing) — the
+  pattern covering the component that distributes requests across a horizontally
   scaled fleet.
 - [Sharding](/docs/patterns/storage/sharding) — the data-partitioning
   technique that makes horizontal scaling possible for stateful,

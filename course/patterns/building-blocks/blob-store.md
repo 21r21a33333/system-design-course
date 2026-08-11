@@ -68,7 +68,7 @@ a CDN in front for read-heavy public content.
 
 ## Related patterns
 
-- [CDN](/docs/concepts/cdn) — the primer's treatment of caching and
+- [CDN](/docs/patterns/building-blocks/cdn) — the pattern covering caching and
   distributing static content at the edge, which blob stores are
   frequently placed behind.
 
