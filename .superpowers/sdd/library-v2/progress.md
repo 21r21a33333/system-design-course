@@ -378,3 +378,25 @@ internal links resolve; fixed 1 dangling Wikipedia section anchor
 (#Incremental_maintenance absent -> page root). 11/12 external 200 (MySQL
 403 bot-block, browser-live, left). Originality clean. Build/typecheck
 clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Observability & Delivery (8 pages) — COMPLETE
+Commit: 45313f0 (all 8). 5 bare built out (blue-green-deployment, canary-
+deployment, feature-flags, distributed-tracing, health-check) + 3 depth-
+ups (deployment-stamps, external-configuration-store, geode). 7 new SVGs
+incl 2 second-diagrams (trace waterfall, health probes). blue-green/
+canary/feature-flags cross-differentiated (atomic / gradual / runtime-
+toggle, they compose) with shared comparison table; traces-vs-metrics-vs-
+logs + liveness/readiness/startup tables. In-page anchor links added and
+validated by the build (onBrokenAnchors=throw).
+
+Independent review: all 10 checks pass, ZERO issues, zero edits. Re-ran
+2 measured demos (canary 5.09% at weight 5 + 0 ramp regressions [sticky];
+feature-flags 10.23% at 10% + targeting + kill-switch-overrides-all) —
+both match; also reconstructed the tracing self-time scenario (300/40/30/
+190 + traceparent round-trip) — matches. 25 internal links + 3 anchors
+resolve, 22/22 external URLs 200, originality clean, 10 SVGs valid. The
+reviewer's git-diff preservation check was sandbox-blocked; orchestrator
+verified additive-only via HEAD~1 diff — definition/diagram/code/sections
+all preserved on the 3 depth-up pages (removed prose = old shallow
+How-it-works body upgraded to deep Technical-architecture, as intended).
+Build/typecheck clean, manifest 121.
