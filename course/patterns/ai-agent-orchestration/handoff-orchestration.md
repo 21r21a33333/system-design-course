@@ -10,7 +10,10 @@ specialized agent the moment it recognizes the task has moved outside
 its own competence — the same shape as a call-center agent transferring
 a caller to a specialist department. Exactly one agent is ever in
 control at a time, and the identity of the next agent is decided
-reactively, not fixed in advance.
+reactively, not fixed in advance. Microsoft's AutoGen framework
+documents this same transfer-of-control structure as its "Handoffs"
+design pattern, and Semantic Kernel ships the equivalent structure as
+a named "Handoff" orchestration pattern.
 
 ![Handoff Orchestration diagram](/img/patterns/handoff-orchestration.svg)
 
@@ -256,3 +259,5 @@ of the sales conversation, only the fields it actually needs to act on.
 
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
+- [Handoffs design pattern — AutoGen documentation, Microsoft](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/design-patterns/handoffs.html)
+- [Handoff agent orchestration — Semantic Kernel documentation, Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/handoff)

@@ -11,6 +11,13 @@ revises the plan as results come back — rather than following a fixed
 pipeline, a fixed roster, or handing control fully away. It is the most
 adaptive of the five patterns in this group, trading predictability for
 the ability to handle tasks whose right shape can't be known in advance.
+The name and the plan-delegate-observe-replan structure both trace to
+Microsoft's Magentic-One multi-agent system, whose lead Orchestrator
+agent plans, delegates sub-tasks to specialists (a coder, a
+web-browsing agent, a file-handling agent), and revises the plan based
+on what comes back; Microsoft's Semantic Kernel framework now ships
+this same structure as a named "Magentic" orchestration pattern for
+building multi-agent applications.
 
 ![Magentic Orchestration diagram](/img/patterns/magentic-orchestration.svg)
 
@@ -280,3 +287,5 @@ by a maximum remediation-round count before it escalates to a human.
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
 - [Automated planning and scheduling — Wikipedia](https://en.wikipedia.org/wiki/Automated_planning_and_scheduling)
+- [Magentic-One: a generalist multi-agent system for solving complex tasks — Microsoft Research](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/)
+- [Magentic agent orchestration — Semantic Kernel documentation, Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/magentic)

@@ -9,7 +9,10 @@ agents that run independently and in parallel, then combines their
 individual results into a single output through an aggregation step —
 a vote, a merge, or a selection. Where sequential orchestration is a
 pipeline, concurrent orchestration is a fan-out to several independent
-attempts followed by a fan-in that reconciles them.
+attempts followed by a fan-in that reconciles them. Microsoft's
+Semantic Kernel framework ships this same fan-out-then-aggregate
+structure as a named "Concurrent" orchestration pattern, one of the
+built-in multi-agent orchestration patterns in that framework.
 
 ![Concurrent Orchestration diagram](/img/patterns/concurrent-orchestration.svg)
 
@@ -237,3 +240,4 @@ company's outlook rather than smoothing the disagreement away.
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
 - [Ensemble learning — Wikipedia](https://en.wikipedia.org/wiki/Ensemble_learning)
+- [Concurrent agent orchestration — Semantic Kernel documentation, Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/concurrent)

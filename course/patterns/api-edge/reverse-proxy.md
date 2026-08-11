@@ -44,6 +44,15 @@ backend's perspective, the proxy is just another client, and the
 backend typically never learns the original caller's real address
 unless the proxy explicitly forwards it in a header.
 
+NGINX is one of the most widely deployed pieces of software in this
+role — originally built specifically as an HTTP server and reverse
+proxy, it's since grown load-balancing and caching features on top,
+which is itself a concrete illustration of how naturally those
+capabilities layer onto a proxy's basic forward-and-return job. Envoy
+is a newer, widely adopted alternative built around dynamic
+configuration and rich observability, and is the proxy Istio uses as
+its per-instance sidecar in its service mesh data plane.
+
 **What a reverse proxy adds beyond forwarding.** Because every request
 passes through it, a reverse proxy is a natural place to add
 functionality that would otherwise need to be duplicated across every
@@ -224,3 +233,5 @@ worthwhile.
 
 - [Reverse proxy — Wikipedia](https://en.wikipedia.org/wiki/Reverse_proxy)
 - [API Management overview — Microsoft Learn](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-implementation)
+- DesignGurus' System Design Patterns course covers this as "Reverse Proxy" in its The Entry Point (API and Edge) module.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Reverse Proxy as a named topic.

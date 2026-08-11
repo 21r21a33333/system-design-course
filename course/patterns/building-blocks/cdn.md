@@ -42,7 +42,13 @@ network layer is also used — directs it to whichever point of presence
 can serve it fastest, without the requesting client needing to know
 anything about the CDN's internal topology; from the client's
 perspective, it's still just making a normal request to a single
-hostname.
+hostname. Cloudflare and Amazon CloudFront are two widely used
+commercial CDNs that illustrate the anycast and DNS-based approaches
+respectively: Cloudflare routes much of its edge traffic via anycast,
+where the same IP address is announced from many points of presence
+and ordinary internet routing sends a request to the topologically
+nearest one, while CloudFront relies more directly on DNS resolution
+to steer a request to a nearby edge location.
 
 **Push vs. pull population.** Content gets onto edge locations one of
 two ways, and the choice trades storage cost against first-request
@@ -232,3 +238,5 @@ minutes to propagate everywhere.
 
 - [Content delivery network — Wikipedia](https://en.wikipedia.org/wiki/Content_delivery_network)
 - [What is a CDN? — Amazon CloudFront overview, AWS documentation](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html)
+- DesignGurus' System Design Patterns course covers this as "CDN" in its The Entry Point (API and Edge) module.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes CDN as a named topic.

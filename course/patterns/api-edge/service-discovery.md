@@ -72,6 +72,14 @@ one stable address of that intermediary, never the registry, at the
 cost of that intermediary being an extra hop and a component that has
 to stay available.
 
+HashiCorp Consul and etcd are two widely deployed examples of the
+registry itself: Consul combines a service registry with built-in
+health checking and a DNS/HTTP lookup interface, while etcd is a
+distributed key-value store (Kubernetes uses it internally) that
+services can watch for changes, making it a common building block for
+teams that implement discovery on top of a general-purpose consistent
+store rather than a purpose-built registry.
+
 **Propagation delay as a failure mode.** Every discovery mechanism has
 some lag between an instance's real status changing and every
 caller's view of the registry reflecting that change — a new instance
@@ -186,10 +194,10 @@ erasing the fact that it's a known member of the service.
   never change — a hardcoded address or simple DNS A record is simpler
   and has nothing meaningful to gain from a dynamic registry.
 - The deployment platform already provides equivalent functionality
-  transparently (many container orchestration and managed-compute
-  platforms give every service a stable internal DNS name backed by
-  their own instance tracking) — building a separate, custom discovery
-  layer on top would be redundant.
+  transparently — Kubernetes, for instance, gives every Service a
+  stable internal DNS name backed by its own endpoint tracking, which
+  is server-side discovery provided by the platform itself — building a
+  separate, custom discovery layer on top would be redundant.
 - The added lookup hop or registry dependency isn't acceptable for an
   extremely latency-sensitive call path, and a simpler static topology
   is an acceptable trade for that path specifically.
@@ -245,3 +253,4 @@ device-to-worker assignment.
 
 - [Service discovery — Wikipedia](https://en.wikipedia.org/wiki/Service_discovery)
 - [Service Fabric naming service (service discovery concepts) — Microsoft Learn](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-and-communicate-with-services)
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Service Discovery as a named topic.

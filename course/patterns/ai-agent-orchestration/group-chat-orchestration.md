@@ -9,7 +9,13 @@ Group chat orchestration puts multiple agents — and optionally a human
 see every prior message, and a moderator decides, turn by turn, which
 participant speaks next. It replaces both sequential's fixed chain and
 concurrent's isolated fan-out with one common context that every
-participant reads from and writes to.
+participant reads from and writes to. Microsoft's AutoGen framework
+documents this exact shared-thread, moderator-selects-next-speaker
+structure as its "Group Chat" design pattern, and Semantic Kernel ships
+the same idea as a named "Group Chat" orchestration pattern — both
+built by the same team that also documents the sequential, concurrent,
+handoff, and magentic patterns covered on the other pages in this
+group.
 
 ![Group Chat Orchestration diagram](/img/patterns/group-chat-orchestration.svg)
 
@@ -262,3 +268,5 @@ raising a new concern, signaling the discussion has converged.
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
 - [Four-eyes principle — Wikipedia](https://en.wikipedia.org/wiki/Four-eyes_principle)
+- [Group Chat design pattern — AutoGen documentation, Microsoft](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/design-patterns/group-chat.html)
+- [Group chat agent orchestration — Semantic Kernel documentation, Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/group-chat)

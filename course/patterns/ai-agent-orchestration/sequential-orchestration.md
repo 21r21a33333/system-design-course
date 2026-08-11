@@ -9,7 +9,11 @@ a predetermined order, where each agent receives the previous agent's
 output as its own input and produces the output the next agent will
 consume. It is a pipeline: the same shape as a Unix pipe or an
 assembly line, applied to LLM-backed agents instead of shell commands
-or physical components.
+or physical components. Microsoft's Semantic Kernel framework ships
+this exact structure as a named "Sequential" orchestration pattern,
+one of several built-in multi-agent orchestration patterns alongside
+the concurrent, group chat, handoff, and magentic patterns covered on
+the following pages.
 
 ![Sequential Orchestration diagram](/img/patterns/sequential-orchestration.svg)
 
@@ -223,3 +227,4 @@ is transforming the previous stage's output into a more actionable form.
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
 - [Pipeline (software) — Wikipedia](https://en.wikipedia.org/wiki/Pipeline_(software))
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
+- [Sequential agent orchestration — Semantic Kernel documentation, Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/sequential)

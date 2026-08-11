@@ -46,7 +46,14 @@ their provisioned resources, or hold a client on the same backend
 across a whole session by pinning on a session cookie. That visibility
 costs more compute per request than Layer 4's blind forwarding, but
 it's what enables any routing decision smarter than pure load
-distribution.
+distribution. HAProxy and NGINX are two widely deployed software load
+balancers that make this split concrete: both can run in a pure Layer
+4 (TCP) mode or a Layer 7 (HTTP-aware) mode, with the operator choosing
+per listener depending on whether content-based routing is actually
+needed for that traffic. Cloud providers also ship managed products
+built around the same split — AWS, for instance, offers a Network Load
+Balancer for Layer 4 traffic and an Application Load Balancer for
+Layer 7 — rather than one product trying to be both.
 
 **Distribution algorithms.** The policy that decides which specific
 instance gets the next request has several common shapes. **Round
@@ -243,3 +250,5 @@ here at the granularity of an entire region's instance pool.
 - [Load balancing (computing) — Wikipedia](https://en.wikipedia.org/wiki/Load_balancing_(computing))
 - [What is load balancing? — AWS documentation](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html)
 - [Load Balancer traffic-routing methods — Azure documentation](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-load-balancing-azure)
+- DesignGurus' System Design Patterns course covers this as "Load Balancing" in its Growing Under Load (Scaling) module.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Load Balancing as a named topic.

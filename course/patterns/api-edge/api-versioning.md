@@ -53,6 +53,20 @@ path structure, but it's the easiest to omit by accident since it's
 just another optional parameter, silently defaulting callers to
 whatever version the server treats as default.
 
+Real public APIs split across these approaches in ways that illustrate
+the trade-offs concretely. X's (formerly Twitter's) API puts the
+version directly in the path (`/2/tweets`), the URI-path approach's
+canonical form. Stripe and GitHub both take the header route instead,
+but with a twist on the usual major-version-number scheme: each uses a
+dated version string (Stripe's `Stripe-Version` header, GitHub's
+`X-GitHub-Api-Version` header, both carrying values like `2024-06-20`)
+rather than an incrementing integer, so a "version" is really a
+specific release date's contract, and an account or request that omits
+the header falls back to a configured default rather than the latest
+version — the same "easy to omit, silently defaults" risk header-based
+versioning carries in general, just with a date string standing in for
+a version number.
+
 **Backward compatibility inside a version.** Not every change needs a
 new version at all — the discipline that makes versioning tractable
 is distinguishing additive, backward-compatible changes (a new
@@ -212,3 +226,5 @@ real inside the organization.
 
 - [Software versioning — Wikipedia](https://en.wikipedia.org/wiki/Software_versioning)
 - [Web API design best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#versioning-a-restful-web-api)
+- DesignGurus' System Design Patterns course covers this as "API Versioning" in its The Entry Point (API and Edge) module.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes API Versioning as a named topic.
