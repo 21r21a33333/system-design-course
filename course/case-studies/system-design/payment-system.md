@@ -5,6 +5,8 @@ sidebar_position: 19
 
 A payment system's defining property is that its failure modes are worse than almost any other kind of system in this course: a lost write is an inconvenience for a social feed and a financial incident for a payment, and a duplicated write isn't a rendering glitch, it's a customer charged twice. The entire design below is organized around one goal — make every payment happen exactly once from the customer's perspective, even though the underlying infrastructure can only ever promise at-least-once delivery and partial failure.
 
+*Educative's Grokking Modern System Design Interview course covers this same system in its "Design a Payment System" module.*
+
 ## Step 1: Outline use cases and constraints
 
 ### Use cases
@@ -12,7 +14,7 @@ A payment system's defining property is that its failure modes are worse than al
 #### We'll scope the problem to handle the following use cases
 
 * **Merchant** (an online store, a platform, an app) submits a request to charge a customer's payment method for an order
-* **Service** coordinates with an external **payment gateway/processor** to actually move funds, since this design does not move money itself — it orchestrates and records the transaction, generically, without depending on any specific external provider's API
+* **Service** coordinates with an external **payment gateway/processor** (a real-world illustrative example of this role: a provider like Stripe) to actually move funds, since this design does not move money itself — it orchestrates and records the transaction, generically, without depending on any specific external provider's API
 * **Service** guarantees a given payment request is applied at most once, even if the merchant's client retries after a timeout or the request is redelivered internally
 * **Service** coordinates the multiple internal steps a single payment involves — reserving funds, charging the gateway, updating the order record — so that a failure partway through never leaves the system in a state where some of those steps happened and others didn't
 * **Service** records a durable, auditable ledger of every payment attempt and its outcome
@@ -51,7 +53,7 @@ A payment system's defining property is that its failure modes are worse than al
 
 ![Payment System high-level architecture](/img/case-studies/payment-system-overview.svg)
 
-A merchant submits a charge request, carrying a client-generated **idempotency key**, to a **payment service**. Before doing anything else, the payment service checks that key against a durable **idempotency store**: if the key has been seen before, it returns the previously recorded outcome instead of processing the request again — this check is the single most important step in the entire design, because it's what converts "the merchant retried a request that may or may not have already succeeded" into "the merchant safely gets back the one true answer for that request, whether this is the first attempt or the fifth." If the key is new, the payment service records the attempt in a durable **ledger** as "processing," then calls out to the external **payment gateway/processor** to actually move funds. Once the gateway responds (success or failure), the payment service updates the ledger to a terminal status and records the result against the idempotency key, so any future retry of the same key returns that recorded outcome directly, without a second gateway call.
+A merchant submits a charge request, carrying a client-generated **idempotency key**, to a **payment service**. Before doing anything else, the payment service checks that key against a durable **idempotency store**: if the key has been seen before, it returns the previously recorded outcome instead of processing the request again — this check is the single most important step in the entire design, because it's what converts "the merchant retried a request that may or may not have already succeeded" into "the merchant safely gets back the one true answer for that request, whether this is the first attempt or the fifth." If the key is new, the payment service records the attempt in a durable **ledger** as "processing," then calls out to the external **payment gateway/processor** — conceptually, whichever provider a merchant has integrated (Stripe and Adyen are two well-known real examples of this category of provider) — to actually move funds. Once the gateway responds (success or failure), the payment service updates the ledger to a terminal status and records the result against the idempotency key, so any future retry of the same key returns that recorded outcome directly, without a second gateway call.
 
 The structural bet this design makes, more explicitly than almost any other system in this course, is that **durability and ordering of state transitions matter more than raw speed** — every step that changes a payment's status is written durably before the system acts on it or reports it externally, because a payment system that's fast but occasionally loses track of whether a charge actually happened isn't an acceptable tradeoff, whereas a payment system that's a few hundred milliseconds slower than it could be is a minor inconvenience. This inverts the read-heavy, cache-first instinct that shapes most of this course's other case studies.
 

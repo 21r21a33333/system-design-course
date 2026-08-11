@@ -5,6 +5,8 @@ sidebar_position: 12
 
 A video platform's defining constraint is different from a photo or text feed: the content itself isn't servable the moment it's uploaded. A raw video file has to go through a processing pipeline before it can be watched by anyone, and once it can be watched, delivering it efficiently dominates the system's total cost and traffic far more than any single photo or message ever would.
 
+*Educative's Grokking Modern System Design Interview course covers this same system in its "Design YouTube" module, including a dedicated "TikTok System Design (Mock Interview)" sub-lesson.*
+
 ## Step 1: Outline use cases and constraints
 
 ### Use cases
@@ -71,7 +73,7 @@ Returning success to the uploader as soon as the raw bytes are durably stored �
 This is the component with no clear analogue in the other case studies in this course, and it's the one most worth spending interview time on for this specific system. The pipeline takes one raw input file and needs to produce several independent outputs (different resolution/bitrate renditions, a set of thumbnail candidates), where each output's transcoding work is independent of the others and can run in parallel.
 
 * A **coordinator** breaks the job into per-rendition tasks (e.g., "produce the 1080p rendition," "produce the 480p rendition," "extract thumbnail candidates") and places them onto a work queue
-* A fleet of **transcoding workers** pulls tasks and processes them — this is compute-intensive, and unlike almost everything else in this design, it's CPU/GPU-bound rather than I/O-bound, so the worker fleet scales on a completely different axis (compute capacity) than the rest of the system
+* A fleet of **transcoding workers** pulls tasks and processes them — this is compute-intensive, and unlike almost everything else in this design, it's CPU/GPU-bound rather than I/O-bound, so the worker fleet scales on a completely different axis (compute capacity) than the rest of the system. FFmpeg is the widely-used real-world tool for the actual encode step underlying a worker like this, and its wide codec and container support is a large part of why it's such a common building block for this exact stage of a video pipeline.
 * Each completed rendition is written to blob storage independently; the coordinator tracks which renditions are done and updates the video's status once enough are ready to make the video watchable (not necessarily all — the lowest-resolution rendition finishing first is enough to let playback start, with higher tiers becoming available for adaptive switching shortly after)
 * If a worker crashes mid-task, the task needs to be retried by another worker rather than lost — this is a natural fit for [Competing Consumers](/docs/patterns/batch-streaming/competing-consumers) pulling from a [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue), where an unacknowledged task becomes visible again for another worker to pick up
 * Structuring the whole thing as [Pipes and Filters](/docs/patterns/building-blocks/pipes-and-filters) — independent, composable processing stages (demux, per-rendition encode, thumbnail extraction, packaging) rather than one monolithic transcoding job — makes it possible to retry or scale one stage without re-running the others, and to add a new rendition tier later without redesigning the pipeline
@@ -81,14 +83,14 @@ This pipeline is also the part of the system where cost is most directly proport
 ### Use case: User watches a video
 
 * Client requests the video's manifest (the list of available renditions and their URLs) from the metadata/playback service
-* Client begins fetching video segments from the **CDN**, starting at a lower-bitrate rendition to minimize start-up delay, and adjusts which rendition it requests for subsequent segments based on observed download speed — this adaptive-bitrate behavior lives client-side; the server's job is simply to have all the renditions available and correctly segmented
+* Client begins fetching video segments from the **CDN**, starting at a lower-bitrate rendition to minimize start-up delay, and adjusts which rendition it requests for subsequent segments based on observed download speed — this adaptive-bitrate behavior lives client-side; the server's job is simply to have all the renditions available and correctly segmented. HLS and MPEG-DASH are the two real, widely-deployed protocols that define exactly this segmented-rendition-plus-manifest shape, and either is a reasonable concrete choice for the packaging format this design's renditions and manifest need to follow
 * Segments are fetched from the CDN edge nearest the viewer; only on a cache miss does the request fall through to origin blob storage
 
 This is the delivery-side counterpart to the transcoding pipeline's production-side complexity: because the pipeline already did the expensive work of producing multiple renditions ahead of time, playback itself is a comparatively simple, mostly-static-file-serving problem, which is exactly what makes it so effectively cacheable. See [CDN](/docs/patterns/building-blocks/cdn) for the general mechanism — the key point specific to video is that popular content's *entire working set* (all renditions of a small number of very popular videos) can often be kept resident at CDN edges, since video traffic tends to follow a strong popularity skew where a small fraction of the catalog accounts for a large fraction of total plays.
 
 ### Use case: User searches for videos, service tracks view counts
 
-Search indexes title, description, and (optionally) transcript text against an inverted index — the same general mechanism described in [Distributed Search](/docs/patterns/building-blocks/distributed-search) — updated asynchronously off the same "video uploaded / video ready" event stream the transcoding pipeline already consumes, rather than being a separate ad hoc integration.
+Search indexes title, description, and (optionally) transcript text against an inverted index — the same general mechanism described in [Distributed Search](/docs/patterns/building-blocks/distributed-search), of the kind Elasticsearch or OpenSearch implement as off-the-shelf systems — updated asynchronously off the same "video uploaded / video ready" event stream the transcoding pipeline already consumes, rather than being a separate ad hoc integration.
 
 View counts follow the same reasoning as Instagram's like counts: extremely high write frequency concentrated on a small number of popular videos, tolerant of a brief lag before the displayed number is exact. A [Sharded Counter](/docs/patterns/building-blocks/sharded-counters) absorbs concurrent increments without one row becoming a bottleneck on a video that's currently trending, with the displayed count refreshed from a periodic aggregate rather than summed on every single page view.
 

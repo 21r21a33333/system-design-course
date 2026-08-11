@@ -5,6 +5,8 @@ sidebar_position: 11
 
 A photo-sharing feed is, at its core, a fan-out problem: a small number of writes (posts) need to reach a large number of reads (followers' feeds), and the feed has to feel instantaneous to open even though the underlying content is scattered across many other users' accounts.
 
+*Educative's Grokking Modern System Design Interview course covers this same system in its "Design Instagram" module.*
+
 ## Step 1: Outline use cases and constraints
 
 ### Use cases
@@ -58,7 +60,7 @@ The feed's read-heavy skew (30:1 in this design's numbers) is the reason the arc
 
 ### Use case: User uploads a photo
 
-* Client uploads the original image, typically over a resumable/chunked upload given mobile network conditions, directly to **blob storage** (or through the post service acting as a thin pass-through) — see [Blob Store](/docs/patterns/building-blocks/blob-store)
+* Client uploads the original image, typically over a resumable/chunked upload given mobile network conditions, directly to **blob storage** (a service like Amazon S3 or a comparable cloud object store is a typical real-world fit) or through the post service acting as a thin pass-through — see [Blob Store](/docs/patterns/building-blocks/blob-store)
 * An asynchronous processing step generates the standard display sizes (thumbnail, feed-width, full-screen) and writes them alongside the original
 * The **post service** writes a metadata row (`post_id`, `user_id`, `image_urls`, `caption`, `created_at`) to the **post store**, and only after that succeeds, publishes a "new post" event
 * The **fan-out service** consumes that event and is responsible for making the post appear in followers' feeds (see the fan-out use case below)
@@ -89,11 +91,11 @@ The like/comment *event* itself (who liked what, when) is written durably and in
 
 ![Instagram scaled architecture](/img/case-studies/instagram-scaled.svg)
 
-**Image delivery is the highest-volume traffic in the system and shouldn't touch application servers at all.** Once an image is processed into its display variants, it's immutable — nothing about a photo's pixels changes after upload — which makes it about as ideal a caching candidate as exists. A [CDN](/docs/patterns/building-blocks/cdn) in front of blob storage serves the overwhelming majority of image requests without ever reaching the origin, which matters enormously given this design's ~40,000 reads/sec at peak, each of which touches multiple images.
+**Image delivery is the highest-volume traffic in the system and shouldn't touch application servers at all.** Once an image is processed into its display variants, it's immutable — nothing about a photo's pixels changes after upload — which makes it about as ideal a caching candidate as exists. A [CDN](/docs/patterns/building-blocks/cdn) in front of blob storage (a CDN such as Cloudflare, Fastly, or a cloud provider's own edge network is the kind of real building block this role maps to) serves the overwhelming majority of image requests without ever reaching the origin, which matters enormously given this design's ~40,000 reads/sec at peak, each of which touches multiple images.
 
 **The feed store's read path is the second-highest-volume path and is served primarily from an in-memory cache, with the durable feed store as the source of truth behind it.** A user's precomputed feed list rarely needs anything more durable-feeling than "recompute from the social graph and recent posts if the cache entry is ever lost" — see [Cache-Aside](/docs/patterns/caching/cache-aside). Because feed reads so heavily outnumber feed writes, keeping only active users' feed entries warm in cache (evicting users who haven't opened the app recently) keeps the cache working set proportional to actual daily activity rather than the full user base.
 
-**The fan-out write path scales by moving fan-out off the synchronous post-upload path entirely.** The post service publishes a "new post" event and returns success immediately; a pool of fan-out workers consuming from a [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue) does the (potentially large, for a mid-size popular account) work of inserting into follower feed-store entries, so a burst of a popular account's posts landing at the same time doesn't stall uploads for anyone. This is [Queue-Based Load Leveling](/docs/patterns/batch-streaming/queue-based-load-leveling) applied to the fan-out-on-write path specifically.
+**The fan-out write path scales by moving fan-out off the synchronous post-upload path entirely.** The post service publishes a "new post" event and returns success immediately; a pool of fan-out workers consuming from a [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue) (Kafka is a common real-world choice for this kind of high-throughput event backbone) does the (potentially large, for a mid-size popular account) work of inserting into follower feed-store entries, so a burst of a popular account's posts landing at the same time doesn't stall uploads for anyone. This is [Queue-Based Load Leveling](/docs/patterns/batch-streaming/queue-based-load-leveling) applied to the fan-out-on-write path specifically.
 
 **The social graph store scales by sharding on `user_id`**, since "who does this user follow" and "who follows this user" are both keyed off a single user — see [Sharding](/docs/patterns/storage/sharding). At this design's scale, followers/following lists are read constantly (every fan-out, every feed merge) and written comparatively rarely (follow/unfollow), which argues for aggressively caching graph reads on top of a sharded durable store, similar to the treatment the Social Graph case study elsewhere in this course goes into in more depth.
 
