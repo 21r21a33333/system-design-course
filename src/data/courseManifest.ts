@@ -401,6 +401,13 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/batch-streaming/competing-consumers",
+    "title": "Competing Consumers",
+    "path": "/docs/patterns/batch-streaming/competing-consumers",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/batch-streaming/exactly-once-semantics",
     "title": "Exactly-Once Semantics",
     "path": "/docs/patterns/batch-streaming/exactly-once-semantics",
@@ -425,6 +432,27 @@ export const courseManifest: ManifestEntry[] = [
     "id": "patterns/batch-streaming/partitioned-consumption",
     "title": "Partitioned Consumption",
     "path": "/docs/patterns/batch-streaming/partitioned-consumption",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/priority-queue",
+    "title": "Priority Queue",
+    "path": "/docs/patterns/batch-streaming/priority-queue",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/queue-based-load-leveling",
+    "title": "Queue-Based Load Leveling",
+    "path": "/docs/patterns/batch-streaming/queue-based-load-leveling",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/batch-streaming/sequential-convoy",
+    "title": "Sequential Convoy",
+    "path": "/docs/patterns/batch-streaming/sequential-convoy",
     "category": "design-patterns",
     "source": "supplementary"
   },
