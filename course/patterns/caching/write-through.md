@@ -58,10 +58,10 @@ for the read side: write-through keeps written data fresh, and a
 lazy-load strategy fills in reads for keys that predate the current
 cache instance.
 
-Amazon DynamoDB Accelerator (DAX), for instance, supports a
-write-through configuration in front of DynamoDB specifically so a
-cache miss can never be produced by a write that hasn't reached the
-table yet.
+Amazon DynamoDB Accelerator (DAX), for instance, writes through to
+DynamoDB on every put, specifically so that a subsequent read can never
+return a cached value that's staler than what DynamoDB has already
+durably accepted.
 
 **Failure modes.** The core failure mode is a *partial* write: the
 cache accepts and stores the value, but the downstream store write
