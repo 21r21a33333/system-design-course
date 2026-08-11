@@ -1,0 +1,59 @@
+<svg viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="780" height="340" fill="#ffffff"/>
+
+  <text x="390" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Query-time retrieval and re-ranking ground the LLM's answer in fetched source text</text>
+
+  <!-- Query -->
+  <rect x="20" y="130" width="110" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="75" y="153" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">User query</text>
+  <text x="75" y="171" font-size="9" fill="#dbeafe" text-anchor="middle">embedded</text>
+
+  <!-- Vector index -->
+  <rect x="180" y="55" width="150" height="55" rx="8" fill="#0f766e"/>
+  <text x="255" y="78" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Vector index</text>
+  <text x="255" y="96" font-size="9" fill="#ccfbf1" text-anchor="middle">chunk embeddings</text>
+
+  <!-- Re-ranker -->
+  <rect x="380" y="130" width="140" height="55" rx="8" fill="#0f766e"/>
+  <text x="450" y="153" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Re-ranker</text>
+  <text x="450" y="171" font-size="9" fill="#ccfbf1" text-anchor="middle">scores candidates</text>
+
+  <!-- Prompt assembly -->
+  <rect x="560" y="55" width="180" height="55" rx="8" fill="#334155"/>
+  <text x="650" y="78" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Prompt assembly</text>
+  <text x="650" y="96" font-size="9" fill="#cbd5e1" text-anchor="middle">query + top chunks</text>
+
+  <!-- LLM -->
+  <rect x="560" y="200" width="180" height="55" rx="8" fill="#334155"/>
+  <text x="650" y="223" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">LLM</text>
+  <text x="650" y="241" font-size="9" fill="#cbd5e1" text-anchor="middle">grounded generation</text>
+
+  <line x1="130" y1="145" x2="178" y2="95" stroke="#1d4ed8" stroke-width="2" marker-end="url(#ragArrowBlue)"/>
+  <text x="150" y="105" font-size="9" fill="#1d4ed8" text-anchor="middle">1. embed + search</text>
+
+  <line x1="330" y1="95" x2="378" y2="150" stroke="#0f766e" stroke-width="2" marker-end="url(#ragArrowTeal)"/>
+  <text x="360" y="115" font-size="9" fill="#0f766e" text-anchor="middle">2. candidates</text>
+
+  <line x1="520" y1="145" x2="558" y2="90" stroke="#0f766e" stroke-width="2" marker-end="url(#ragArrowTeal)"/>
+  <text x="555" y="130" font-size="9" fill="#0f766e" text-anchor="middle">3. top-k</text>
+
+  <line x1="650" y1="110" x2="650" y2="198" stroke="#334155" stroke-width="2" marker-end="url(#ragArrowGray)"/>
+  <text x="695" y="160" font-size="9" fill="#334155" text-anchor="middle">4. generate</text>
+
+  <rect x="130" y="260" width="500" height="55" rx="8" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="380" y="280" font-size="9.5" fill="#b45309" text-anchor="middle" font-weight="600">Re-ranking exists because fast ANN search over-recalls:</text>
+  <text x="380" y="295" font-size="9.5" fill="#b45309" text-anchor="middle">it returns some marginally relevant chunks the cheaper</text>
+  <text x="380" y="309" font-size="9.5" fill="#b45309" text-anchor="middle">vector search alone can't reliably filter out</text>
+
+  <defs>
+    <marker id="ragArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="ragArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="ragArrowGray" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

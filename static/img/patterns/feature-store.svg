@@ -1,0 +1,50 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">One transformation pipeline writes both stores so training and serving see identical features</text>
+
+  <!-- Ingestion pipeline -->
+  <rect x="290" y="35" width="180" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="380" y="58" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Ingestion pipeline</text>
+  <text x="380" y="76" font-size="9" fill="#dbeafe" text-anchor="middle">single transformation logic</text>
+
+  <!-- Offline store -->
+  <rect x="90" y="150" width="180" height="60" rx="8" fill="#0f766e"/>
+  <text x="180" y="176" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Offline store</text>
+  <text x="180" y="194" font-size="9" fill="#ccfbf1" text-anchor="middle">historical, for training</text>
+
+  <!-- Online store -->
+  <rect x="490" y="150" width="180" height="60" rx="8" fill="#0f766e"/>
+  <text x="580" y="176" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Online store</text>
+  <text x="580" y="194" font-size="9" fill="#ccfbf1" text-anchor="middle">latest value, key-value</text>
+
+  <!-- pipeline -> offline -->
+  <line x1="320" y1="90" x2="200" y2="148" stroke="#1d4ed8" stroke-width="2" marker-end="url(#fsArrowBlue)"/>
+  <!-- pipeline -> online -->
+  <line x1="440" y1="90" x2="560" y2="148" stroke="#1d4ed8" stroke-width="2" marker-end="url(#fsArrowBlue)"/>
+
+  <!-- Training job reads offline -->
+  <rect x="30" y="250" width="150" height="50" rx="8" fill="#334155"/>
+  <text x="105" y="271" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Training job</text>
+  <text x="105" y="287" font-size="9" fill="#cbd5e1" text-anchor="middle">bulk read, point-in-time</text>
+  <line x1="180" y1="255" x2="150" y2="212" stroke="#0f766e" stroke-width="2" marker-end="url(#fsArrowTeal)"/>
+
+  <!-- Inference request reads online -->
+  <rect x="580" y="250" width="150" height="50" rx="8" fill="#334155"/>
+  <text x="655" y="271" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Inference request</text>
+  <text x="655" y="287" font-size="9" fill="#cbd5e1" text-anchor="middle">single-key lookup, ms</text>
+  <line x1="610" y1="255" x2="580" y2="212" stroke="#0f766e" stroke-width="2" marker-end="url(#fsArrowTeal)"/>
+
+  <rect x="240" y="245" width="280" height="45" rx="8" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="380" y="263" font-size="9.5" fill="#b45309" text-anchor="middle" font-weight="600">Skew risk if these two paths ever diverge:</text>
+  <text x="380" y="278" font-size="9.5" fill="#b45309" text-anchor="middle">separately-written stores drift apart silently</text>
+
+  <defs>
+    <marker id="fsArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="fsArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

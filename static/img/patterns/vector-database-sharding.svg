@@ -1,0 +1,47 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Scatter-gather-rerank: per-shard top-k is only an approximation until merged</text>
+
+  <!-- Coordinator -->
+  <rect x="290" y="35" width="180" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="380" y="58" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Coordinator</text>
+  <text x="380" y="76" font-size="9" fill="#dbeafe" text-anchor="middle">broadcasts query</text>
+
+  <!-- Shard 1 -->
+  <rect x="60" y="140" width="150" height="60" rx="8" fill="#0f766e"/>
+  <text x="135" y="164" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Shard 1</text>
+  <text x="135" y="182" font-size="9" fill="#ccfbf1" text-anchor="middle">local top-k, own HNSW</text>
+
+  <!-- Shard 2 -->
+  <rect x="305" y="140" width="150" height="60" rx="8" fill="#0f766e"/>
+  <text x="380" y="164" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Shard 2</text>
+  <text x="380" y="182" font-size="9" fill="#ccfbf1" text-anchor="middle">local top-k, own HNSW</text>
+
+  <!-- Shard 3 -->
+  <rect x="550" y="140" width="150" height="60" rx="8" fill="#0f766e"/>
+  <text x="625" y="164" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Shard 3</text>
+  <text x="625" y="182" font-size="9" fill="#ccfbf1" text-anchor="middle">local top-k, own HNSW</text>
+
+  <line x1="330" y1="90" x2="150" y2="138" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#vsArrowBlue)"/>
+  <line x1="380" y1="90" x2="380" y2="138" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#vsArrowBlue)"/>
+  <line x1="430" y1="90" x2="600" y2="138" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#vsArrowBlue)"/>
+
+  <line x1="160" y1="200" x2="330" y2="235" stroke="#0f766e" stroke-width="1.5" marker-end="url(#vsArrowTeal)"/>
+  <line x1="380" y1="200" x2="380" y2="235" stroke="#0f766e" stroke-width="1.5" marker-end="url(#vsArrowTeal)"/>
+  <line x1="600" y1="200" x2="430" y2="235" stroke="#0f766e" stroke-width="1.5" marker-end="url(#vsArrowTeal)"/>
+
+  <!-- Merge/rerank -->
+  <rect x="290" y="240" width="180" height="50" rx="8" fill="#334155"/>
+  <text x="380" y="261" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Merge + re-rank</text>
+  <text x="380" y="277" font-size="9" fill="#cbd5e1" text-anchor="middle">true global top-k</text>
+
+  <defs>
+    <marker id="vsArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="vsArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

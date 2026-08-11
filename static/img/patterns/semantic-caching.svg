@@ -1,0 +1,49 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">A paraphrased prompt hits the cache if it lands within the similarity threshold</text>
+
+  <!-- New prompt -->
+  <rect x="30" y="130" width="150" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="105" y="153" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">"How do refunds</text>
+  <text x="105" y="169" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">work?"</text>
+
+  <!-- Embedding + ANN search -->
+  <rect x="270" y="130" width="180" height="55" rx="8" fill="#334155"/>
+  <text x="360" y="153" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Embed + ANN search</text>
+  <text x="360" y="171" font-size="9" fill="#cbd5e1" text-anchor="middle">vs. cached prompt vectors</text>
+
+  <line x1="180" y1="157" x2="268" y2="157" stroke="#1d4ed8" stroke-width="2" marker-end="url(#scArrowBlue)"/>
+
+  <!-- Cache hit path -->
+  <rect x="540" y="55" width="180" height="55" rx="8" fill="#0f766e"/>
+  <text x="630" y="78" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Cache hit</text>
+  <text x="630" y="96" font-size="9" fill="#ccfbf1" text-anchor="middle">within threshold — reuse</text>
+
+  <!-- Cache miss path -->
+  <rect x="540" y="200" width="180" height="55" rx="8" fill="#b45309"/>
+  <text x="630" y="223" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Cache miss → LLM call</text>
+  <text x="630" y="241" font-size="9" fill="#fef3c7" text-anchor="middle">outside threshold</text>
+
+  <line x1="450" y1="145" x2="538" y2="90" stroke="#0f766e" stroke-width="2" marker-end="url(#scArrowTeal)"/>
+  <text x="495" y="105" font-size="9" fill="#0f766e" text-anchor="middle">similar enough</text>
+
+  <line x1="450" y1="170" x2="538" y2="220" stroke="#b45309" stroke-width="2" marker-end="url(#scArrowAmber)"/>
+  <text x="495" y="210" font-size="9" fill="#b45309" text-anchor="middle">too different</text>
+
+  <rect x="130" y="250" width="450" height="50" rx="8" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="355" y="270" font-size="9.5" fill="#b45309" text-anchor="middle" font-weight="600">Threshold too loose: "cancel" vs. "pause" wrongly match.</text>
+  <text x="355" y="284" font-size="9.5" fill="#b45309" text-anchor="middle">Threshold too tight: savings evaporate. No signal either way is wrong.</text>
+
+  <defs>
+    <marker id="scArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="scArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="scArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>
