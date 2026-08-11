@@ -224,3 +224,5 @@ compliant logging correctly.
 
 - [AI gateway capabilities in Azure API Management](https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities)
 - [Throttle requests to your REST APIs — Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html)
+- [OpenAI — rate limits and usage tiers](https://platform.openai.com/docs/guides/rate-limits)
+- [Anthropic — rate limits and the token-bucket model](https://docs.anthropic.com/en/api/rate-limits)

@@ -217,3 +217,6 @@ business-hours surge.
 ## Further reading
 
 - [Automatic scaling of Amazon SageMaker AI models](https://docs.aws.amazon.com/sagemaker/latest/dg/endpoint-auto-scaling.html)
+- [KEDA — event-driven and queue-depth-based autoscaling for Kubernetes](https://keda.sh/docs/latest/concepts/scaling-deployments/)
+- [Kubernetes Horizontal Pod Autoscaler (custom and external metrics)](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+- [NVIDIA — GPU metrics with DCGM Exporter](https://docs.nvidia.com/datacenter/cloud-native/gpu-telemetry/latest/dcgm-exporter.html)

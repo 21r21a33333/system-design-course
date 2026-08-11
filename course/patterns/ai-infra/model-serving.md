@@ -74,6 +74,26 @@ pressure), requests get routed to a version that silently isn't ready,
 which needs an explicit readiness check per version rather than trusting
 the registry's configuration alone.
 
+**Quantization and GPU utilization.** Batching raises throughput by
+amortizing per-call overhead, but it doesn't reduce the per-request work
+itself — the other major lever a serving layer pulls is **quantization**,
+storing and computing model weights (and often activations) at lower
+numeric precision than the FP32/FP16 they were trained in. Serving an
+8-bit or 4-bit quantized copy of a model shrinks its memory footprint
+roughly in proportion to the bit-width reduction, which lets more of the
+model (or a larger KV cache, or a bigger batch) fit in the same VRAM, and
+lower-precision arithmetic is faster on hardware with dedicated
+low-precision units. The cost is a usually-small accuracy regression that
+has to be measured against the specific model and task rather than
+assumed negligible. Quantization and batching are complementary: a
+smaller quantized model frees VRAM that a serving layer can spend on a
+larger micro-batch, pushing GPU utilization higher on both axes at once.
+The relevant health signal here is the same one
+[GPU Auto-Scaling](/docs/patterns/ai-infra/gpu-auto-scaling) watches —
+sustained GPU utilization and VRAM headroom decide whether a batch-plus-
+quantization configuration is actually saturating the hardware it's
+paying for, or leaving it idle.
+
 **Model serving vs. feature store.** [Feature Store](/docs/patterns/ai-infra/feature-store)
 answers a different question in the same request path: what are this
 entity's current input values, versus model serving's what does the
@@ -213,8 +233,14 @@ to serve every tenant's requests.
 - [Canary Deployment](/docs/patterns/observability/canary-deployment) —
   the general rollout technique that model serving applies to shifting
   traffic between model versions.
+- [GPU Auto-Scaling](/docs/patterns/ai-infra/gpu-auto-scaling) — sizes the
+  GPU fleet the serving layer runs on, watching the same utilization and
+  VRAM signals that batching and quantization move.
 
 ## Further reading
 
 - [Deploy models for inference — Amazon SageMaker AI](https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html)
-- [Feature engineering — Wikipedia](https://en.wikipedia.org/wiki/Feature_engineering)
+- [KServe — model serving on Kubernetes](https://kserve.github.io/website/latest/)
+- [Ray Serve — request batching for online inference](https://docs.ray.io/en/latest/serve/advanced-guides/dyn-req-batch.html)
+- [NVIDIA Triton Inference Server — dynamic batching](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/user_guide/model_configuration.html)
+- [vLLM — quantization support](https://docs.vllm.ai/en/latest/features/quantization/index.html)

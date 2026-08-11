@@ -231,3 +231,5 @@ threshold is tuned.
 
 - [Semantic similarity — Wikipedia](https://en.wikipedia.org/wiki/Semantic_similarity)
 - [AI gateway capabilities in Azure API Management](https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities)
+- [Cosine similarity — Wikipedia](https://en.wikipedia.org/wiki/Cosine_similarity)
+- [GPTCache — semantic cache for LLM queries](https://github.com/zilliztech/GPTCache)

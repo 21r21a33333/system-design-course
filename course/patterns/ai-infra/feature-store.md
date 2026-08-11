@@ -212,3 +212,5 @@ returns for the same user during the following day's live requests.
 
 - [Feature engineering — Wikipedia](https://en.wikipedia.org/wiki/Feature_engineering)
 - [Create, store, and share features with Amazon SageMaker Feature Store](https://docs.aws.amazon.com/sagemaker/latest/dg/feature-store.html)
+- [Feast — feature store concepts (online/offline stores)](https://docs.feast.dev/getting-started/concepts)
+- [Tecton — point-in-time correctness and time-travel joins](https://docs.tecton.ai/docs/beta/introduction/framework-concepts)

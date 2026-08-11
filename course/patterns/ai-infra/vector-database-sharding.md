@@ -78,6 +78,32 @@ skew), one shard becomes both a capacity and latency hot spot, and
 because scatter-gather waits on every shard before merging, the overall
 query latency is bounded by the *slowest* shard, not the average one.
 
+**ANN index types, and shard vs. replicate.** The "local ANN index" each
+shard runs isn't one thing — the choice of index structure changes the
+memory/recall/latency profile a shard operates under, which in turn
+affects how aggressively the collection needs sharding at all:
+
+| Index | How it searches | Tradeoff |
+| --- | --- | --- |
+| HNSW (graph) | Greedy walk over a multi-layer proximity graph | High recall and low latency, but the graph itself is memory-heavy — a large per-vector overhead that pushes the collection toward sharding sooner |
+| IVF (inverted file) | Partition vectors into clusters, search only the nearest few | Cheaper memory and faster to build; recall depends on how many clusters (`nprobe`) are searched |
+| PQ (product quantization) | Compress each vector into a short code, search in compressed space | Drastically smaller footprint (often paired with IVF as IVFPQ), at a recall cost from the lossy compression |
+
+Quantization here is the index-level analog of the weight quantization
+[Model Serving](/docs/patterns/ai-infra/model-serving) uses: trade a
+little accuracy for a much smaller footprint. It also interacts with the
+sharding decision itself. **Sharding** splits *distinct* vectors across
+nodes to solve a capacity problem — the whole collection no longer fits
+in one machine's memory. **Replicating** an index copies the *same*
+vectors onto multiple nodes to solve a throughput problem — one copy of
+the index can't serve the query volume. The two are orthogonal and
+routinely combined: a collection is sharded for capacity, and each shard
+is then replicated for read throughput and availability, so a single
+shard's node failure doesn't remove that slice of the data from every
+query. Shrinking each shard's index with IVFPQ can also *defer* the need
+to shard, by letting more vectors fit per node before the capacity wall
+is hit.
+
 **Vector database sharding vs. RAG's retrieval stage.** These are not
 separate mechanisms so much as adjacent layers: sharding is what a
 vector index does internally once it outgrows one node, while
@@ -245,3 +271,6 @@ budget.
 ## Further reading
 
 - [Vector database — Wikipedia](https://en.wikipedia.org/wiki/Vector_database)
+- [Malkov & Yashunin, 2016 — Efficient and robust ANN search using HNSW graphs](https://arxiv.org/abs/1603.09320)
+- [Faiss — nearest-neighbor index types (IVF, PQ, HNSW)](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes)
+- [Milvus — how vector indexes and sharding work](https://milvus.io/docs/index.md)
