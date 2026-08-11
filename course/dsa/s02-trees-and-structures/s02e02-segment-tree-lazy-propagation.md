@@ -217,7 +217,7 @@ $$
 | $\max$ | $+v$ | $\max(x,y)+v$ |
 | sum | $\times v$ | $(x+y)\,v = xv + yv$ |
 | $\min$ | $\min\text{-with-}v$ | $\min(\min(x,v),\min(y,v))$ |
-| bitwise or | bitwise and-$v$ | $(x\,\&\,v)\,|\,(y\,\&\,v)$ |
+| bitwise or | bitwise and-$v$ | $(x\,\&\,v)\,\vert \,(y\,\&\,v)$ |
 
 - If your pair does **not** distribute cleanly, the fix is usually to **enrich the node state** — carry extra fields (e.g. segment length so that "assign $v$" can update a **sum** as $v \cdot \text{len}$) — until the repair rule becomes $O(1)$ again.
 

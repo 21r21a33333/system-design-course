@@ -40,7 +40,11 @@ via the yt-notes pipeline. Branch: `dsa-course-notes` in `system-design-course`.
       several CSES number/title corrections.
       NOTE: reviewers that SWAP a frame must copy the new frame file; a defensive
       copy-missing-frames step now runs before each build.
-- [ ] Batch 5 — L41–L50 (strings, suffix structures, matchings/flows start)
+- [x] **Batch 5 — L41–L50** — DONE (C++), build green, adversarial-reviewed. S03 strings
+      (hashing/KMP/Z, finite automata, Aho-Corasick, suffix array, suffix tree/Ukkonen,
+      Y-fast trie, fusion tree) + S04 start (bipartite matching/König, general matching/
+      blossom, flows/Ford-Fulkerson). All C++ verified vs brute force (no code bugs);
+      fixes were link titles + one table-cell `|`-in-math build break (now a spec rule).
 - [ ] Batch 6 — L51–L60 (flows, number theory, crypto, FFT, approximation)
 - [ ] Batch 7 — L61 (parallel algorithms) + DSA manifest wiring + final polish
 

@@ -87,6 +87,8 @@ Pavel Mavrin _Algorithms & Data Structures_ lecture. The reader reads the note
   return HTTP 200 (verify with `curl -s -o /dev/null -w "%{http_code}" -L -A Mozilla/5.0 <url>`).
   Drop any link you cannot justify. Never invent a URL.
 - **Original prose only.** Never copy sentences from any site. Summarize in your own words.
+- **Inside markdown TABLE cells, never put a literal `|` in `$…$` math** (it's read as a
+  column separator and breaks the cell). Use `\vert`, `\lvert … \rvert`, or `\mid` instead.
 - Math notation: prefer real KaTeX (this site renders it). Keep mermaid fences balanced.
 
 ## Verification before you finish
