@@ -227,5 +227,5 @@ system to maintain.
 
 - [Lambda architecture — Wikipedia](https://en.wikipedia.org/wiki/Lambda_architecture)
 - [Questioning the Lambda Architecture — Jay Kreps (O'Reilly Radar)](https://www.oreilly.com/radar/questioning-the-lambda-architecture/)
-- [The Log: What every software engineer should know about real-time data's unifying abstraction — Jay Kreps](https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying)
+- [The Log: What every software engineer should know about real-time data's unifying abstraction — Jay Kreps](https://www.linkedin.com/blog/engineering/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying)
 - [Kappa Architecture — kappa-architecture.com](https://milinda.pathirage.org/kappa-architecture.com/)
