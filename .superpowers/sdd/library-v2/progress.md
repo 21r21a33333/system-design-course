@@ -416,3 +416,29 @@ internal + 17 external links all resolve/200. Originality clean.
 Build/typecheck clean, manifest 121. 7 of 14 groups now complete (66
 pages: building-blocks, reliability, batch-streaming, communication,
 storage, observability, scaling).
+
+### Phase 3 (relaunched) — Group: API & Edge (14 pages) — COMPLETE
+Commit: 073623f (all 14). 5 depth-ups (gateway-routing, gateway-
+aggregation, gateway-offloading, federated-identity, valet-key) + 9 v3
+light-enhanced (additive-only: api-gateway +vs-service-mesh, reverse-proxy
++vs-forward-proxy, api-versioning +URI/header/media table, backend-for-
+frontend +vs-aggregation, cursor-pagination +vs-offset table, sidecar
++vs-offloading, load-balancing/service-discovery/service-mesh +links).
+New valet-key-signed-url.svg (2nd diagram). gateway-aggregation snippet
+FIXED from fake-sequential to real thread::scope fan-out.
+
+INCIDENT: a batch-streaming implementer had left a leaked rustc artifact
+`libv_pq.rlib` in course/patterns/batch-streaming/ which got swept into
+commit 7bf6b0b by `git add -A <group>`. Caught when the api-edge C2
+implementer flagged it. Removed via git rm; deleted a second untracked
+root artifact; added *.rlib/*.rmeta to .gitignore to prevent recurrence.
+0 tracked .rlib remain.
+
+Independent review: all 10 checks pass, ZERO issues, zero fixes. Re-ran
+gateway-aggregation concurrency (154ms vs 360ms sequential — genuinely
+thread::scope-concurrent). All 9 light-enhances verified ADDITIVE (full
+section structure + diagram + Rust intact). 25 internal + 44 external
+links resolve/live. Security logic (federated-identity token validation
+incl alg-confusion warning; valet-key scope/expiry binding) verified
+correct. No stray artifacts under api-edge/static. Build/typecheck clean,
+manifest 121. 8 of 14 groups complete (80 pages).
