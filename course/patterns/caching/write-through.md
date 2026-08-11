@@ -194,6 +194,18 @@ next request from that user — potentially milliseconds later — is
 evaluated against the updated permission set rather than a cached
 "still allowed" value.
 
+## Production libraries & getting started
+
+Write-through is a cache-provider mode: you attach a writer and every cache write is synchronously pushed to the backing store. These systems expose a real write-through configuration.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Ehcache (write-through) | Java | `CacheLoaderWriter` that synchronously writes each mutation to the system of record | [Caching patterns](https://www.ehcache.org/documentation/3.10/caching-patterns.html#write-through) |
+| Hazelcast MapStore | Java / JVM | `IMap` backed by a `MapStore` in write-through mode, persisting on every `put` | [MapStore docs](https://docs.hazelcast.com/hazelcast/latest/mapstore/configuring-a-generic-mapstore) |
+| NCache write-through | .NET | Write-through provider that commits cache writes to the data source in the same call | [Write-through docs](https://www.alachisoft.com/resources/docs/ncache/prog-guide/write-through-caching.html) |
+| Apache Ignite | Java / JVM | Distributed cache with `CacheStore` configured for synchronous write-through persistence | [External storage docs](https://ignite.apache.org/docs/latest/persistence/external-storage) |
+| Amazon DynamoDB DAX | Any (AWS) | Managed cache that writes through to DynamoDB, keeping the item cache consistent on writes | [DAX docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.html) |
+
 ## Related patterns
 
 - [Write-Behind](/docs/patterns/caching/write-behind) — the asynchronous
@@ -211,6 +223,7 @@ evaluated against the updated permission set rather than a cached
 ## Further reading
 
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
+- [Caching strategies (write-through & lazy loading) — Amazon ElastiCache Developer Guide](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Strategies.html)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
 - DesignGurus' System Design Patterns course covers this as "Write-Through" in its Serving Data Fast (Caching) module.
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Write-Through as a named topic in its interactive caching-strategy node.

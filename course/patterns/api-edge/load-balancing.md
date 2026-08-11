@@ -223,6 +223,23 @@ underlying detect-and-redirect mechanism described in more depth on
 the [Failover](/docs/patterns/reliability/failover) page, applied
 here at the granularity of an entire region's instance pool.
 
+## Production libraries & getting started
+
+Load balancers spread traffic across healthy instances. The choice spans
+self-hosted software, managed cloud LBs, and Kubernetes-native options —
+these are the ones in real production use:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| NGINX | C | Software L7 load balancing with round-robin, least-connections, and hashing | [NGINX docs](https://nginx.org/en/docs/) |
+| HAProxy | C | Very fast L4/L7 load balancing with health checks and stick tables | [HAProxy docs](https://www.haproxy.org/#docs) |
+| Envoy | C++ | Client-aware L7 load balancing with outlier detection and zone awareness | [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/) |
+| AWS Elastic Load Balancing (ALB/NLB) | Managed (AWS) | Managed L7 (ALB) and L4 (NLB) load balancers that scale automatically | [AWS ELB docs](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html) |
+| Traefik | Go | Dynamic load balancing tied to service discovery and health checks | [Traefik docs](https://doc.traefik.io/traefik/) |
+| MetalLB | Go | Bare-metal `LoadBalancer` service implementation for Kubernetes clusters | [MetalLB docs](https://metallb.io/) |
+
+**Example / reference:** [NGINX HTTP load balancing docs](https://nginx.org/en/docs/)
+
 ## Related patterns
 
 - [Rate Limiter](/docs/patterns/building-blocks/rate-limiter) — caps
@@ -252,3 +269,4 @@ here at the granularity of an entire region's instance pool.
 - [Load Balancer traffic-routing methods — Azure documentation](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-load-balancing-azure)
 - DesignGurus' System Design Patterns course covers this as "Load Balancing" in its Growing Under Load (Scaling) module.
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Load Balancing as a named topic.
+- [HTTP load balancing methods (round robin, least connections, hash) — NGINX docs](https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/)

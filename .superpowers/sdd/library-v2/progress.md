@@ -1343,3 +1343,310 @@ primer-derived case studies correctly remain on their own template
 ## the way: yelp.md's geohash_neighbors implementation gap, caught and
 ## fixed). All 24 case studies (16 deep-dive + 8 primer) verified
 ## present, build/typecheck clean throughout.
+
+---
+
+### Phase 3 (relaunched, all-121 scope) — Group: Building Blocks (16 pages) — COMPLETE
+Commits: 53ad61f (batch A: blob-store, key-value-store, distributed-cache,
+distributed-search), 98ca620 (batch B/C/D: distributed-message-queue,
+distributed-logging, distributed-monitoring, distributed-task-scheduler,
+rate-limiter, sequencer, sharded-counters, throttling, scheduler-agent-
+supervisor, static-content-hosting, cdn, pipes-and-filters), 1a509cc
+(review fixes).
+
+NEW scope per user (2026-08-11): flexible-baseline (v3 spine + topic-
+specific added sections/diagrams/tables where they add value), ALL 121
+pages, real-tech naming ALLOWED and cited, external reference links w/
+attribution generous, ORIGINAL SVGs only (never embed external images),
+no domain denylist. Copyright boundary still hard: no verbatim copy of
+text or images from any source.
+
+Process: 1 pilot implementer (batch A) validated the brief, then 3
+parallel implementers (B/C/D, disjoint files), git kept single-threaded
+in orchestrator. Bare pages got full build-out (diagram+code+deep
+architecture+scenarios+extras); img+code pages depth-up; the 2 already-v3
+pages (cdn, pipes-and-filters) light-enhanced with existing content
+preserved. Added comparison tables (delivery guarantees, rate-limit
+algorithms, ID schemes). 11 new original SVGs.
+
+Independent review (fresh skeptical agent): re-ran all 3 concurrency
+claims with its own timing harnesses — distributed-search scatter-gather
+3.61x, sharded-counters 1.74x + exact-total-no-lost-updates, scheduler-
+agent-supervisor 47ms vs 129ms — all genuinely multi-threaded (real OS
+threads, not sequential-in-disguise). Verified facts (Snowflake bit
+budget, quorum R+W>N, BM25 saturation+length-norm, RS(4,2)=1.5x vs 3x
+replication). Originality spot-checks (exact-phrase search) clean. Fixed
+1 correctness bug (truncated FNV-1a offset basis 1469598103934665603 ->
+14695981039346656037 in distributed-message-queue) + 2 dead external
+links (Datastore 404 -> Firestore counters; Twitter blog 403 ->
+twitter-archive/snowflake). All 16 Rust snippets compile via rustc
+--edition 2021; typecheck + build clean, manifest untouched at 121.
+
+### Phase 3 (relaunched) — Group: Reliability (7 pages) — COMPLETE
+Commits: b22934c (all 7). failover.md (v3 exemplar) left untouched.
+7 bare pages fully built out: circuit-breaker (+ 2nd state-machine
+diagram circuit-breaker-states.svg), retry-with-backoff, timeout,
+bulkhead, idempotency, dead-letter-queue, graceful-degradation. 8 new
+SVGs. Cross-differentiation deliberately consistent with failover.md
+(breaker stops calls / bulkhead isolates resources / failover replaces /
+degradation reduces / retry repeats). Added jitter-strategies and
+degradation-tier tables, deadline-propagation and idempotency-key
+walkthroughs.
+
+PROCESS LEARNINGS this group (fed into all subsequent briefs):
+1. Implementers initially embedded `#[cfg(test)] mod tests` in every
+   shipped snippet — inconsistent with failover.md/building-blocks
+   (mechanism-only). Ran a normalization fixer to strip test modules
+   (bulkhead's real-thread test converted to a plain `fn main()` demo to
+   preserve the empirical concurrency). RULE NOW IN BRIEFS: code example
+   ships the MECHANISM only, no #[test]/#[cfg(test)] on the page.
+2. That fixer subagent ACCIDENTALLY LEAKED its own tool-call closing
+   tags (`</content>`, `</invoke>`) as trailing lines into 3 files,
+   which broke the MDX build ("unexpected closing slash in tag"). Caught
+   by the orchestrator's mandatory post-edit `npm run build` (NOT by the
+   subagent's self-report). Stripped the 2 junk lines per file; rebuilt
+   clean. Reinforces: always full-build after ANY subagent edit; never
+   trust "verified" self-reports.
+
+Independent review (fresh agent): all 10 checks pass, zero issues, zero
+fixes. Re-ran bulkhead concurrency 5x (peak concurrency == 2 permits
+every run, ~224ms wall, genuinely multi-threaded). Re-verified DLQ (dead-
+letters at exactly max_attempts=3) and idempotency (total_charged stays
+2500 on replay) behaviorally. 16 external URLs curl-checked all 200.
+Originality verbatim-search clean. Build/typecheck clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Batch & Streaming (11 pages) — COMPLETE
+Commits: 7bf6b0b (all 11), 1b65d77 (review fix). 7 bare built out
+(stream-processing, backpressure, exactly-once-semantics, partitioned-
+consumption, change-data-capture, mapreduce, lambda-kappa-architecture)
++ 4 depth-ups (competing-consumers, priority-queue, queue-based-load-
+leveling, sequential-convoy). 7 new SVGs. Comparison tables (delivery
+guarantees, CDC capture methods, lambda-vs-kappa, window types).
+Mechanism-only snippets (new rule enforced from the start — zero test
+attrs). Genuine real-thread timing demos: mapreduce parallel-map 55ms
+vs 200ms, competing-consumers 4-worker 232ms/~3.4x, sequential-convoy
+per-key lanes 70ms, backpressure sync_channel 319ms/3-blocked.
+
+Independent review: re-ran all 5 concurrency claims (all genuinely
+multi-threaded, none sequential-in-disguise), verified logic of all 7
+lib mechanisms by reading, 26 internal links resolve, SVGs valid+on-
+palette, originality verbatim-search clean, curled 19 external URLs —
+1 dead (LinkedIn "The Log" engineering.linkedin.com 404 -> migrated
+linkedin.com/blog canonical), fixed. Build/typecheck clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Communication (9 pages) — COMPLETE
+Commit: f62f940 (all 9). 5 bare built out (websockets, server-sent-
+events, webhooks, pub-sub, event-driven-architecture) + 4 depth-ups
+(asynchronous-request-reply, claim-check, grpc-bidirectional-streaming,
+messaging-bridge). 5 new SVGs. WS/SSE/webhooks cross-differentiation
+(bidirectional / one-way / server-to-server) and pub-sub-vs-EDA framing
+consistent; EDA links (not duplicates) event-sourcing/cqrs/choreography/
+saga. Comparison tables (WS-vs-SSE-vs-polling, event styles, RPC types).
+Notable fix: grpc snippet was a trivial SEQUENTIAL echo — replaced with
+a genuine 3-real-thread duplex demo (~97ms interleaved vs ~150ms serial).
+
+Independent review: all 10 checks pass, ZERO issues, zero fixes. Re-ran
+grpc concurrency 3x (93/101/97ms — genuinely concurrent, real threads).
+Exercised all 9 snippets with assertion drivers (SSE wire bytes exact,
+webhook sign/verify rejects tampered/stale/wrong-secret, pub-sub own-copy
+fan-out, EDA dedup+dead-letter, claim-check integrity, async submit
+idempotency, bridge ack-after-confirm). 27 internal links resolve, 26
+external URLs all 200, originality verbatim-search clean, SVGs valid+on-
+palette. Build/typecheck clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Storage & Replication (9 pages) — COMPLETE
+Commits: 16561ed (all 9), plus review-fix. 5 bare built out (consistent-
+hashing, sharding, write-ahead-log, cqrs, event-sourcing), 2 depth-ups
+(index-table, materialized-view), 2 v3 light-enhanced (federation +31/-0,
+primary-replica-replication +40/-1 [link-text only] — preservation diff-
+verified). 5 new SVGs incl a 480x480 square hash-ring. consistent-hashing
+deliberately does NOT duplicate key-value-store's ring snippet — goes
+deeper on the algorithm + a different Rust facet (measured remap %). ES
+vs CQRS vs WAL vs CDC vs EDA all differentiated + cross-linked.
+
+Independent review: all checks pass. Re-ran 3 measured demos (CH 24.1%
+moved vs modulo-N 75.0%; WAL pre-crash==post-recovery alice=90/bob=60;
+sharding split moves only targeted bucket + flags hot key) — all match
+claimed numbers. Verified asserts genuinely execute (tamper->panic). 25
+internal links resolve; fixed 1 dangling Wikipedia section anchor
+(#Incremental_maintenance absent -> page root). 11/12 external 200 (MySQL
+403 bot-block, browser-live, left). Originality clean. Build/typecheck
+clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Observability & Delivery (8 pages) — COMPLETE
+Commit: 45313f0 (all 8). 5 bare built out (blue-green-deployment, canary-
+deployment, feature-flags, distributed-tracing, health-check) + 3 depth-
+ups (deployment-stamps, external-configuration-store, geode). 7 new SVGs
+incl 2 second-diagrams (trace waterfall, health probes). blue-green/
+canary/feature-flags cross-differentiated (atomic / gradual / runtime-
+toggle, they compose) with shared comparison table; traces-vs-metrics-vs-
+logs + liveness/readiness/startup tables. In-page anchor links added and
+validated by the build (onBrokenAnchors=throw).
+
+Independent review: all 10 checks pass, ZERO issues, zero edits. Re-ran
+2 measured demos (canary 5.09% at weight 5 + 0 ramp regressions [sticky];
+feature-flags 10.23% at 10% + targeting + kill-switch-overrides-all) —
+both match; also reconstructed the tracing self-time scenario (300/40/30/
+190 + traceparent round-trip) — matches. 25 internal links + 3 anchors
+resolve, 22/22 external URLs 200, originality clean, 10 SVGs valid. The
+reviewer's git-diff preservation check was sandbox-blocked; orchestrator
+verified additive-only via HEAD~1 diff — definition/diagram/code/sections
+all preserved on the 3 depth-up pages (removed prose = old shallow
+How-it-works body upgraded to deep Technical-architecture, as intended).
+Build/typecheck clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Scaling (5 pages) — COMPLETE
+Commit: 5f9ad42 (all 5). 4 bare built out (horizontal-scaling, vertical-
+scaling, auto-scaling, connection-pooling) + 1 depth-up (compute-resource-
+consolidation). 4 new SVGs. h/v/auto cross-differentiated (bigger machine
+/ more machines / automation) with comparison table. Measured demos all
+independently reproduced by review: auto-scaling peak=30/breaches=0/no-
+flap, connection-pool genuine 16-thread peak==4 (== pool size, real
+std::thread::scope), consolidation 6->2 hosts 25%->75%, USL throughput
+peaks at N=31 then declines, vertical super-linear cost + ceiling.
+
+Independent review: all 10 checks pass, ZERO issues, zero edits. 17
+internal + 17 external links all resolve/200. Originality clean.
+Build/typecheck clean, manifest 121. 7 of 14 groups now complete (66
+pages: building-blocks, reliability, batch-streaming, communication,
+storage, observability, scaling).
+
+### Phase 3 (relaunched) — Group: API & Edge (14 pages) — COMPLETE
+Commit: 073623f (all 14). 5 depth-ups (gateway-routing, gateway-
+aggregation, gateway-offloading, federated-identity, valet-key) + 9 v3
+light-enhanced (additive-only: api-gateway +vs-service-mesh, reverse-proxy
++vs-forward-proxy, api-versioning +URI/header/media table, backend-for-
+frontend +vs-aggregation, cursor-pagination +vs-offset table, sidecar
++vs-offloading, load-balancing/service-discovery/service-mesh +links).
+New valet-key-signed-url.svg (2nd diagram). gateway-aggregation snippet
+FIXED from fake-sequential to real thread::scope fan-out.
+
+INCIDENT: a batch-streaming implementer had left a leaked rustc artifact
+`libv_pq.rlib` in course/patterns/batch-streaming/ which got swept into
+commit 7bf6b0b by `git add -A <group>`. Caught when the api-edge C2
+implementer flagged it. Removed via git rm; deleted a second untracked
+root artifact; added *.rlib/*.rmeta to .gitignore to prevent recurrence.
+0 tracked .rlib remain.
+
+Independent review: all 10 checks pass, ZERO issues, zero fixes. Re-ran
+gateway-aggregation concurrency (154ms vs 360ms sequential — genuinely
+thread::scope-concurrent). All 9 light-enhances verified ADDITIVE (full
+section structure + diagram + Rust intact). 25 internal + 44 external
+links resolve/live. Security logic (federated-identity token validation
+incl alg-confusion warning; valet-key scope/expiry binding) verified
+correct. No stray artifacts under api-edge/static. Build/typecheck clean,
+manifest 121. 8 of 14 groups complete (80 pages).
+
+### Phase 3 (relaunched) — Group: Distributed Consistency (9 pages) — COMPLETE
+Commits: e72a7d6 (all 9) + review-fix. 4 depth-ups (paxos, raft,
+choreography, compensating-transaction) + 5 v3 light-enhanced (leader-
+election, quorum, saga +choreo-vs-orchestration table, two-phase-commit
++2PC-vs-3PC-vs-consensus, vector-clocks +vs-lamport-vs-version-vectors).
+2 new consensus SVGs (paxos-phases, raft-log).
+
+Independent review (expert consensus scrutiny): ACCURACY PASS — Paxos
+Phase-2 adoption rule, majority-overlap safety, dueling-proposer
+livelock; Raft previous-term commit rule (the most-mis-stated fact)
+stated CORRECTLY, plus election restriction + Log Matching; consensus-
+vs-2PC direction correct (consensus tolerates minority via majority
+quorum; 2PC needs unanimous + blocks on coordinator). Re-ran all 4
+invariants (paxos chosen-value-immutable, raft stale-log-loses-vote +
+majority-commit, choreography compensation-on-failure, compensating-txn
+reverse-order-only-completed) — all hold. 5 light-enhances additive-only.
+17 external URLs 200. Fixed 1 malformed pre-existing SVG entity (&le; ->
+&#8804; in vector-clocks.svg). Build/typecheck clean, manifest 121. 9 of
+14 groups complete (89 pages).
+
+### Phase 3 (relaunched) — Group: Legacy Integration & Resilience (5 pages) — COMPLETE
+Commits: 70db3e1 (all 5) + review-fix. All 5 depth-ups: strangler-fig
+(+migration-stages SVG), anti-corruption-layer, ambassador (migration
+family); gatekeeper (+trust-boundary SVG), quarantine (+pipeline SVG)
+(security family). 3 new SVGs. Invariant-verified Rust (all re-run by
+review): strangler per-route flip, ACL two-way translation no-legacy-leak
+round-trip, ambassador retry+breaker fail-fast, gatekeeper rejects-before-
+backend (processed==1), quarantine reject-never-reaches-trusted-store.
+Ambassador-vs-sidecar-vs-gateway-offloading + gatekeeper-vs-gateway-vs-
+valet-key differentiations consistent with target pages.
+
+Independent review: all 10 checks pass, 1 MINOR fix (Envoy 404 ->
+what_is_envoy). Build/typecheck clean, manifest 121. 10 of 14 groups
+complete (94 pages).
+
+### Phase 3 (relaunched) — Groups: Caching / AI-Infra / AI-Agent-Orchestration / Antipatterns (27 pages) — COMPLETE
+Commits: d515c4c (caching 5), cc26e85 (ai-infra 7), bf52eb3 (ai-agent-
+orchestration 5), a24b3a3 (antipatterns 10) + review-fix. All ALREADY at
+their target template (v3 / antipattern-template), so LIGHT-ENHANCE only:
+additive comparison tables (caching-strategies, stampede-mitigations,
+orchestration-patterns, ANN-index-types, RAG-eval) + a few subsections
+(model-serving quantization/GPU-util, rag eval, vector-db shard-vs-
+replicate) + generous external links (Feast/Tecton/KEDA/Triton/vLLM/KServe,
+RAG+HNSW papers, Semantic Kernel/Anthropic/OpenAI-Agents/CrewAI/Magentic-
+One, Azure antipattern catalog w/ trailing slash, Fowler, AWS Builders',
+C10K, SQLAlchemy N+1, PostgreSQL EXPLAIN). model-serving stray off-topic
+link fixed.
+
+One consolidated independent review (27 pages): all 10 checks pass. Re-ran
+the 3 concurrency no-regression snippets (gpu-auto-scaling 205ms, vector-
+database-sharding 205ms, synchronous-io fix 205ms vs 613ms) — all still
+genuinely concurrent. 37/37 rust blocks compile individually (antipattern
+pages have 2 each). Preservation confirmed additive (+N/-0 except model-
+serving -1 stray-link fix). Fixed 2 dead links (KServe, Tecton 404s).
+Antipattern template + corrective links intact (retry-storm keeps both).
+Build/typecheck clean, manifest 121. ALL 14 GROUPS COMPLETE (121 pages).
+
+## LIBRARIES + VISUAL-REFS PASS (follow-up, user-requested 2026-08-11)
+User asked to add, to every pattern, a practical production-library
+"getting started" section (JS/TS, Rust, Go, Python — best per pattern,
+curl-verified getting-started URLs + example projects) and, where a
+clearly-better external diagram exists, an attributed "Visual references"
+LINK section (never embedding external images — the copyright boundary
+held; attribution via link credits the author). Additive-only; existing
+content preserved byte-for-byte. Placement: Production-libraries H2 before
+`## Related patterns`; Visual-references H2 before `## Further reading`.
+
+### Libs+visuals — Building Blocks (16 pages) — COMPLETE
+Commit: 525593a. New Production-libraries section on all 16 + Visual-refs
+on cdn/distributed-message-queue/distributed-monitoring. Independent review
+re-curled all 121 new URLs (119 200, 2 npmjs 403 browser-live/real),
+verified every library real + correctly language-attributed (governor=Rust,
+etc.), tables valid GFM, visual-refs are attributed external links (not
+embeds), diffs additive (+N/-0). Zero fixes. Build/typecheck clean.
+
+### Libs+visuals — Communication (9 pages) — COMPLETE
+Commit: 220743c. Production-libraries on all 9 + websockets Visual-refs
+(Ably). Independent review re-curled all 66 new URLs (66/66 200), all
+libraries real + correctly attributed (socket.io/ws JS, tonic/tokio-
+tungstenite/rumqtt Rust, gorilla-websocket/grpc-go/asynq Go, grpcio/
+celery/sse-starlette Python), tables valid GFM, additive. Zero fixes.
+
+### Libs+visuals — Reliability (8 pages) — COMPLETE
+Commit: 5c4c3a5. Production-libraries on all 8 (incl failover exemplar).
+Batch caught+dropped a hallucinated Rust lib (actix-idempotency) mid-run,
+replaced w/ verified axum-idempotent. Independent review re-curled all 61
+URLs (56 200, 5 acceptable bot-block), registry-confirmed every library
+real incl axum-idempotent (crates.io v0.2.7) + express-idempotency (npm
+v2.1.0). Zero fixes. Build clean.
+
+### Libs+visuals — Batch & Streaming (11 pages) — COMPLETE
+Commits: 0a2001d + review-fix. Production-libraries on all 11 (streaming
+engines + clients). Review re-curled 73 URLs (70 200, 2 acceptable bot-
+block, Bytewax real behind sandbox DNS filter); fixed dead Confluent link
++ Sequin language (Go->Elixir). Additive. Build clean.
+
+### Libs+visuals — remaining 10 groups (77 pages) — COMPLETE (parallel sweep)
+Commits: 4fb0396 (all 77) + review-fix. Dispatched all 15 remaining
+implementer batches at once (storage, observability, scaling, api-edge,
+consistency, integration, caching, ai-infra, ai-agent-orchestration,
+antipatterns[Libraries-&-tools-that-prevent-this framing]). One earlier
+storage dispatch had been interrupted mid-write; a resumed agent detected
+the 3 already-written pages + finished the 2 remaining. Two parallel
+reviewers re-curled 452 URLs (all healthy; npm/mysql/milvus browser-live
+403s noted inline), verified every library real+correctly-attributed incl
+high-risk recent ai-infra/agent-orchestration tools; paxos honest (no fake
+pkg), raft libs real, vector-clocks honestly weak, federation not-Apollo.
+2 URL-canonicalization fixes. Additive; build/typecheck clean; manifest 121.
+
+## LIBRARIES + VISUAL-REFS PASS COMPLETE — all 121 pages now carry a
+## production-library getting-started section (antipatterns: corrective-
+## tools framing) + external Visual-references links where a clearly-better
+## diagram existed. ~570 curl-verified library/getting-started URLs added.

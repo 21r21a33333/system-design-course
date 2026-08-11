@@ -194,6 +194,21 @@ simply don't offer a batched equivalent of the operation — in that
 case, the mitigation is architectural (caching, denormalization, a
 different store) rather than a batching call that doesn't exist.
 
+## Libraries & tools that prevent this
+
+These tools collapse a loop of small calls into a single batched round trip — coalescing per-item lookups behind a batching layer, eager-loading related rows in one query, or exposing a batch API that accepts a list of IDs.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| DataLoader | JS / TS | Coalesces many individual load-by-key calls made within a tick into one batched fetch and caches results, the standard cure for GraphQL/API N+1. | [github.com/graphql/dataloader](https://github.com/graphql/dataloader) |
+| Dataloader | Elixir | Batches and caches data-source loads (the Absinthe/GraphQL ecosystem's answer to N+1) so related records load in one round trip. | [hexdocs.pm/dataloader](https://hexdocs.pm/dataloader/Dataloader.html) |
+| Prisma (relation queries) | JS / TS | `include`/nested reads fetch parent and related records together instead of a lazy load per parent. | [prisma.io docs](https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries) |
+| SQLAlchemy (eager loading) | Python | `joinedload`/`selectinload` fetch relationships in one (or a bounded number of) queries rather than one per parent row. | [sqlalchemy.org docs](https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html) |
+| Django ORM (`select_related` / `prefetch_related`) | Python | Pulls related objects in a single join or a small fixed number of queries, eliminating the per-object lazy fetch. | [docs.djangoproject.com](https://docs.djangoproject.com/en/stable/ref/models/querysets/#prefetch-related) |
+| gRPC | Go / Java / Python / C++ / etc. | Supports batch-style RPCs and streaming, so a service can expose one call that accepts a list of IDs instead of forcing a call per item. | [grpc.io docs](https://grpc.io/docs/) |
+
+**Example / reference:** [The N plus one problem — SQLAlchemy glossary](https://docs.sqlalchemy.org/en/20/glossary.html#term-N-plus-one-problem)
+
 ## Related patterns
 
 - [Gateway Aggregation](/docs/patterns/api-edge/gateway-aggregation) —
@@ -211,3 +226,4 @@ different store) rather than a batching call that doesn't exist.
 - [Thundering herd problem — Wikipedia](https://en.wikipedia.org/wiki/Thundering_herd_problem)
 - [GraphQL — official site](https://graphql.org/) — a single-request, client-specified-shape query model designed as a direct antidote to per-resource chatty REST calls.
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Chatty I/O as a named antipattern topic.
+- [The N plus one problem — SQLAlchemy glossary](https://docs.sqlalchemy.org/en/20/glossary.html#term-N-plus-one-problem)

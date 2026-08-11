@@ -1,0 +1,53 @@
+<svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="300" fill="#ffffff"/>
+
+  <text x="360" y="26" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">The facade routes each capability to old or new; the mix shifts over time</text>
+
+  <!-- Stage 1 -->
+  <text x="130" y="62" font-size="11" fill="#64748b" text-anchor="middle" font-weight="600">Start</text>
+  <rect x="60" y="72" width="140" height="26" rx="5" fill="#b45309"/>
+  <text x="130" y="90" font-size="10" fill="#ffffff" text-anchor="middle">Legacy: orders</text>
+  <rect x="60" y="104" width="140" height="26" rx="5" fill="#b45309"/>
+  <text x="130" y="122" font-size="10" fill="#ffffff" text-anchor="middle">Legacy: users</text>
+  <rect x="60" y="136" width="140" height="26" rx="5" fill="#b45309"/>
+  <text x="130" y="154" font-size="10" fill="#ffffff" text-anchor="middle">Legacy: billing</text>
+
+  <!-- arrow -->
+  <line x1="210" y1="117" x2="268" y2="117" stroke="#64748b" stroke-width="2" marker-end="url(#sfArrow)"/>
+
+  <!-- Stage 2 -->
+  <text x="360" y="62" font-size="11" fill="#64748b" text-anchor="middle" font-weight="600">Mid-migration</text>
+  <rect x="290" y="72" width="140" height="26" rx="5" fill="#0f766e"/>
+  <text x="360" y="90" font-size="10" fill="#ffffff" text-anchor="middle">New: orders</text>
+  <rect x="290" y="104" width="140" height="26" rx="5" fill="#0f766e"/>
+  <text x="360" y="122" font-size="10" fill="#ffffff" text-anchor="middle">New: users</text>
+  <rect x="290" y="136" width="140" height="26" rx="5" fill="#b45309"/>
+  <text x="360" y="154" font-size="10" fill="#ffffff" text-anchor="middle">Legacy: billing</text>
+
+  <!-- arrow -->
+  <line x1="440" y1="117" x2="498" y2="117" stroke="#64748b" stroke-width="2" marker-end="url(#sfArrow)"/>
+
+  <!-- Stage 3 -->
+  <text x="590" y="62" font-size="11" fill="#64748b" text-anchor="middle" font-weight="600">Strangled</text>
+  <rect x="520" y="72" width="140" height="26" rx="5" fill="#0f766e"/>
+  <text x="590" y="90" font-size="10" fill="#ffffff" text-anchor="middle">New: orders</text>
+  <rect x="520" y="104" width="140" height="26" rx="5" fill="#0f766e"/>
+  <text x="590" y="122" font-size="10" fill="#ffffff" text-anchor="middle">New: users</text>
+  <rect x="520" y="136" width="140" height="26" rx="5" fill="#0f766e"/>
+  <text x="590" y="154" font-size="10" fill="#ffffff" text-anchor="middle">New: billing</text>
+
+  <!-- legend -->
+  <rect x="230" y="215" width="16" height="16" rx="3" fill="#b45309"/>
+  <text x="254" y="228" font-size="11" fill="#334155">legacy still owns this capability</text>
+  <rect x="230" y="243" width="16" height="16" rx="3" fill="#0f766e"/>
+  <text x="254" y="256" font-size="11" fill="#334155">capability cut over to the new system</text>
+
+  <rect x="60" y="190" width="600" height="86" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="360" y="207" font-size="10" fill="#64748b" text-anchor="middle">each cutover is one small, independently reversible step &#8212; no big-bang switch</text>
+
+  <defs>
+    <marker id="sfArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

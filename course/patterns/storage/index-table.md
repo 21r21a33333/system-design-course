@@ -28,37 +28,84 @@ NoSQL and key-value stores, however, are deliberately built around fast
 lookups on a single primary key and don't offer that feature — which is
 the specific gap the index table pattern fills.
 
-## How it works
+## Technical architecture & implementation
 
-An index table is a second table, stored alongside the original ("fact")
-table, whose own key is the field applications need to query by. Each
-row in the index table maps a value of that secondary field to enough
-information to retrieve the matching fact-table row(s) — either the full
-duplicated data, or just a reference (the primary/shard key) back to the
-fact table. Which of those two approaches to take is the pattern's main
-design decision. Duplicating the full row into the index table (denormalized)
-serves the secondary query with a single lookup, at the cost of storing
-the data twice and updating both copies on every write. Storing only a
-reference (normalized) keeps one copy of the data and a smaller index to
-maintain, at the cost of a second lookup — first the index table to find
-the primary key, then the fact table to fetch the row. A common middle
-ground duplicates only the handful of fields the secondary query
-actually needs, and defers to the fact table for anything else.
+**Reference vs. duplicated payload.** An index table is a second table,
+stored alongside the original ("fact") table, whose own key is the field
+applications need to query by. Each row maps a value of that secondary
+field to enough information to retrieve the matching fact-table row(s) —
+and *how much* it stores is the pattern's first design decision.
+Duplicating the full row into the index table (denormalized) serves the
+secondary query with a single lookup, at the cost of storing the data
+twice and updating both copies on every write. Storing only a
+*reference* (the primary/shard key) keeps one copy of the data and a
+smaller index to maintain, at the cost of a second hop — first the index
+table to find the primary key, then the fact table to fetch the row. A
+common middle ground, a **covering index**, duplicates only the handful
+of fields a specific query actually reads, so that query is answered
+entirely from the index table without ever touching the fact table,
+while everything else still defers back to it. When the secondary query
+also filters or sorts by more than one field, a **composite index** —
+keyed on an ordered tuple of fields (`(status, created_at)`) rather than
+one — lets the store satisfy the whole predicate from a single
+contiguous range of index rows, provided the query's leading fields
+match the index's leading fields.
 
-Whichever shape is chosen, the index table has to be kept in sync with
-the fact table on every write to the indexed field, and that
-synchronization is the pattern's central tradeoff. It can be done
-transactionally — writing to both tables atomically, if the store
-supports it for co-located data — or eventually, by publishing a change
-and letting an asynchronous process update the index table shortly
-after. Transactional updates keep the index table always correct but
-require the store to support multi-row atomicity; eventual updates scale
-better and touch fewer resources per write but leave a window where
-the index table can return a stale or missing result. Either way, an
-index table is an extra structure: it costs additional storage, and
-every write to an indexed field becomes at least two writes instead of
-one, so index tables are worth building only for fields that are
-actually queried often enough to justify that overhead.
+**Keeping it in sync — synchronous vs. eventual.** Whatever shape is
+chosen, the index table must be updated on every write to the indexed
+field, and *when* that update happens is the central tradeoff. A
+**synchronous** update writes the fact row and the index row together,
+atomically, so a reader can never observe one without the other — but
+this requires the store to support multi-row atomicity (a transaction,
+or the two rows being co-located in the same partition), and it makes
+every indexed write pay for both writes before it can return. An
+**eventual** update commits the fact row, then propagates the index
+change asynchronously — via a change stream, a queue, or a background
+job — which scales better and keeps the write path fast, at the cost of
+a window during which the index is stale: it can still point at a
+just-deleted row, miss a just-inserted one, or return a value under its
+old key after the field changed.
+
+**Failure modes.** The dangerous states are the ones where the two
+tables *disagree*. A crash between the fact write and the index write (in
+a non-atomic store) leaves a **dangling index entry** pointing at a row
+that doesn't exist, or a fact row with no index entry that queries can't
+find. Updating an indexed field is really a *delete-then-insert* in the
+index — the row moves from its old key to its new key — and if only half
+of that lands, the same record can appear under both keys or neither.
+Robust implementations therefore treat the fact table as the source of
+truth and make index maintenance **idempotent and re-runnable**: a
+reader that follows an index reference and finds no matching fact row
+simply skips it, and a periodic reconciliation job rebuilds the index
+from the fact table to repair any drift, since the index is always
+derivable and never authoritative.
+
+**Local vs. global secondary indexes.** In a sharded store the choice
+gains a distributed dimension. A **local secondary index** is stored on
+the same shard as the rows it indexes, so it's cheap and transactional
+to maintain (the index update and the row update touch one shard) — but
+querying it means fanning the query out to *every* shard, because any
+shard might hold a match, so it doesn't avoid the scatter for a
+value-based lookup. A **global secondary index** is itself partitioned
+by the indexed field, independently of how the fact table is sharded, so
+a lookup goes straight to the one index partition holding that value —
+but maintaining it now spans shards (writing a row on shard A may update
+an index partition on shard C), which forces cross-shard coordination or
+accepts eventual consistency for the index. DynamoDB makes exactly this
+distinction concrete: local secondary indexes are strongly consistent
+but confined to a single partition key, while global secondary indexes
+span the whole table and are updated asynchronously, and therefore
+eventually consistent.
+
+**Cost and index selection.** An index table is never free: it costs
+additional storage, and every write to an indexed field becomes at least
+two writes instead of one — write amplification that compounds with each
+index added. That makes **index selection** a real discipline: build an
+index only for a field that is queried often enough, and selectively
+enough, that the scan it replaces would genuinely hurt. Indexing a field
+that's rarely queried, or one so low-cardinality that a lookup still
+returns a huge fraction of the table, pays the write and storage cost
+without buying back a meaningfully cheaper read.
 
 ## Code example
 
@@ -114,6 +161,27 @@ the index table already grouped primary keys by that field — the scan
 that a store without secondary indexing would otherwise require is
 replaced by a direct lookup.
 
+## Index table vs. materialized view
+
+Both an index table and a
+[materialized view](/docs/patterns/storage/materialized-view) are derived
+structures kept in sync with source data to make a read faster, and it's
+easy to blur them, but they store fundamentally different things. An
+index table stores **pointers** — it maps a secondary field's values to
+the *locations* (primary keys) of the matching source rows, and the rows
+themselves still live in, and are served from, the fact table. A
+materialized view stores **results** — the actual output of a query
+(often a join or aggregation), precomputed and held as its own table, so
+a read consumes the computed answer directly and may never touch the
+source tables at all. Put concretely: an index table answers "*where*
+are the rows matching this value" and then you fetch them; a materialized
+view answers "*here is* the already-computed answer to this query." An
+index table doesn't change the shape of the data, only how you find it; a
+materialized view changes the shape entirely (rows become sums,
+many-table joins become one flat row). The two even compose — a
+materialized view can itself carry an index table over one of its columns
+to speed lookups into the precomputed result.
+
 ## When to use it
 
 - The data store is a NoSQL or key-value store with no built-in
@@ -139,16 +207,53 @@ replaced by a direct lookup.
   expensive synchronous updates on every write or an index that's
   perpetually a little behind.
 
-## Real-world example
+## Use-case scenarios
 
-Azure Table Storage has no built-in secondary index: a table is
-efficiently queryable only by its partition key and row key. An
-application storing movies partitioned by genre (so "find action movies"
-is fast) that also needs to answer "find movies starring this actor"
-creates a second table partitioned by actor name, with each row pointing
-back to (or duplicating) the corresponding movie — a manually built index
-table standing in for the secondary index the store doesn't offer
-natively.
+**Login by email over an ID-keyed user store.** A user service keeps its
+`users` table keyed (and sharded) by an opaque user ID, because that's
+what every internal reference carries. But login arrives with an email
+address, not an ID. An `email → user_id` index table turns
+authentication's hot-path lookup into a single direct read instead of a
+fan-out scan of every shard, and because email changes rarely, keeping
+the index in sync costs almost nothing on the write side.
+
+**Azure Table Storage secondary access path.** Azure Table Storage is
+efficiently queryable only by partition key and row key — there is no
+built-in secondary index. An application storing movies partitioned by
+genre (so "find action movies" is fast) that also needs "find movies
+starring this actor" creates a second table partitioned by actor name,
+each row pointing back to (or duplicating a few fields of) the
+corresponding movie — a hand-built index table standing in for the
+secondary index the store doesn't provide.
+
+**Global secondary index over a sharded orders table.** An orders store
+is sharded by order ID for even write distribution, but support agents
+constantly need "all orders for this customer." A global secondary index
+partitioned by customer ID resolves that query to a single index
+partition instead of scattering it across every shard; because the index
+spans shards it's maintained asynchronously and is eventually consistent,
+which is acceptable here — a newly placed order appearing in the
+customer's list a second late is fine, and reads fall back to the
+authoritative orders table for anything the index reference can't
+confirm.
+
+## Production libraries & getting started
+
+You rarely build an index table by hand in a relational world — you declare a
+secondary index and the engine maintains it. The pattern surfaces explicitly
+in key-value and wide-column stores, where you either create a global secondary
+index or maintain the lookup table yourself.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| PostgreSQL | System (SQL) | `CREATE INDEX` builds B-tree/GIN/GiST/BRIN secondary indexes, including partial and expression indexes | [CREATE INDEX docs](https://www.postgresql.org/docs/current/sql-createindex.html) |
+| MySQL | System (SQL) | Secondary and covering indexes over InnoDB tables; optimizer-driven lookup | [How MySQL uses indexes](https://dev.mysql.com/doc/refman/8.0/en/mysql-indexes.html) |
+| MongoDB | System (document) | Single-field, compound, and partial secondary indexes maintained on write | [Indexes docs](https://www.mongodb.com/docs/manual/indexes/) |
+| DynamoDB GSI / LSI | System (KV) | Global and local secondary indexes: query by non-key attributes, projected into a separate index table | [Secondary indexes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SecondaryIndexes.html) |
+| Elasticsearch | System (search) | Inverted-index engine acting as an external index table over a primary store | [Reference docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html) |
+| OpenSearch | System (search) | Apache-2.0 Elasticsearch fork providing the same external secondary-index role | [Documentation](https://opensearch.org/docs/latest/) |
+
+**Example / reference:** [Use The Index, Luke!](https://use-the-index-luke.com/) is a practical, engine-agnostic guide to how secondary indexes are built and used by the query optimizer.
 
 ## Related patterns
 
@@ -156,11 +261,19 @@ natively.
   category of store that most often lacks native secondary indexing and
   therefore benefits from this pattern.
 - [Sharding](/docs/patterns/storage/sharding) — index tables are
-  especially useful over sharded data, letting a query resolve directly
-  to the owning shard via a non-shard-key field instead of fanning out
-  to every shard.
+  especially useful over sharded data; a global secondary index lets a
+  query resolve directly to the owning partition via a non-shard-key
+  field instead of fanning out to every shard.
+- [Materialized View](/docs/patterns/storage/materialized-view) — the
+  sibling derived structure that stores precomputed *results* rather than
+  *pointers* to source rows; the two are complementary and can be layered.
+- [Change Data Capture](/docs/patterns/batch-streaming/change-data-capture) —
+  a common mechanism for eventually propagating fact-table writes into an
+  asynchronously maintained (global) secondary index.
 
 ## Further reading
 
-- [Index Table pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/index-table)
+- [Index Table pattern — Azure Architecture Center (Microsoft)](https://learn.microsoft.com/en-us/azure/architecture/patterns/index-table)
+- [Improving data access with secondary indexes (DynamoDB) — AWS docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SecondaryIndexes.html)
 - [Database index — Wikipedia](https://en.wikipedia.org/wiki/Database_index)
+- [Covering index — Wikipedia](https://en.wikipedia.org/wiki/Database_index#Covering_index)

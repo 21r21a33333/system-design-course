@@ -27,27 +27,70 @@ workflow's progress emerges from services independently responding to
 each other, with no single node holding — or needing to hold — the
 full picture.
 
-## How it works
+## Technical architecture & implementation
 
-Each service that participates in the workflow publishes an event
-describing what it just did ("account created," "inventory reserved,"
-"file uploaded") onto a shared event bus, typically a message broker or
-log. Every other service that needs to react to that fact subscribes to
-the relevant event type and, on receiving it, performs its own local
-work and — if there's a next step — publishes its own event in turn.
-Chaining these publish-and-react steps together is what carries a
-workflow to completion: service A's event triggers service B, whose
-own event triggers service C, and so on, without any of A, B, or C
-having been told about the others directly. No participant needs to
-know the full sequence of steps, only which events it cares about and
-which event(s) it should emit after handling one — the end-to-end
-workflow is not represented anywhere as a single artifact, it's the
-emergent result of independently defined event reactions. Adding a new
-step to the workflow generally means adding a new subscriber to an
-existing event, with no change required to the services already in the
-chain.
+**Publish, react, emit.** Each service that participates in the
+workflow publishes an event describing what it just did ("account
+created," "inventory reserved," "file uploaded") onto a shared event
+bus, typically a message broker or log. Every other service that needs
+to react to that fact subscribes to the relevant event type and, on
+receiving it, performs its own local work and — if there's a next step —
+publishes its own event in turn. Chaining these publish-and-react steps
+together is what carries a workflow to completion: service A's event
+triggers service B, whose own event triggers service C, and so on,
+without any of A, B, or C having been told about the others directly. No
+participant needs to know the full sequence of steps, only which events
+it cares about and which event(s) it should emit after handling one —
+the end-to-end workflow is not represented anywhere as a single
+artifact, it's the emergent result of independently defined event
+reactions. Adding a new step generally means adding a new subscriber to
+an existing event, with no change to the services already in the chain.
 
-**Choreography vs. Orchestration.** These are the two ways to sequence
+**The event bus is the coupling boundary.** Because no service holds a
+reference to any other, the only shared contract is the event *type* and
+its payload schema. That contract is what lets teams deploy and evolve
+their services on independent release cycles — the property choreography
+is chosen for. The bus itself is almost always a
+[pub-sub](/docs/patterns/communication/pub-sub) topic or a log-based
+[distributed message queue](/docs/patterns/building-blocks/distributed-message-queue),
+and choreography inherits that substrate's delivery semantics wholesale.
+Choreography is best understood as a *coordination style layered on*
+[Event-Driven Architecture](/docs/patterns/communication/event-driven-architecture) —
+that page covers the broker, event richness, and eventual-consistency
+mechanics in depth; this page is specifically about using events to
+*sequence a workflow* with no coordinator.
+
+**Idempotency and ordering are not optional.** Real brokers deliver
+*at-least-once*: after a crash or a lost acknowledgement, the same event
+can arrive twice. Every handler must therefore be **idempotent** —
+reacting to the same "inventory.reserved" event a second time must not
+reserve twice — usually by deduplicating on an event id or making the
+effect naturally repeatable (see
+[Idempotency](/docs/patterns/reliability/idempotency)). Ordering is
+typically guaranteed only *per partition/key*, so causally related events
+for one workflow instance must share a partition key, or handlers must
+tolerate seeing them out of order. Events that repeatedly fail handling
+are routed to a
+[dead-letter queue](/docs/patterns/reliability/dead-letter-queue) rather
+than blocking the topic — the poison-message discipline that keeps one
+bad event from stalling every workflow behind it.
+
+**Failure modes.** The trade choreography makes shows up under failure.
+Because the flow lives in no single artifact, **cyclic dependencies**
+are easy to create by accident — service A reacts to B's event and B
+reacts to A's, and an unlucky payload can bounce forever; catching this
+requires actually tracing the subscription graph, since nothing declares
+it. **End-to-end visibility** is the headline cost: answering "what
+state is workflow instance X in?" or "why did this order stall?" means
+reconstructing the sequence from
+[distributed tracing](/docs/patterns/observability/distributed-tracing)
+spans and logs after the fact, because no component holds the whole
+picture. And a **missing subscriber** is a silent bug — if no service
+happens to react to an emitted event, the workflow simply stops with no
+error anywhere, which is why unroutable events should be dead-lettered
+rather than dropped.
+
+**Choreography vs. orchestration.** These are the two ways to sequence
 a multi-step distributed workflow, and the choice is really about where
 the "what happens next" logic lives. Choreography spreads that logic
 across every participant's event handlers: there's no single point of
@@ -63,7 +106,16 @@ each service and tracks the workflow's state, so the whole sequence is
 visible in one place and easy to step through, at the cost of that
 orchestrator being a new component every participating service now
 depends on, and a potential bottleneck or single point of failure of
-its own.
+its own. The table below summarizes the two.
+
+| | Choreography | Orchestration |
+| --- | --- | --- |
+| "What next" logic | Spread across each service's handlers | Centralized in one coordinator |
+| Coupling | Loose — only the event type is shared | Every step depends on the orchestrator |
+| End-to-end visibility | Emergent; reconstructed from traces | Explicit; the coordinator holds state |
+| Single point of failure | None | The orchestrator |
+| Adding a step | Subscribe a new service to an event | Edit the coordinator's flow |
+| Debugging a stuck instance | Hard — trace subscriptions across services | Easier — inspect coordinator state |
 
 > **Relationship to `saga.md`.** [Saga](/docs/patterns/consistency/saga)
 > covers choreography specifically as one of two ways to implement a
@@ -77,61 +129,115 @@ its own.
 
 ## Code example
 
-The snippet below models the essence of choreography: services
-subscribe only to the events they care about, and a workflow's
-progress emerges from independent handlers, with nothing tracking the
-overall sequence centrally.
+The snippet below models the essence of choreography: services subscribe
+only to the topics they care about, do their local step, and emit the
+next event, with nothing tracking the overall sequence centrally. It
+carries the flow all the way through — including the failure branch,
+where a `payment.declined` fact triggers the inventory service to
+compensate its own earlier step with no coordinator ordering it to. The
+`log` exists only so the emergent sequence can be observed after the
+fact, which is exactly how a real choreography is debugged.
 
 ```rust
 use std::collections::HashMap;
 
+// An event is an immutable fact: something a service just did. Its `topic`
+// is the only thing other services key off — no service names a recipient,
+// it just announces what happened and moves on.
 #[derive(Clone, Debug)]
-struct Event {
-    topic: String,
-    payload: String,
+pub struct Event {
+    pub topic: String,
+    pub order_id: u64,
 }
 
-// Each handler reacts to one topic and may publish a follow-up event.
-// It has no knowledge of who published the event it's reacting to,
-// or who (if anyone) will react to what it publishes next.
-type Handler = fn(&Event) -> Option<Event>;
+// A handler reacts to one topic, does its local work, and may emit the next
+// event(s). It has no knowledge of who published the event it reacts to, or
+// who (if anyone) reacts to what it emits — that wiring lives only in the bus.
+type Handler = fn(&Event) -> Vec<Event>;
 
-struct EventBus {
+pub struct EventBus {
+    // topic -> subscribers. Producers and consumers are decoupled: neither
+    // holds a reference to the other, only the shared topic string.
     subscribers: HashMap<String, Vec<Handler>>,
+    // An append-only trace of every topic delivered, in order. Nothing in a
+    // choreography holds the end-to-end flow; this log is how an operator
+    // reconstructs it after the fact.
+    pub log: Vec<String>,
 }
 
 impl EventBus {
-    fn subscribe(&mut self, topic: &str, handler: Handler) {
+    pub fn new() -> Self {
+        EventBus { subscribers: HashMap::new(), log: Vec::new() }
+    }
+
+    pub fn subscribe(&mut self, topic: &str, handler: Handler) {
         self.subscribers.entry(topic.to_string()).or_default().push(handler);
     }
 
-    // Publishing triggers every subscriber to that topic in turn; any
-    // event a handler returns is published back onto the bus, letting
-    // the chain continue without a central driver.
-    fn publish(&mut self, event: Event) {
-        println!("event: {} -> {}", event.topic, event.payload);
-        if let Some(handlers) = self.subscribers.get(&event.topic).cloned() {
-            for handler in handlers {
-                if let Some(next) = handler(&event) {
-                    self.publish(next);
+    // Publishing runs every subscriber to the topic; each event a handler
+    // returns is fed back through the bus, so the workflow advances with no
+    // central driver. A breadth-first queue keeps ordering deterministic
+    // and avoids unbounded recursion on long chains.
+    pub fn publish(&mut self, event: Event) {
+        let mut queue = vec![event];
+        while !queue.is_empty() {
+            let ev = queue.remove(0);
+            self.log.push(ev.topic.clone());
+            if let Some(handlers) = self.subscribers.get(&ev.topic).cloned() {
+                for handler in handlers {
+                    for next in handler(&ev) {
+                        queue.push(next);
+                    }
                 }
             }
         }
     }
 }
 
-fn on_order_placed(e: &Event) -> Option<Event> {
-    Some(Event { topic: "inventory.reserved".into(), payload: e.payload.clone() })
+// Order service reacts to a placed order and asks inventory to reserve.
+fn on_order_placed(e: &Event) -> Vec<Event> {
+    vec![Event { topic: "inventory.reserved".into(), order_id: e.order_id }]
 }
 
-fn on_inventory_reserved(e: &Event) -> Option<Event> {
-    Some(Event { topic: "payment.charged".into(), payload: e.payload.clone() })
+// Inventory reserved -> ask payment to charge.
+fn on_inventory_reserved(e: &Event) -> Vec<Event> {
+    vec![Event { topic: "payment.requested".into(), order_id: e.order_id }]
+}
+
+// Payment service: even order ids succeed, odd order ids are declined. A
+// decline emits a failure event instead of the success event — the failure
+// is just another fact on the bus, and upstream services subscribe to it.
+fn on_payment_requested(e: &Event) -> Vec<Event> {
+    match e.order_id % 2 {
+        0 => vec![Event { topic: "payment.charged".into(), order_id: e.order_id }],
+        _ => vec![Event { topic: "payment.declined".into(), order_id: e.order_id }],
+    }
+}
+
+// Inventory also subscribes to the payment-declined event and reacts by
+// compensating its own earlier step — releasing what it reserved. No
+// coordinator told it to; it reacts to the failure fact like any other.
+fn on_payment_declined(e: &Event) -> Vec<Event> {
+    vec![Event { topic: "inventory.released".into(), order_id: e.order_id }]
+}
+
+pub fn wire(bus: &mut EventBus) {
+    bus.subscribe("order.placed", on_order_placed);
+    bus.subscribe("inventory.reserved", on_inventory_reserved);
+    bus.subscribe("payment.requested", on_payment_requested);
+    bus.subscribe("payment.declined", on_payment_declined);
 }
 ```
 
-Wiring `on_order_placed` to `"order.placed"` and `on_inventory_reserved`
-to `"inventory.reserved"` is all either service needs to know — neither
-one is aware the other exists, or that a payment step comes after.
+Publishing `order.placed` with an even `order_id` produces the log
+`order.placed → inventory.reserved → payment.requested →
+payment.charged`: each service reacted to one event and emitted the next,
+and the happy path completed with no coordinator. Publishing with an odd
+`order_id` instead produces `… → payment.declined → inventory.released` —
+the payment service's failure *fact* is what triggers the inventory
+service to run its own compensation, which is choreographed saga recovery
+in miniature. Neither service was ever told the other exists; the whole
+flow, success and failure alike, is emergent from the wiring in `wire`.
 
 ## When to use it
 
@@ -159,16 +265,54 @@ one is aware the other exists, or that a payment step comes after.
   much simpler to enforce by direct control than by relying on every
   participant to correctly react to the right events in the right way.
 
-## Real-world example
+## Use-case scenarios
 
-CI/CD pipelines are commonly choreographed: a "CodePushed" event
+**CI/CD pipeline across independent tools.** A "CodePushed" event
 triggers an independent build service to compile and publish
-"BuildSucceeded," which triggers an independent test service to run
-the suite and publish "TestsPassed," which triggers a deployment
-service — with no service in the chain aware that any of the others
-exist, only that it should react to one event and emit another. Adding
-a new stage (a security scan, say) means subscribing it to an existing
-event; nothing already in the chain has to change.
+"BuildSucceeded," which triggers a test service to run the suite and
+publish "TestsPassed," which triggers a deployment service — with no
+service in the chain aware that any of the others exist, only that it
+should react to one event and emit another. Adding a new stage (a
+security scan, say) means subscribing it to an existing event; nothing
+already in the chain has to change. The workflow's decentralization
+matches an organization where each stage is owned by a different team.
+
+**Choreographed order fulfillment across bounded contexts.** An order
+service emits `OrderPlaced` and forgets about it. Inventory reacts by
+reserving stock and emits `InventoryReserved`; payment reacts to *that*
+and emits `PaymentCharged` or `PaymentDeclined`; shipping reacts to the
+charge. On a decline, inventory reacts to the failure event by releasing
+its hold — a choreographed saga where the compensation is itself just
+another event reaction, exactly as in the code above. No team owns the
+end-to-end flow, and each context deploys on its own cadence; the cost
+is that "where is order 4711 stuck?" has to be answered from traces.
+
+**Multi-stage media-processing pipeline.** An "UploadCompleted" event
+kicks off a chain of independent workers: transcode to several bitrates,
+extract a thumbnail, run content moderation, then publish. Each worker
+subscribes to the previous stage's completion event and emits its own,
+so the pipeline scales each stage independently and absorbs bursts
+through the broker. A new stage — say, subtitle generation — is added by
+subscribing a new worker to an existing event, with no change to the
+workers already in the chain.
+
+## Production libraries & getting started
+
+Choreography isn't a library you install — it's a coordination style
+built on top of a message broker plus a framework that makes services
+publish, subscribe, and react idempotently. The real production choices
+are the broker that carries the events and the event-driven framework
+that wires handlers to topics.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Apache Kafka | Java/Scala broker; clients in most languages | Durable, partitioned event log — the usual substrate for choreographed workflows where each service consumes and emits events | [Kafka documentation](https://kafka.apache.org/documentation/) |
+| NATS / JetStream | Go broker; clients in most languages | Lightweight pub-sub with JetStream persistence for at-least-once event choreography | [NATS JetStream](https://docs.nats.io/nats-concepts/jetstream) |
+| MassTransit | .NET / C# | Message framework whose event consumers make choreographed, event-reacting services (and choreographed sagas) straightforward | [MassTransit saga](https://masstransit.io/documentation/patterns/saga) |
+| Watermill | Go | Library for building event-driven apps: publishers, subscribers, and middleware over Kafka/NATS/etc. for choreographed flows | [Watermill getting started](https://watermill.io/docs/getting-started/) |
+| Eventuate | Java (Spring) | Event-driven microservices platform providing transactional event publishing that choreographed and orchestrated sagas build on | [Eventuate](https://eventuate.io/) |
+
+**Example / reference:** [ThreeDotsLabs/watermill](https://github.com/ThreeDotsLabs/watermill) — event-driven message-handling library with runnable pub-sub examples.
 
 ## Related patterns
 
@@ -179,9 +323,20 @@ event; nothing already in the chain has to change.
 - [Event-Driven Architecture](/docs/patterns/communication/event-driven-architecture) —
   the broader architectural style choreography is built on top of:
   services reacting to events rather than being called directly.
+- [Publish-Subscribe](/docs/patterns/communication/pub-sub) — the
+  messaging primitive the event bus is usually built on, delivering each
+  event to every subscribed service.
+- [Compensating Transaction](/docs/patterns/consistency/compensating-transaction) —
+  the undo mechanism a choreographed saga triggers by publishing a
+  failure event that upstream services react to, as in the code above.
+- [Idempotency](/docs/patterns/reliability/idempotency) and
+  [Dead Letter Queue](/docs/patterns/reliability/dead-letter-queue) — the
+  reliability disciplines that make at-least-once, unroutable, and
+  poison events safe in a choreographed flow.
 
 ## Further reading
 
 - [Event-driven architecture — Wikipedia](https://en.wikipedia.org/wiki/Event-driven_architecture)
 - [Choreography pattern — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-choreography.html)
 - [Orchestration pattern — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-orchestration.html)
+- [Saga design pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/saga)

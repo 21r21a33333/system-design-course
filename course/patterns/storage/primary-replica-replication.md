@@ -100,6 +100,43 @@ shard is itself a primary-replica set, so the system gets sharding's
 write-throughput and capacity scaling and replication's read scaling
 and failover safety, layered on top of each other.
 
+## Living with replication lag
+
+Serving reads from asynchronous replicas is where lag stops being an
+abstraction and starts producing user-visible anomalies, and a few
+recurring ones are worth naming because each has a standard mitigation.
+
+**Read-your-own-writes.** A user updates their profile, the write
+commits on the primary, the immediate re-read is routed to a replica
+that hasn't received the change yet — and the user sees their *old*
+profile, as if the save failed. The usual fix is to route a user's reads
+to the primary (or to a replica known to be caught up) for a short window
+after that user writes, so they always observe at least their own latest
+change even while everyone else reads from lagging replicas.
+
+**Monotonic reads.** Two successive reads by the same user land on two
+different replicas at different lag, and the second replica is *further
+behind* than the first — so the user watches data appear to travel
+backwards in time (a comment they just saw vanishes). Pinning a session
+to a single replica, or tracking a per-session read position, keeps a
+user's view moving only forward.
+
+**Bounding and monitoring lag.** Because lag is the currency of all of
+this, production systems measure it continuously — as a time delta (how
+many seconds behind) or a log-position delta — and act on it: a replica
+whose lag crosses a threshold is pulled out of the read pool until it
+catches up, rather than serving reads so stale they're misleading. Some
+systems expose the primary's current write position to clients and let a
+read specify "only serve me from a replica that has applied at least up
+to position X," turning "read from a fresh-enough replica" into an
+explicit, checkable contract rather than a hope.
+
+These are the same consistency guarantees the
+[consistency patterns](/docs/patterns/consistency/quorum) formalize;
+primary-replica replication is where an application most often meets them
+in practice, because "read from a replica" quietly opts into all of them
+at once.
+
 ## Code example
 
 ```rust
@@ -204,6 +241,23 @@ the moment of the outage may be lost, in exchange for the primary
 region's writes never paying a cross-region round trip in normal
 operation.
 
+## Production libraries & getting started
+
+Every mainstream database implements primary-replica replication directly;
+the extra tooling you add is for high-availability failover and for routing
+reads away from the primary.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| PostgreSQL | System (SQL) | Streaming/physical replication, synchronous and async standbys | [High availability & replication](https://www.postgresql.org/docs/current/high-availability.html) |
+| MySQL | System (SQL) | Binlog-based replication, semi-synchronous option, replica topologies | [Replication docs](https://dev.mysql.com/doc/refman/8.0/en/replication.html) |
+| Redis | System (KV) | Primary-replica replication for read scaling and failover | [Replication docs](https://redis.io/docs/latest/operate/oss_and_stack/management/replication/) |
+| MongoDB | System (document) | Replica sets with automatic election and failover | [Replication docs](https://www.mongodb.com/docs/manual/replication/) |
+| Patroni | Python | Postgres HA: leader election, automated failover, fencing | [Docs](https://patroni.readthedocs.io/en/latest/) |
+| PgBouncer / ProxySQL | C | Connection pooling and read/write splitting in front of replicas | [PgBouncer](https://www.pgbouncer.org/) · [ProxySQL](https://proxysql.com/documentation/) |
+
+**Example / reference:** [Rails `connects_to` / read-replica routing](https://guides.rubyonrails.org/active_record_multiple_databases.html) shows app-level read/write splitting against a primary and its replicas.
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — partitions data across
@@ -224,3 +278,6 @@ operation.
 - [Replication (computing) — Wikipedia](https://en.wikipedia.org/wiki/Replication_(computing))
 - [Geodes pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes)
 - DesignGurus' System Design Patterns course covers this as "Primary-Replica" in its Storing Data module.
+- [High availability, load balancing, and replication — PostgreSQL documentation](https://www.postgresql.org/docs/current/high-availability.html)
+- [MySQL replication — MySQL 8.0 reference manual](https://dev.mysql.com/doc/refman/8.0/en/replication.html)
+- [Geodes pattern — Azure Architecture Center (Microsoft)](https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes)

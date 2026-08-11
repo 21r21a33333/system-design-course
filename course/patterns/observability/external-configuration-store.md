@@ -28,32 +28,72 @@ both problems by holding configuration in one centralized place, outside
 any single deployment artifact, that can be read at startup or updated
 live and inspected independently of what's currently deployed.
 
-## How it works
+## Technical architecture & implementation
 
-Configuration values move out of the application package and into a
-dedicated store — a key-value service, a dedicated configuration
-management product, or a database table built for exactly this — that
-every instance of the application reads from rather than reading from
-local files or baked-in environment variables. On startup, an instance
-fetches its current configuration from the store; the harder design
-question is what happens when a value changes *after* startup. If the
-application only reads configuration once, at boot, a config update
-still requires restarting every instance to take effect — which is
-better than a redeploy but still not a live change. To get an actual
-live update, the application needs an explicit mechanism to detect and
-reload configuration changes without restarting: polling the store
-periodically, or subscribing to a push/watch mechanism the store
-provides, and swapping in the new values while running. That
-capability has to be built deliberately; it doesn't come for free just
-by moving config to an external store.
+**The store and the read path.** Configuration values move out of the
+application package into a dedicated store — a purpose-built
+configuration service, a key-value/coordination service, or a database
+table designed for exactly this — that every instance reads from instead
+of from local files or baked-in environment variables. On startup an
+instance fetches its current configuration; the values are typically
+namespaced by environment and by service so one store can serve an
+entire fleet without collisions. A local in-memory cache of the last
+successful read is essential: it makes reads O(1) at request time and,
+just as importantly, is what the instance falls back to when the store
+is unreachable.
 
-The tradeoff this pattern introduces is a new critical runtime
-dependency: the configuration store itself now has to be available and
-fast, because every instance depends on it, at least at startup and
-possibly continuously if changes need to be picked up live. If the
-store is unreachable, every instance either fails to start or — in a
-better-designed system — falls back to its last-known-good configuration
-cached locally, but that fallback logic has to be built in, not assumed.
+**Static read vs. dynamic reload.** The hard design question is what
+happens when a value changes *after* startup. If the application reads
+configuration only once, at boot, a change still requires restarting
+every instance to take effect — better than a redeploy, but not a live
+change. To get a genuine live update, the app needs an explicit
+mechanism to detect and apply changes without restarting. Two shapes are
+common: **polling** (re-read the store on an interval and diff against
+the last-seen version) and **watch/push** (subscribe to the store, which
+notifies instances the moment a key changes). Polling is simpler and
+degrades gracefully; watch is near-instant but couples the app to a
+store that supports change notification. Either way the app swaps in the
+new values atomically while serving, so an in-flight request never sees a
+half-updated config.
+
+**Versioning, rollback, and change consistency.** A production config
+store should be *versioned*: every write produces a new immutable
+version, so a bad change can be rolled back to a known-good prior
+version instantly — the same "undo" safety a redeploy pipeline has, but
+in seconds. Versioning also solves a subtle distributed problem:
+**consistency of a change across many instances**. Instances poll or get
+notified at slightly different moments, so for a short window some run
+version N and some run N+1. For an independent scalar (a timeout) that's
+harmless; for a set of values that must change *together* (a new
+endpoint plus its new credential), a naive key-by-key update can leave an
+instance briefly reading a mismatched pair. The fix is to make a related
+group of values a single versioned unit — instances read the whole
+snapshot atomically and only ever see version N or N+1, never a mix.
+
+**Secrets belong in a separate store.** Connection strings, API keys, and
+certificates are configuration too, but they carry a different threat
+model — they must be encrypted at rest, tightly access-controlled, and
+audited on every read. The standard practice is to keep secrets in a
+dedicated **secret store** (a vault) rather than the general config
+store, with the config store holding a *reference* to the secret rather
+than its plaintext value. This keeps least-privilege boundaries and
+rotation policies where they belong and avoids leaking credentials into
+config dumps, logs, or diffs.
+
+**Failure modes.** The pattern introduces a new critical runtime
+dependency: the store must be available and fast because every instance
+depends on it, at startup and continuously if changes are picked up
+live. The mitigations are non-negotiable in production. *Last-known-good
+fallback*: on a fetch failure, keep serving the cached config rather than
+crashing or blanking settings — an outage of the config store should not
+become an outage of the application. *Monotonic version guards*: only
+apply a strictly newer version, so a stale or partial read can't silently
+roll config backward. *A bad-config blast radius*: because one edit
+propagates to every instance within seconds, a single fat-fingered value
+can take down the whole fleet at once — which is exactly why versioning
+with instant rollback, validation on write, and staged propagation
+matter. Treat a config change with the same care as a deploy, because
+operationally it now *is* one.
 
 ### How this differs from Feature Flags
 
@@ -78,57 +118,79 @@ store itself does.
 
 ## Code example
 
-The snippet below models the reload behavior a config-store client needs
-to actually pick up changes live, rather than only reading configuration
-once at startup.
+The snippet below models the three behaviors a production config-store
+client needs beyond a naive one-time read: **live reload** with a
+monotonic version guard, **last-known-good fallback** when the store is
+unreachable, and a **layered override** so a specific environment or
+tenant can differ from the base without a separate store.
 
 ```rust
 use std::collections::HashMap;
 
-struct ConfigStore {
+// A versioned snapshot of configuration as held by the external store.
+#[derive(Clone)]
+struct Snapshot {
     values: HashMap<String, String>,
     version: u32,
 }
 
+// Stand-in for the external store. `fetch` returns None to model the store
+// being unreachable — the case a real client must survive.
+struct ConfigStore {
+    current: Option<Snapshot>,
+}
+
 impl ConfigStore {
-    // Simulates fetching the current snapshot from the external store.
-    fn fetch(&self) -> (HashMap<String, String>, u32) {
-        (self.values.clone(), self.version)
+    fn fetch(&self) -> Option<Snapshot> {
+        self.current.clone()
     }
 }
 
 struct AppConfig {
-    cached: HashMap<String, String>,
-    last_seen_version: u32,
+    // Base values plus a per-environment/tenant override layer resolved on
+    // top of them, so a specific tenant can differ without a separate store.
+    base: Snapshot,
+    overrides: HashMap<String, String>,
+    // Last-known-good: retained so a store outage never blanks live config.
+    last_good_version: u32,
 }
 
 impl AppConfig {
-    fn new() -> Self {
-        AppConfig { cached: HashMap::new(), last_seen_version: 0 }
+    fn new(initial: Snapshot, overrides: HashMap<String, String>) -> Self {
+        let v = initial.version;
+        AppConfig { base: initial, overrides, last_good_version: v }
     }
 
-    // Called at boot, and again on each poll — a config store only
-    // delivers live updates if the app actually re-reads it like this.
-    fn reload_if_changed(&mut self, store: &ConfigStore) -> bool {
-        let (values, version) = store.fetch();
-        if version == self.last_seen_version {
-            return false; // nothing changed since last read
+    // Called at boot and on every poll. On a store outage (None) it keeps
+    // serving the last-known-good snapshot rather than failing. Only a
+    // strictly newer version is swapped in, so a stale read can't roll back.
+    fn reload(&mut self, store: &ConfigStore) -> bool {
+        match store.fetch() {
+            None => false, // store unreachable: keep last-known-good
+            Some(snap) if snap.version > self.last_good_version => {
+                self.last_good_version = snap.version;
+                self.base = snap;
+                true
+            }
+            Some(_) => false, // same or older version: nothing to apply
         }
-        self.cached = values;
-        self.last_seen_version = version;
-        true
     }
 
+    // Override layer wins over the base layer; base wins over nothing.
     fn get(&self, key: &str) -> Option<&String> {
-        self.cached.get(key)
+        self.overrides.get(key).or_else(|| self.base.values.get(key))
     }
 }
 ```
 
-`reload_if_changed` is the mechanism that turns a one-time boot-time
-read into a live update: without a poll (or push-based equivalent)
-calling it periodically, a config store update wouldn't reach a
-running instance until its next restart.
+`reload` is the mechanism that turns a one-time boot read into a live
+update — but note the two guards that make it safe: a `None` from the
+store leaves the last-known-good snapshot in place (an unreachable store
+doesn't blank the app's config), and the `snap.version > last_good_version`
+check means only a strictly newer version is ever applied, so a stale or
+out-of-order read can't silently roll configuration backward. `get`
+resolves the override layer first, giving per-environment or per-tenant
+values without a second store.
 
 ## When to use it
 
@@ -153,24 +215,73 @@ running instance until its next restart.
   specific feature — that's the narrower problem [Feature
   Flags](/docs/patterns/observability/feature-flags) is built for.
 
-## Real-world example
+## Use-case scenarios
 
-A microservices fleet stores database connection strings, external API
-keys, and per-environment tunables in a centralized service like AWS
-Systems Manager Parameter Store or HashiCorp Consul's key-value store.
-Each service instance reads its configuration from the store at
-startup and polls periodically for changes, so an operator can update a
-timeout value for every running instance without rebuilding or
-redeploying a single container.
+**Microservices fleet with centralized tunables.** A fleet of services
+stores database connection strings (as references into a secret vault),
+external API endpoints, and per-environment tunables in a centralized
+service such as AWS Systems Manager Parameter Store, Azure App
+Configuration, or HashiCorp Consul's key-value store. Each instance reads
+at startup and polls for changes, so an operator can adjust a timeout for
+every running instance — during an incident, without rebuilding or
+redeploying a single container — and roll it back to the prior version
+just as fast if the change misbehaves.
+
+**Live incident mitigation via dynamic reload.** A service under a
+traffic spike is shedding load poorly because a retry count and a
+concurrency limit are too aggressive. Rather than build and ship a new
+release under pressure, an on-call engineer edits those values in the
+config store; every instance watching the store picks up the new version
+within seconds and re-tunes itself in place. Because the change is
+versioned, if it makes things worse it is reverted with a single
+rollback to the last-known-good version.
+
+**Per-tenant and per-environment overrides.** A multi-tenant SaaS keeps a
+base configuration plus layered overrides — one tenant needs a larger
+upload limit, the EU environment needs a different regional endpoint. The
+override layer is resolved on top of the base at read time, so the vast
+majority of settings stay defined once while the handful that must differ
+are expressed as targeted overrides rather than forked config files or
+special-case code paths sprinkled through the application.
+
+## Production libraries & getting started
+
+Two layers of tooling implement this pattern: a centralized store (a purpose-built config service, a coordination KV, or a secret vault) and a client-side loader that reads, caches, and layers config inside the app. Keep secrets in a dedicated vault holding only a reference in the general store.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| HashiCorp Consul KV | Go (server); HTTP + SDKs | Distributed key/value store with watches for live, push-based config updates | [developer.hashicorp.com/consul — KV](https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv) |
+| etcd | Go (server); gRPC + SDKs | Strongly consistent KV with watch API, the config/coordination store behind Kubernetes | [etcd.io/docs](https://etcd.io/docs/latest/) |
+| AWS SSM Parameter Store | Managed (any language SDK) | Versioned, hierarchical parameters with IAM access control and change history | [docs.aws.amazon.com — Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) |
+| Azure App Configuration | Managed (any language SDK) | Centralized config + feature management with labels and point-in-time snapshots | [learn.microsoft.com — App Configuration](https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview) |
+| Spring Cloud Config | Java | Server + client for externalized config with Git-backed versioning and refresh | [docs.spring.io — Spring Cloud Config](https://docs.spring.io/spring-cloud-config/reference/index.html) |
+| HashiCorp Vault | Go (server); HTTP + SDKs | Dedicated secret store: encryption at rest, dynamic secrets, audited access, rotation | [developer.hashicorp.com/vault](https://developer.hashicorp.com/vault/docs) |
+| Viper | Go | Client library that merges files, env vars, and remote stores with live-watch reload | [github.com/spf13/viper](https://github.com/spf13/viper) |
+| Dynaconf | Python | Layered settings with environments, overrides, and Vault/Redis backends | [dynaconf.com](https://www.dynaconf.com/) |
+| node-config | JS | Hierarchical, per-environment config layering for Node.js applications | [github.com/node-config/node-config](https://github.com/node-config/node-config) |
+
+**Example / reference:** [etcd (source)](https://github.com/etcd-io/etcd)
 
 ## Related patterns
 
 - [Feature Flags](/docs/patterns/observability/feature-flags) — a
-  narrower, more targeted sibling pattern focused on per-user or
-  gradual-rollout control over a single feature, often built on top of
-  a configuration store as its storage layer.
+  narrower, more targeted sibling focused on per-user or gradual-rollout
+  control over a single feature, often built *on top of* a configuration
+  store as its storage layer.
+- [Canary Deployment](/docs/patterns/observability/canary-deployment) —
+  a config change propagates to the whole fleet at once, so staging that
+  propagation (or gating a risky value behind a flag) borrows the same
+  progressive-exposure discipline canary releases use for code.
+- [Cache-Aside](/docs/patterns/caching/cache-aside) — the local
+  last-known-good cache a config client keeps is a cache of the store's
+  contents, with the store as the system of record behind it.
+- [Sidecar](/docs/patterns/api-edge/sidecar) — a common deployment shape
+  for config/secret retrieval: a co-located sidecar fetches, caches, and
+  refreshes configuration on behalf of the application container.
 
 ## Further reading
 
 - [External Configuration Store pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/external-configuration-store)
+- [AWS Systems Manager Parameter Store — official docs](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
+- [HashiCorp Consul: key/value store — official docs](https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv)
 - [Configuration management — Wikipedia](https://en.wikipedia.org/wiki/Configuration_management)

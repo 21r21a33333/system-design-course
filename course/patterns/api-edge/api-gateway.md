@@ -105,6 +105,20 @@ compose rather than compete: it's common to run several BFFs behind one
 shared gateway, with the gateway handling cross-cutting concerns
 (TLS, auth) uniformly and each BFF handling client-specific shaping.
 
+**API Gateway vs. Service Mesh.** Both intercept traffic and enforce
+cross-cutting concerns without each service reimplementing them, which
+invites confusion — but they sit on different axes of traffic. An API
+gateway handles **north-south** traffic: requests entering the system
+from outside clients, where per-client authentication, quotas, and a
+stable public contract matter most. A
+[Service Mesh](/docs/patterns/api-edge/service-mesh) handles
+**east-west** traffic: the calls services make to each other inside the
+system, where mutual TLS between workloads, retries, and traffic
+shaping for canary rollouts matter most. They are complementary layers,
+not alternatives — a system commonly runs a gateway at its edge for
+inbound client traffic and a mesh internally for service-to-service
+calls, and neither removes the need for the other.
+
 ## Code example
 
 ```rust
@@ -207,6 +221,24 @@ payload, sparing the mobile client three separate round trips (and
 three separate timeout budgets to manage) for what the user experiences
 as one screen loading.
 
+## Production libraries & getting started
+
+You rarely build a gateway from scratch — you pick an existing one and
+configure routes, auth, and rate limits as data. These are the production
+gateways teams actually run:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Kong Gateway | Lua / C (on NGINX/OpenResty) | Plugin-driven gateway: auth, rate limiting, transformations, observability | [Kong Gateway docs](https://docs.konghq.com/gateway/latest/) |
+| Envoy | C++ | High-performance L7 proxy and gateway core (also the data plane behind many meshes) | [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/) |
+| Amazon API Gateway | Managed (AWS) | Fully managed REST/HTTP/WebSocket gateway with auth, throttling, and usage plans | [Amazon API Gateway docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) |
+| Apigee | Managed (Google Cloud) | Enterprise API management: gateway, developer portal, analytics, monetization | [Apigee docs](https://cloud.google.com/apigee/docs) |
+| Tyk | Go | Open-source gateway with a dashboard, developer portal, and GraphQL support | [Tyk docs](https://tyk.io/docs/) |
+| KrakenD | Go | Stateless, declarative gateway focused on aggregation and high throughput | [KrakenD docs](https://www.krakend.io/docs/) |
+| Spring Cloud Gateway | Java | Programmatic gateway for Spring/JVM stacks with reactive routing and filters | [Spring Cloud Gateway docs](https://docs.spring.io/spring-cloud-gateway/reference/) |
+
+**Example / reference:** [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/)
+
 ## Related patterns
 
 - [Reverse Proxy](/docs/patterns/api-edge/reverse-proxy) — the broader
@@ -219,3 +251,4 @@ as one screen loading.
 
 - [API management — Wikipedia](https://en.wikipedia.org/wiki/API_management)
 - [What is Amazon API Gateway? — AWS docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html)
+- [Gateway Aggregation pattern — Microsoft Learn](https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation)

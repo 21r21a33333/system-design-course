@@ -215,6 +215,19 @@ independent analyses into a single memo, explicitly flagging any point
 where the three agents reached conflicting conclusions about the
 company's outlook rather than smoothing the disagreement away.
 
+## Production libraries & getting started
+
+These frameworks let a fixed roster of agents run in parallel against the same input, then reconcile their results at a fan-in step.
+
+| Framework / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| **LangGraph** | Python, JS/TS | Parallel branches (fan-out edges) whose results merge back into shared state, with reducers acting as the aggregation step. | [Graph API — parallel execution](https://langchain-ai.github.io/langgraph/how-tos/graph-api/) |
+| **Microsoft AutoGen** | Python, .NET | An async, event-driven runtime where multiple agents run concurrently and results are collected for downstream aggregation. | [AutoGen docs](https://microsoft.github.io/autogen/stable/) |
+| **Semantic Kernel** | C#, Python, Java | A built-in `ConcurrentOrchestration` primitive that dispatches one task to many agents in parallel and gathers their outputs. | [Concurrent orchestration docs](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/concurrent) |
+| **OpenAI Agents SDK** | Python, JS/TS | `asyncio`-based parallel agent runs whose independent outputs a final judge or merge agent reconciles into one answer. | [Agents SDK docs](https://openai.github.io/openai-agents-python/) |
+
+**Example / reference:** [Semantic Kernel concurrent orchestration](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/concurrent)
+
 ## Related patterns
 
 - [Sequential Orchestration](/docs/patterns/ai-agent-orchestration/sequential-orchestration) —
@@ -238,6 +251,8 @@ company's outlook rather than smoothing the disagreement away.
 ## Further reading
 
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
+- [Concurrent agent orchestration — Semantic Kernel docs (Microsoft)](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/concurrent)
+- [Building effective agents — Anthropic (parallelization workflow)](https://www.anthropic.com/engineering/building-effective-agents)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
 - [Ensemble learning — Wikipedia](https://en.wikipedia.org/wiki/Ensemble_learning)
 - [Concurrent agent orchestration — Semantic Kernel documentation, Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/concurrent)

@@ -175,6 +175,21 @@ store or cache genuinely returns whole objects as its only interface
 elsewhere — trimming and shaping the object after retrieval, or caching
 a pre-shaped version — rather than at the fetch call itself.
 
+## Libraries & tools that prevent this
+
+These tools let a call site request exactly the columns and rows it needs — column projection instead of full-entity loads, keyset pagination instead of unbounded scans, and query inspection to confirm the fetch shape matches the use.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| GraphQL | Spec / all | Clients request only the fields they render, so the server can resolve a narrow projection instead of returning whole objects. | [graphql.org — queries](https://graphql.org/learn/queries/) |
+| Prisma (`select`) | JS / TS | `select` returns only the named columns rather than the full row, matching fetch width to what the caller uses. | [prisma.io docs](https://www.prisma.io/docs/orm/prisma-client/queries/select-fields) |
+| SQLAlchemy (`load_only` / column loading) | Python | Loads only specified columns of an entity, avoiding a `SELECT *` when a view needs two fields. | [sqlalchemy.org docs](https://docs.sqlalchemy.org/en/20/orm/queryguide/columns.html) |
+| Django ORM (`only` / `values`) | Python | `only()`/`values()` restrict a queryset to chosen fields instead of hydrating every column. | [docs.djangoproject.com](https://docs.djangoproject.com/en/stable/ref/models/querysets/#only) |
+| EXPLAIN | PostgreSQL | Reveals how wide a query scans and returns, exposing extraneous columns and full-collection reads on hot paths. | [postgresql.org docs](https://www.postgresql.org/docs/current/sql-explain.html) |
+| Keyset pagination (No Offset) | SQL / all | Fetches a bounded page by seeking on an indexed key instead of pulling and discarding large offset ranges. | [use-the-index-luke.com](https://use-the-index-luke.com/no-offset) |
+
+**Example / reference:** [Extraneous Fetching antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/extraneous-fetching/)
+
 ## Related patterns
 
 - [Materialized View](/docs/patterns/storage/materialized-view) —
@@ -192,3 +207,4 @@ a pre-shaped version — rather than at the fetch call itself.
 - [Database normalization — Wikipedia](https://en.wikipedia.org/wiki/Database_normalization)
 - [Projection (relational algebra) — Wikipedia](https://en.wikipedia.org/wiki/Projection_(relational_algebra)) — the formal operation behind "select only the columns you need," the direct fix for this antipattern's `SELECT *` shape.
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Extraneous Fetching as a named antipattern topic.
+- [EXPLAIN — PostgreSQL documentation](https://www.postgresql.org/docs/current/sql-explain.html)

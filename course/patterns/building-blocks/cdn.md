@@ -94,6 +94,34 @@ purely for the network-path benefit, without actually caching the
 response — a narrower benefit than the caching case, since it saves
 network distance but not origin load.
 
+**Cache key and the `Vary` trap.** An edge location decides whether two
+requests can share one cached copy by computing a **cache key** — by
+default the URL, but often extended to include selected headers or query
+parameters. This is where subtle bugs live. If a response legitimately
+differs by `Accept-Encoding` (gzip vs. brotli) or by a device-class
+header, that header must be part of the cache key (via `Vary`) or the
+CDN will serve one variant to everyone. The opposite mistake is worse for
+hit rate: keying on a high-cardinality dimension — a per-user cookie, a
+cache-busting analytics query parameter — fragments the cache into
+one-entry-per-user copies that never get reused, quietly collapsing the
+hit rate toward zero while the CDN still technically "works." Tuning the
+cache key to include exactly the dimensions a response actually varies on,
+and no more, is a large part of operating a CDN well.
+
+**Tiered caching and origin shielding.** A naive pull CDN has every edge
+location fetch independently from the origin on a miss, so a globally
+popular-but-uncached object (a just-published video, an asset right after
+a purge) can trigger a burst of simultaneous origin fetches from dozens of
+edges at once — a "thundering herd" against the origin. Tiered caching
+inserts one or more **mid-tier / shield** caches between the edges and the
+origin: edges miss to a regional shield, the shield misses to the origin
+*once*, and every other edge behind that shield is served from it. This
+collapses N edge misses into a single origin fetch, protecting a
+modest origin from the full fan-out of a large edge fleet — the same
+request-coalescing idea as
+[cache stampede prevention](/docs/patterns/caching/cache-stampede-prevention),
+applied across cache tiers rather than within one.
+
 **CDN vs. Static Content Hosting.** These two are adjacent and
 frequently deployed together, which makes them easy to conflate, but
 they answer different questions. [Static Content
@@ -219,6 +247,18 @@ edge location rather than once per reader, at the cost of a
 short window where a late correction to the article takes a few
 minutes to propagate everywhere.
 
+## Production libraries & getting started
+
+A CDN is a managed edge network you configure, not a library you import; for self-hosting you run a caching reverse proxy at the origin/edge.
+
+| Library / Tool | Type | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Cloudflare | Managed CDN | Global edge cache, Workers, tiered cache | [Cache docs](https://developers.cloudflare.com/cache/) · [Workers guide](https://developers.cloudflare.com/workers/get-started/guide/) |
+| Fastly | Managed CDN | Edge cache with VCL/Compute at the edge | [Learning docs](https://developer.fastly.com/learning/) |
+| AWS CloudFront | Managed CDN | Edge cache integrated with S3/origins | [Getting started](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/GettingStarted.html) |
+| Varnish | Self-host | HTTP caching reverse proxy (VCL) | [Varnish docs](https://varnish-cache.org/docs/) |
+| Nginx | Self-host | Content caching in a reverse proxy | [Content caching guide](https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/) |
+
 ## Related patterns
 
 - [Static Content Hosting](/docs/patterns/building-blocks/static-content-hosting) —
@@ -230,9 +270,17 @@ minutes to propagate everywhere.
   the general caching pattern a CDN is a geographically distributed,
   edge-focused specialization of; the TTL and staleness trade-offs are
   shared with any cache.
+- [Cache Stampede Prevention](/docs/patterns/caching/cache-stampede-prevention) —
+  the request-coalescing idea a CDN's tiered/shield caching applies
+  across cache tiers to keep a burst of edge misses from becoming a
+  thundering herd against the origin.
 - [CDN — concept overview](/docs/concepts/cdn) — this site's earlier
   primer-derived treatment of content delivery networks, for further
   background.
+
+## Visual references
+
+- [Diagram contrasting a single-origin topology with a distributed CDN edge network — Wikipedia](https://en.wikipedia.org/wiki/Content_delivery_network) — © Wikipedia
 
 ## Further reading
 
@@ -240,3 +288,6 @@ minutes to propagate everywhere.
 - [What is a CDN? — Amazon CloudFront overview, AWS documentation](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html)
 - DesignGurus' System Design Patterns course covers this as "CDN" in its The Entry Point (API and Edge) module.
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes CDN as a named topic.
+- [Cache-Control — MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control)
+- [How Cloudflare Tiered Cache works — Cloudflare documentation](https://developers.cloudflare.com/cache/how-to/tiered-cache/)
+- [Anycast — Wikipedia](https://en.wikipedia.org/wiki/Anycast)

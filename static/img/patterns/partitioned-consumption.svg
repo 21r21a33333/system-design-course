@@ -1,0 +1,66 @@
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="360" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Key → partition routing; each partition assigned to exactly one consumer in the group</text>
+
+  <!-- producer -->
+  <rect x="30" y="150" width="110" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="85" y="176" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Producer</text>
+  <text x="85" y="193" font-size="8" fill="#dbeafe" text-anchor="middle">hash(key) % N</text>
+
+  <!-- partitions -->
+  <rect x="200" y="70" width="200" height="42" rx="6" fill="#0f766e"/>
+  <text x="215" y="96" font-size="10" fill="#ffffff" font-weight="600">P0</text>
+  <text x="330" y="96" font-size="8" fill="#ccfbf1" text-anchor="middle">offsets 0,1,2 (ordered)</text>
+
+  <rect x="200" y="130" width="200" height="42" rx="6" fill="#0f766e"/>
+  <text x="215" y="156" font-size="10" fill="#ffffff" font-weight="600">P1</text>
+  <text x="330" y="156" font-size="8" fill="#ccfbf1" text-anchor="middle">offsets 0,1 (ordered)</text>
+
+  <rect x="200" y="190" width="200" height="42" rx="6" fill="#0f766e"/>
+  <text x="215" y="216" font-size="10" fill="#ffffff" font-weight="600">P2</text>
+  <text x="330" y="216" font-size="8" fill="#ccfbf1" text-anchor="middle">offsets 0,1,2,3 (ordered)</text>
+
+  <rect x="200" y="250" width="200" height="42" rx="6" fill="#b45309"/>
+  <text x="215" y="276" font-size="10" fill="#ffffff" font-weight="600">P3</text>
+  <text x="330" y="276" font-size="8" fill="#fde68a" text-anchor="middle">hot: skewed key</text>
+
+  <!-- producer -> partitions -->
+  <line x1="140" y1="175" x2="198" y2="95" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#pcArrowBlue)"/>
+  <line x1="140" y1="180" x2="198" y2="151" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#pcArrowBlue)"/>
+  <line x1="140" y1="185" x2="198" y2="211" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#pcArrowBlue)"/>
+  <line x1="140" y1="190" x2="198" y2="271" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#pcArrowBlue)"/>
+
+  <!-- consumer group -->
+  <rect x="470" y="60" width="260" height="240" rx="10" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="600" y="52" font-size="10" fill="#334155" text-anchor="middle" font-weight="600">consumer group "analytics"</text>
+
+  <rect x="500" y="80" width="200" height="46" rx="6" fill="#334155"/>
+  <text x="600" y="107" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Consumer A → P0, P1</text>
+
+  <rect x="500" y="150" width="200" height="46" rx="6" fill="#334155"/>
+  <text x="600" y="177" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Consumer B → P2</text>
+
+  <rect x="500" y="220" width="200" height="46" rx="6" fill="#334155"/>
+  <text x="600" y="247" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Consumer C → P3</text>
+
+  <!-- assignment arrows -->
+  <line x1="400" y1="91" x2="498" y2="98" stroke="#0f766e" stroke-width="2" marker-end="url(#pcArrowTeal)"/>
+  <line x1="400" y1="151" x2="498" y2="108" stroke="#0f766e" stroke-width="2" marker-end="url(#pcArrowTeal)"/>
+  <line x1="400" y1="211" x2="498" y2="173" stroke="#0f766e" stroke-width="2" marker-end="url(#pcArrowTeal)"/>
+  <line x1="400" y1="271" x2="498" y2="243" stroke="#b45309" stroke-width="2" marker-end="url(#pcArrowAmber)"/>
+
+  <text x="380" y="330" font-size="9" fill="#334155" text-anchor="middle">max parallelism = partition count; more consumers than partitions would sit idle. Rebalance reassigns on join/leave.</text>
+
+  <defs>
+    <marker id="pcArrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="pcArrowTeal" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="pcArrowAmber" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>

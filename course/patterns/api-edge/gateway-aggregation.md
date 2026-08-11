@@ -4,9 +4,10 @@ sidebar_position: 6
 supplementary: true
 ---
 
-Gateway Aggregation is a gateway that combines several backend calls
-into a single client-facing response, so a client makes one request
-instead of orchestrating multiple round trips itself.
+Gateway Aggregation is a gateway that fans one client request out to
+several backend services and combines their responses into a single
+client-facing payload, so a client makes one request instead of
+orchestrating multiple round trips itself.
 
 ![Gateway Aggregation diagram](/img/patterns/gateway-aggregation.svg)
 
@@ -20,72 +21,145 @@ a high-latency network (mobile, especially) that adds up fast. It also
 couples the client to the internal service topology: the client has to
 know which three services exist and how to combine their results,
 which turns any backend re-decomposition into a client-side change.
+Aggregation moves both the fan-out and the merge to the gateway, where
+the calls run over a fast internal network and the client sees one
+request and one response.
 
-## How it works
+## Technical architecture & implementation
 
-The client sends one request to the gateway for the composite result it
-needs. The gateway fans that request out to the relevant backend
-services — typically in parallel, since the calls are usually
-independent of each other — waits for the responses, merges them into
-a single payload shaped for the client, and returns that one response.
-The client never sees the individual backend calls; from its
-perspective, one request went out and one response came back. Because
-the fan-out happens inside the gateway (on a fast, typically
-low-latency network to the backends) rather than over the client's own
-network connection, the aggregation is usually far cheaper than having
-the client make the same calls itself.
+**Fan-out and merge.** The client sends one request for the composite
+result it needs. The gateway maps that to N backend calls, issues them,
+waits for the responses, and merges them into a single payload shaped
+for the client. The client never sees the individual calls; from its
+perspective, one request went out and one came back. Because the
+fan-out happens inside the gateway — on a fast, typically low-latency
+network to the backends — rather than over the client's own connection,
+the aggregation is usually far cheaper than the client making the same
+calls itself.
+
+**Concurrency is the whole point.** The N calls are almost always
+independent of each other, so they must run **in parallel**, not
+sequentially. Run in parallel, the gateway's total latency is bounded
+by the *slowest* leg; run sequentially, it degenerates into the *sum*
+of all legs — which merely moves the round trips from the client's
+network to the gateway's without saving any time. If one leg genuinely
+depends on another's result, that's sequential *orchestration*, a
+heavier operation, not aggregation. This is the single most important
+implementation detail and the one most often faked: code that "awaits"
+each call one after another looks concurrent but runs serially.
+
+**Per-backend timeouts and an overall budget.** Each leg needs its own
+[timeout](/docs/patterns/reliability/timeout), and the aggregation as a
+whole needs an overall time budget. Without them, one slow or hung
+dependency stalls every aggregated request that touches it, well beyond
+that backend's own latency budget — the aggregation is only ever as
+fast as its slowest included leg, so an unbounded leg is an unbounded
+response.
+
+**Partial-failure handling.** When a fan-out of three has one leg fail
+or time out, the gateway must decide: fail the whole request, or return
+a **partial response** with the missing piece marked absent and let the
+client degrade gracefully. For a product page, a failed reviews service
+should usually yield a page without the ratings block, not an error
+page — the pattern pairs naturally with [graceful
+degradation](/docs/patterns/reliability/graceful-degradation). Which
+legs are *required* versus *optional* is a per-endpoint policy the
+gateway must encode explicitly.
+
+**Response shaping.** Beyond concatenation, the gateway typically
+reshapes — renaming fields, dropping ones the client doesn't need,
+flattening nested structures — so the client receives exactly the
+payload its screen wants rather than three raw backend schemas stapled
+together. This is also where response size is controlled for the
+client's network.
+
+**Failure modes.** The dominant one is the **slowest-leg tax**: adding
+a chatty or flaky backend to an aggregation makes *every* request that
+includes it as slow (or as failure-prone) as that one dependency,
+even requests that barely use its data. A second is **fan-out
+amplification** — one client request becoming N backend requests
+multiplies load, so a spike at the edge is an N× spike downstream. A
+third is **over-aggregation**: bundling data that the client actually
+consumes independently just adds coupling and delays whichever piece
+would have been ready first.
+
+**Aggregation vs. its siblings.** Aggregation is the fan-out-and-merge
+facet of the umbrella [API
+Gateway](/docs/patterns/api-edge/api-gateway). It differs from [Gateway
+Routing](/docs/patterns/api-edge/gateway-routing), which sends a request
+to exactly *one* backend rather than combining several. It is often
+*implemented inside* a [Backend for
+Frontend](/docs/patterns/api-edge/backend-for-frontend), but they're
+distinct concerns: a BFF is about tailoring a gateway *per client type*
+(the mobile BFF returns a different shape than the web BFF);
+aggregation is about *combining multiple calls* into one, which a BFF
+happens to be a good home for but is not the same idea.
 
 ## Code example
 
-The snippet below shows the core of an aggregating handler: fan out to
-several backends concurrently, then merge their results into one
-response.
+The snippet below fans out to three independent backends on **real OS
+threads** with `std::thread::scope`, joins them, and merges — including
+partial-failure handling that degrades a failed reviews leg to `None`
+rather than failing the whole page.
 
 ```rust
-struct ProductDetails { name: String }
-struct PriceInfo { amount_cents: u32 }
-struct ReviewSummary { average_rating: f32, count: u32 }
+use std::thread;
+use std::time::Duration;
 
+#[derive(Debug)]
 struct ProductPage {
     name: String,
     amount_cents: u32,
-    average_rating: f32,
-    review_count: u32,
+    average_rating: Option<f32>, // None when the reviews leg fails/times out
 }
 
-// Stand-ins for calls to independent backend services.
-fn fetch_details(id: u64) -> ProductDetails {
-    ProductDetails { name: format!("item-{id}") }
+// Each stand-in "backend call" sleeps to model network latency, then
+// returns. Latencies differ so the fan-out's total is bounded by the
+// slowest leg, not the sum.
+fn fetch_details(id: u64) -> String {
+    thread::sleep(Duration::from_millis(120));
+    format!("item-{id}")
 }
-fn fetch_price(id: u64) -> PriceInfo {
-    PriceInfo { amount_cents: 1999 }
+fn fetch_price(_id: u64) -> u32 {
+    thread::sleep(Duration::from_millis(90));
+    1999
 }
-fn fetch_reviews(id: u64) -> ReviewSummary {
-    ReviewSummary { average_rating: 4.5, count: 128 }
+fn fetch_reviews(_id: u64) -> Result<f32, &'static str> {
+    thread::sleep(Duration::from_millis(150));
+    Ok(4.5)
 }
 
-// In production these three calls would run concurrently (e.g. via
-// async tasks or a thread pool) rather than sequentially, so the
-// gateway's total latency is bounded by the slowest call, not the sum.
-fn aggregate_product_page(id: u64) -> ProductPage {
-    let details = fetch_details(id);
-    let price = fetch_price(id);
-    let reviews = fetch_reviews(id);
+// Fan out to three independent backends on real threads, join them, and
+// merge. A scoped thread lets each closure borrow `id` without cloning,
+// and guarantees all threads finish before the scope returns.
+fn aggregate(id: u64) -> ProductPage {
+    thread::scope(|s| {
+        let details = s.spawn(|| fetch_details(id));
+        let price = s.spawn(|| fetch_price(id));
+        let reviews = s.spawn(|| fetch_reviews(id));
 
-    ProductPage {
-        name: details.name,
-        amount_cents: price.amount_cents,
-        average_rating: reviews.average_rating,
-        review_count: reviews.count,
-    }
+        // Partial-failure handling: a panicked or erroring reviews leg
+        // degrades to None rather than failing the whole aggregation.
+        let rating = match reviews.join() {
+            Ok(Ok(r)) => Some(r),
+            _ => None,
+        };
+
+        ProductPage {
+            name: details.join().expect("details thread panicked"),
+            amount_cents: price.join().expect("price thread panicked"),
+            average_rating: rating,
+        }
+    })
 }
 ```
 
-`aggregate_product_page` is the entire contract the client depends on:
-one function call in, one merged struct out. Running the three fetches
-concurrently is the detail that makes aggregation worth doing at all —
-done sequentially, the gateway would just move the round trips from the
-client's network to its own without saving any latency.
+Run with the three legs at 120 ms, 90 ms, and 150 ms, `aggregate()`
+returns in about **153 ms** — bounded by the single slowest call — not
+the **~360 ms** their sum would take run one after another. That
+sub-linear total is the entire reason to aggregate; done sequentially,
+the gateway would just relocate the round trips without saving any
+latency.
 
 ## When to use it
 
@@ -101,8 +175,8 @@ client's network to its own without saving any latency.
 ## When not to use it
 
 - The client only ever needs data from a single backend service —
-  there's nothing to aggregate, and a plain [API
-  Gateway](/docs/patterns/api-edge/api-gateway) route is simpler.
+  there's nothing to aggregate, and plain [Gateway
+  Routing](/docs/patterns/api-edge/gateway-routing) is simpler.
 - The backend calls have very different latency profiles and one is
   much slower than the rest: the aggregated response is bounded by the
   slowest call, so a single flaky or slow dependency degrades every
@@ -112,26 +186,69 @@ client's network to its own without saving any latency.
   need to arrive together — forcing them into one response just adds
   coupling and delays whichever piece would have been ready first.
 
-## Real-world example
+## Use-case scenarios
 
-Mobile apps for content- or commerce-heavy products commonly use a
-Backend for Frontend layer that internally performs gateway
-aggregation: a single "get home screen" or "get product page" endpoint
-fans out to catalog, pricing, inventory, and recommendation services
-and returns one merged JSON payload, rather than making the mobile
-client issue four separate API calls over a cellular connection.
+**Mobile product page over a cellular network.** A commerce app's
+product screen needs catalog details, live pricing, inventory
+availability, and a reviews summary — four services. Rather than have
+the phone make four sequential HTTPS calls over a high-latency cellular
+link, the app hits one `/products/{id}/page` endpoint. The gateway fans
+out to all four backends in parallel over the datacenter's fast
+internal network and returns one merged payload, cutting four
+round-trip taxes down to one and making the screen feel instant.
+
+**Dashboard composed from many microservices.** An internal operations
+dashboard shows account status, recent orders, open tickets, and
+billing state on one screen, each owned by a different team's service.
+The gateway aggregates them into a single `/dashboard` response, and
+crucially marks each block *optional*: if the ticketing service is
+down, the dashboard still renders account, orders, and billing with a
+"tickets unavailable" placeholder instead of failing the whole page —
+partial response over total failure.
+
+**Search results enriched from side services.** A search endpoint
+returns a page of result IDs from the search service, then the gateway
+fans out to fetch each result's current price and stock from two other
+services and stitches them into the response. Per-leg timeouts keep a
+slow enrichment service from holding up results the user could already
+see; if enrichment times out, results render without the price badge
+rather than not at all.
+
+## Production libraries & getting started
+
+Aggregation means one inbound request fans out to several backends and
+their responses are composed into a single reply — these tools give you
+that fan-out and composition without hand-rolling it:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| KrakenD | Go | Declarative endpoint aggregation: merge multiple backend calls into one response | [KrakenD aggregation docs](https://www.krakend.io/docs/) |
+| Apollo Server | JavaScript / TypeScript | GraphQL composition layer that resolves one query across many services | [Apollo Server docs](https://www.apollographql.com/docs/apollo-server/) |
+| Spring Cloud Gateway | Java | Build a BFF/aggregation layer that fans out and combines JVM service calls | [Spring Cloud Gateway docs](https://docs.spring.io/spring-cloud-gateway/reference/) |
+| Netflix Zuul | Java | JVM edge service with filters for composing and enriching backend responses | [Netflix Zuul wiki](https://github.com/Netflix/zuul/wiki) |
+
+**Example / reference:** [KrakenD aggregation docs](https://www.krakend.io/docs/)
 
 ## Related patterns
 
-- [API Gateway](/docs/patterns/api-edge/api-gateway) — Gateway
-  Aggregation is one behavior an API gateway can implement; not every
-  gateway aggregates, but every aggregator is a form of gateway.
+- [API Gateway](/docs/patterns/api-edge/api-gateway) — the umbrella
+  pattern; aggregation is one behavior a gateway can implement. Not
+  every gateway aggregates, but every aggregator is a form of gateway.
+- [Gateway Routing](/docs/patterns/api-edge/gateway-routing) — the
+  one-backend counterpart: routing dispatches to a single service,
+  aggregation combines several.
 - [Backend for Frontend](/docs/patterns/api-edge/backend-for-frontend) —
-  a gateway split per client type is a natural place to put
-  aggregation logic, since different clients often want different
-  combinations of backend data merged together.
+  a per-client-type gateway that is a natural home for aggregation
+  logic, since different clients want different combinations merged.
+- [Graceful Degradation](/docs/patterns/reliability/graceful-degradation) —
+  the partial-response discipline that lets an aggregation survive one
+  failed or slow leg.
+- [Timeout](/docs/patterns/reliability/timeout) — the per-leg bound
+  that stops one slow backend from becoming an unbounded aggregated
+  response.
 
 ## Further reading
 
 - [Gateway Aggregation pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation)
-- [API management — Wikipedia](https://en.wikipedia.org/wiki/API_management)
+- [Backend For Frontend — Sam Newman](https://samnewman.io/patterns/architectural/bff/)
+- [std::thread::scope — Rust standard library documentation](https://doc.rust-lang.org/std/thread/fn.scope.html)

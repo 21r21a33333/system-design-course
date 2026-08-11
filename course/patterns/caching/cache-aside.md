@@ -94,6 +94,26 @@ code (portable, but duplicated across every caller), while read-through
 centralizes it in the cache (consistent, but couples the cache to the
 store's schema and access pattern).
 
+## Caching strategies compared
+
+Cache-aside is one of five strategies in this group, and the fastest way
+to place it is against the others on the axes that actually differ — who
+populates the cache, how reads and writes flow, the consistency it
+offers, and what happens when a component fails.
+
+| Strategy | Who populates the cache | Read path | Write path | Consistency | Failure mode if cache is down |
+|---|---|---|---|---|---|
+| [Cache-aside](/docs/patterns/caching/cache-aside) | Application, lazily on a miss | App checks cache, on miss queries store and fills cache | App writes store, then invalidates the entry | Eventual; a narrow invalidate-race can leave a stale entry until TTL/next write | Degrades to store-only reads — slower, not broken |
+| [Read-through](/docs/patterns/caching/read-through) | Cache's loader, lazily on a miss | App calls cache only; cache invokes its loader on a miss | Not defined by the pattern (pair with a write strategy) | Same as cache-aside on reads, but miss-handling is uniform across callers | Cache is a mandatory hop — reads can fail unless an explicit bypass exists |
+| [Write-through](/docs/patterns/caching/write-through) | Cache, synchronously on every write | Warm cache read; pair with a lazy loader for keys that predate the cache | App writes cache, cache writes store synchronously before returning | Strong for written keys — cache never leads the store | Writes fail or must bypass; written keys can't be served stale |
+| [Write-behind](/docs/patterns/caching/write-behind) | Cache, on write; store updated asynchronously | Warm cache read; pair with a lazy loader | App writes cache, returns immediately; background flush drains to store | Eventual; bounded window where an acknowledged write exists only in cache | Queued writes not yet flushed are lost if the process dies |
+
+Read-through and write-through/write-behind are complementary rather than
+mutually exclusive: the read column and write column are chosen
+independently, which is why write-through and write-behind are so often
+paired with a lazy read strategy (cache-aside or read-through) to cover
+keys that predate the current cache instance.
+
 ## Code example
 
 ```rust
@@ -206,6 +226,25 @@ numbers (a few minutes old is fine), cache-aside with a multi-minute
 TTL is enough: most page loads hit the cache, and the store only sees
 load from the occasional miss or TTL expiry, not from every viewer's
 every refresh.
+
+## Production libraries & getting started
+
+Cache-aside is orchestrated in your own code, so the "library" is really the cache client (remote or in-process) you read from and populate on a miss. These are the production-grade choices per language.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| ioredis | JS/TS | Robust Redis client with cluster, pipelining, and Lua support — the common cache-aside store client for Node | [Docs](https://github.com/redis/ioredis) |
+| node-redis | JS/TS | Official Redis client for Node, promise-based `GET`/`SET` for the miss-then-populate loop | [Docs](https://github.com/redis/node-redis) |
+| node-cache | JS/TS | Simple in-process key/value cache with TTLs for single-instance cache-aside | [Docs](https://github.com/node-cache/node-cache) |
+| redis-rs | Rust | Idiomatic async/sync Redis client for reading and back-filling cache entries | [Docs](https://docs.rs/redis/latest/redis/) |
+| moka | Rust | High-performance concurrent in-process cache with TTL and size eviction | [Docs](https://docs.rs/moka/latest/moka/) |
+| go-redis | Go | Feature-complete Redis client with connection pooling for the cache-aside path | [Docs](https://github.com/redis/go-redis) |
+| Ristretto | Go | Contention-friendly in-process cache with admission/eviction policies | [Docs](https://github.com/dgraph-io/ristretto) |
+| redis-py | Python | Official Redis client for the read-miss-populate loop from Python services | [Docs](https://redis.readthedocs.io/en/stable/) |
+| cachetools | Python | In-process LRU/TTL cache primitives and decorators | [Docs](https://cachetools.readthedocs.io/en/stable/) |
+| Caffeine | Java | High-hit-rate in-process cache (W-TinyLFU) used directly for JVM cache-aside | [Docs](https://github.com/ben-manes/caffeine/wiki) |
+| Memcached | Any | Distributed in-memory store queried directly on the miss path | [Docs](https://github.com/memcached/memcached/wiki) |
+| Valkey | Any | Open-source Redis fork with a full client ecosystem as the cache-aside store | [Client list](https://valkey.io/clients/) |
 
 ## Related patterns
 

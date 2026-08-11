@@ -1,0 +1,64 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <text x="360" y="26" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Producers emit immutable facts; consumers react independently and chain</text>
+
+  <!-- Producer -->
+  <rect x="24" y="140" width="120" height="56" rx="8" fill="#1d4ed8"/>
+  <text x="84" y="166" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Order service</text>
+  <text x="84" y="183" font-size="9" fill="#dbeafe" text-anchor="middle">OrderPlaced</text>
+
+  <!-- Event broker (log) -->
+  <rect x="220" y="120" width="150" height="96" rx="10" fill="#0f766e"/>
+  <text x="295" y="150" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Event broker</text>
+  <text x="295" y="168" font-size="9" fill="#ccfbf1" text-anchor="middle">append-only log</text>
+  <!-- log cells -->
+  <rect x="236" y="180" width="20" height="20" rx="3" fill="#ccfbf1"/>
+  <rect x="260" y="180" width="20" height="20" rx="3" fill="#ccfbf1"/>
+  <rect x="284" y="180" width="20" height="20" rx="3" fill="#ccfbf1"/>
+  <rect x="308" y="180" width="20" height="20" rx="3" fill="#5eead4"/>
+  <rect x="332" y="180" width="20" height="20" rx="3" fill="#99f6e4"/>
+
+  <line x1="144" y1="168" x2="218" y2="168" stroke="#1d4ed8" stroke-width="2.5" marker-end="url(#edaBlue)"/>
+
+  <!-- Consumers, one per event style -->
+  <rect x="470" y="44" width="226" height="52" rx="8" fill="#334155"/>
+  <text x="583" y="64" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">Notification</text>
+  <text x="583" y="80" font-size="9" fill="#cbd5e1" text-anchor="middle">thin event → calls back for detail</text>
+
+  <rect x="470" y="144" width="226" height="52" rx="8" fill="#15803d"/>
+  <text x="583" y="164" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">Carried-state-transfer</text>
+  <text x="583" y="180" font-size="9" fill="#dcfce7" text-anchor="middle">event carries data, no callback</text>
+
+  <rect x="470" y="244" width="226" height="52" rx="8" fill="#b45309"/>
+  <text x="583" y="264" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">Event sourcing</text>
+  <text x="583" y="280" font-size="9" fill="#fde68a" text-anchor="middle">log is the source of truth</text>
+
+  <line x1="370" y1="150" x2="468" y2="76" stroke="#334155" stroke-width="2.5" marker-end="url(#edaSlate)"/>
+  <line x1="370" y1="168" x2="468" y2="170" stroke="#15803d" stroke-width="2.5" marker-end="url(#edaGreen)"/>
+  <line x1="370" y1="188" x2="468" y2="262" stroke="#b45309" stroke-width="2.5" marker-end="url(#edaAmber)"/>
+
+  <!-- choreography chain back to broker (dashed) -->
+  <path d="M470 170 C 430 230, 400 240, 360 224" fill="none" stroke="#64748b" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#edaGray)"/>
+  <text x="430" y="252" font-size="9" fill="#64748b" text-anchor="middle">emits next event (choreography)</text>
+
+  <text x="360" y="322" font-size="10" fill="#64748b" text-anchor="middle">Decoupled &amp; eventually consistent · idempotent consumers · dead-letter on repeated failure</text>
+
+  <defs>
+    <marker id="edaBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="edaSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+    <marker id="edaGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/>
+    </marker>
+    <marker id="edaAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="edaGray" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

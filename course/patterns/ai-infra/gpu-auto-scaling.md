@@ -208,6 +208,23 @@ on its own before the new capacity finished booting — while still
 comfortably outpacing the multi-hour ramp of an actual regional
 business-hours surge.
 
+## Production libraries & getting started
+
+Nobody hand-rolls GPU autoscaling loops in production; the building
+blocks are a Kubernetes autoscaler driven by queue or GPU-utilization
+metrics, a device plugin that exposes GPUs to the cluster, and a
+node-provisioner that adds GPU machines on demand.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| KEDA | Kubernetes | Event-driven pod autoscaling on external metrics like queue depth or Prometheus GPU signals | [Prometheus scaler](https://keda.sh/docs/latest/scalers/prometheus/) |
+| NVIDIA GPU Operator | Kubernetes | Automates driver, device-plugin, and DCGM metric deployment so GPUs are schedulable | [Getting started](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/getting-started.html) |
+| Ray autoscaler | Python | Scales a Ray cluster's worker nodes (incl. GPU nodes) to match pending tasks/actors | [Configuring autoscaling](https://docs.ray.io/en/latest/cluster/vms/user-guides/configuring-autoscaling.html) |
+| Karpenter | Kubernetes | Just-in-time node provisioning that adds GPU instances when pods are unschedulable | [Getting started](https://karpenter.sh/docs/getting-started/) |
+| KServe | Kubernetes | Serverless inference with request-driven autoscaling (incl. scale-to-zero) | [Autoscaling docs](https://kserve.github.io/website/latest/modelserving/autoscaling/autoscaling/) |
+
+**Example / reference:** [KEDA Prometheus scaler](https://keda.sh/docs/latest/scalers/prometheus/)
+
 ## Related patterns
 
 - [Auto-Scaling](/docs/patterns/scaling/auto-scaling) — the general CPU-oriented
@@ -217,3 +234,6 @@ business-hours surge.
 ## Further reading
 
 - [Automatic scaling of Amazon SageMaker AI models](https://docs.aws.amazon.com/sagemaker/latest/dg/endpoint-auto-scaling.html)
+- [KEDA — event-driven and queue-depth-based autoscaling for Kubernetes](https://keda.sh/docs/latest/concepts/scaling-deployments/)
+- [Kubernetes Horizontal Pod Autoscaler (custom and external metrics)](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+- [NVIDIA — GPU metrics with DCGM Exporter](https://docs.nvidia.com/datacenter/cloud-native/gpu-telemetry/latest/dcgm-exporter.html)

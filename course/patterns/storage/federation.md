@@ -105,6 +105,29 @@ instance, shards that specific federate independently by a key, with
 the sharding decision made per-federate rather than for the whole
 system at once.
 
+**The cost that moves to the seams.** Federation doesn't eliminate the
+coupling between domains; it relocates it from inside one database to the
+boundaries between several, and three costs live at those seams. First,
+**referential integrity stops being enforced by the engine**: an order
+row referencing a `user_id` in another federate can't be a foreign key
+anymore, so a user deleted in the users federate can leave orphaned
+orders behind unless the application enforces that invariant itself.
+Second, **cross-domain reads pay a fan-out and a join-in-app** — the
+work a single `JOIN` used to do for free now becomes N round trips to N
+federates plus assembly logic in the caller (or an aggregation layer),
+which is slower and more code, and is why federated systems lean on
+[Gateway Aggregation](/docs/patterns/api-edge/gateway-aggregation) and
+frequently on a per-federate [materialized view](/docs/patterns/storage/materialized-view)
+or read model that pre-stitches the common cross-domain shapes so the hot
+paths don't fan out on every request. Third, **there is no cross-federate
+transaction**, so any operation that must change two domains atomically
+falls back to a [Saga](/docs/patterns/consistency/saga) or a
+[compensating transaction](/docs/patterns/consistency/compensating-transaction)
+rather than a single commit. The rule of thumb that keeps federation
+healthy is to draw the domain boundaries where cross-domain operations
+are *rare* — if two "domains" are joined or transacted together on every
+request, they probably want to be one federate, not two.
+
 ## Code example
 
 ```rust
@@ -217,6 +240,21 @@ access patterns that keeping them in one schema on one engine would
 mean tuning that engine for a compromise that serves neither pattern
 well.
 
+## Production libraries & getting started
+
+Federation in this data-tier sense (functional partitioning / database-per-service) is an architectural decision rather than a drop-in library — so this is the design guidance plus the managed database engines that make running an independent, per-domain store cheap enough to be worth it. (Note: this is *not* GraphQL "Apollo Federation," which composes an API graph, not the data tier.)
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Database per service (guidance) | Architecture pattern | The canonical rationale and tradeoffs for giving each domain/service its own store | [microservices.io](https://microservices.io/patterns/data/database-per-service.html) |
+| Decompose by business capability | Architecture pattern | How to draw the functional/domain boundaries the federates split along | [microservices.io](https://microservices.io/patterns/decomposition/decompose-by-business-capability.html) |
+| Microservice data considerations | Architecture guidance | Per-service data ownership, polyglot persistence, and cross-service query tradeoffs | [learn.microsoft.com](https://learn.microsoft.com/en-us/azure/architecture/microservices/design/data-considerations) |
+| Amazon RDS | Managed (multi-engine) | Managed per-service relational databases so each federate runs its own store cheaply | [docs.aws.amazon.com](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html) |
+| Google Cloud SQL | Managed (multi-engine) | Managed MySQL/Postgres/SQL Server instances for independent per-domain stores | [cloud.google.com](https://cloud.google.com/sql/docs) |
+| MongoDB | Document DB | A per-domain document store when a federate's shape suits documents over relations (polyglot persistence) | [mongodb.com/docs](https://www.mongodb.com/docs/manual/) |
+
+**Example / reference:** [Data sovereignty per microservice — .NET microservices guide](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/architect-microservice-container-applications/data-sovereignty-per-microservice)
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — splits rows within one
@@ -233,6 +271,12 @@ well.
   federate, since federation removes the single-database transaction
   boundary that would otherwise make such an operation atomic for
   free.
+- [Gateway Aggregation](/docs/patterns/api-edge/gateway-aggregation) —
+  centralizes the fan-out-and-assemble work that cross-domain reads
+  require once data is split across federates.
+- [Materialized View](/docs/patterns/storage/materialized-view) — a
+  per-federate read model that pre-stitches common cross-domain shapes so
+  hot-path reads don't fan out to several federates on every request.
 - **Not to be confused with:** [Federated
   Identity](/docs/patterns/api-edge/federated-identity), an unrelated
   pattern despite the shared name — Federated Identity is about
@@ -249,3 +293,5 @@ well.
 - [Federated database system — Wikipedia](https://en.wikipedia.org/wiki/Federated_database_system)
 - [Data federation — Wikipedia](https://en.wikipedia.org/wiki/Data_federation)
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Federation as a named topic in its interactive database-scaling node.
+- [Database per service pattern — Microservices.io (Chris Richardson)](https://microservices.io/patterns/data/database-per-service.html)
+- [Decompose by business capability — Microservices.io (Chris Richardson)](https://microservices.io/patterns/decomposition/decompose-by-business-capability.html)

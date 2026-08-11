@@ -211,6 +211,21 @@ in one auditable, backed-up system can outweigh the performance
 benefits of splitting workloads apart, if that requirement is a genuine
 hard constraint rather than an assumption nobody's revisited.
 
+## Libraries & tools that prevent this
+
+Polyglot persistence means routing each workload to a store shaped for its access pattern instead of forcing everything through one relational instance; these production stores are the fit-for-purpose destinations that a monolithic database's mismatched workloads should migrate to.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| Redis | Any (server + clients) | In-memory key-value store for the ephemeral, high-frequency session/cache workload that should never share a relational buffer cache | [redis.io/docs](https://redis.io/docs/latest/) |
+| Elasticsearch | Any (REST + clients) | Dedicated full-text search engine, replacing `LIKE '%...%'` scans that otherwise contend with transactional queries | [elastic.co getting started](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html) |
+| OpenSearch | Any (REST + clients) | Apache-2.0 search/analytics engine for the search workload, an open alternative to Elasticsearch | [opensearch.org getting started](https://opensearch.org/docs/latest/getting-started/) |
+| TimescaleDB | SQL / any client | Time-series database (Postgres extension) for the metrics-ingest workload that shouldn't compete with order transactions | [docs.timescale.com](https://docs.timescale.com/getting-started/latest/) |
+| ClickHouse | SQL / any client | Column-oriented store for high-volume analytical/aggregation workloads separated out of the transactional instance | [clickhouse.com quick start](https://clickhouse.com/docs/en/getting-started/quick-start) |
+| MinIO | Any (S3 API) | S3-compatible object storage for large blobs/documents that don't belong in relational rows | [min.io docs](https://min.io/docs/minio/linux/index.html) |
+
+**Example / reference:** [Polyglot Persistence — Martin Fowler](https://martinfowler.com/bliki/PolyglotPersistence.html)
+
 ## Related patterns
 
 - [Federation](/docs/patterns/storage/federation) — splits a
@@ -227,3 +242,4 @@ hard constraint rather than an assumption nobody's revisited.
 - [Monolithic Persistence antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/monolithic-persistence/)
 - [Polyglot persistence — Wikipedia](https://en.wikipedia.org/wiki/Polyglot_persistence)
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Monolithic Persistence as a named antipattern topic.
+- [Polyglot Persistence — Martin Fowler](https://martinfowler.com/bliki/PolyglotPersistence.html)

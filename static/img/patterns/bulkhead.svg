@@ -1,0 +1,54 @@
+<svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="340" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Each dependency gets its own bounded pool; one saturated compartment can't starve the others</text>
+
+  <!-- Caller -->
+  <rect x="40" y="140" width="110" height="70" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="170" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Service</text>
+  <text x="95" y="188" font-size="9" fill="#dbeafe" text-anchor="middle">outbound calls</text>
+
+  <!-- Compartment A (saturated) -->
+  <rect x="250" y="55" width="230" height="70" rx="8" fill="none" stroke="#dc2626" stroke-width="2"/>
+  <text x="365" y="46" font-size="10" fill="#dc2626" text-anchor="middle" font-weight="600">Pool A — 4 permits (all busy)</text>
+  <rect x="262" y="70" width="42" height="40" rx="4" fill="#dc2626"/>
+  <rect x="312" y="70" width="42" height="40" rx="4" fill="#dc2626"/>
+  <rect x="362" y="70" width="42" height="40" rx="4" fill="#dc2626"/>
+  <rect x="412" y="70" width="42" height="40" rx="4" fill="#dc2626"/>
+  <text x="365" y="94" font-size="8" fill="#ffffff" text-anchor="middle">hung on slow dep A</text>
+
+  <!-- Compartment B (healthy) -->
+  <rect x="250" y="200" width="230" height="70" rx="8" fill="none" stroke="#15803d" stroke-width="2"/>
+  <text x="365" y="191" font-size="10" fill="#15803d" text-anchor="middle" font-weight="600">Pool B — 4 permits (free)</text>
+  <rect x="262" y="215" width="42" height="40" rx="4" fill="#dcfce7" stroke="#15803d"/>
+  <rect x="312" y="215" width="42" height="40" rx="4" fill="#15803d"/>
+  <rect x="362" y="215" width="42" height="40" rx="4" fill="#dcfce7" stroke="#15803d"/>
+  <rect x="412" y="215" width="42" height="40" rx="4" fill="#dcfce7" stroke="#15803d"/>
+  <text x="365" y="239" font-size="8" fill="#334155" text-anchor="middle">still serving dep B</text>
+
+  <!-- Dependencies -->
+  <rect x="580" y="60" width="140" height="60" rx="8" fill="#dc2626"/>
+  <text x="650" y="86" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Dependency A</text>
+  <text x="650" y="104" font-size="9" fill="#fee2e2" text-anchor="middle">slow / overloaded</text>
+
+  <rect x="580" y="205" width="140" height="60" rx="8" fill="#0f766e"/>
+  <text x="650" y="231" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Dependency B</text>
+  <text x="650" y="249" font-size="9" fill="#ccfbf1" text-anchor="middle">healthy</text>
+
+  <line x1="150" y1="160" x2="248" y2="95" stroke="#dc2626" stroke-width="2" marker-end="url(#bhRed)"/>
+  <line x1="150" y1="190" x2="248" y2="240" stroke="#15803d" stroke-width="2" marker-end="url(#bhGreen)"/>
+  <line x1="480" y1="90" x2="578" y2="90" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#bhRed)"/>
+  <line x1="480" y1="235" x2="578" y2="235" stroke="#0f766e" stroke-width="2" marker-end="url(#bhTeal)"/>
+
+  <!-- reject note -->
+  <text x="200" y="120" font-size="8.5" fill="#dc2626" text-anchor="middle">new A calls rejected fast</text>
+
+  <rect x="40" y="290" width="680" height="34" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="380" y="311" font-size="9" fill="#334155" text-anchor="middle">Because A and B draw from separate bounded pools, A's saturation is contained — B keeps serving normally</text>
+
+  <defs>
+    <marker id="bhRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/></marker>
+    <marker id="bhGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/></marker>
+    <marker id="bhTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/></marker>
+  </defs>
+</svg>

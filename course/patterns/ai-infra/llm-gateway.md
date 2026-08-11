@@ -211,6 +211,24 @@ retention and access-control policy, rather than trusting each of the
 company's several AI-feature teams to independently implement
 compliant logging correctly.
 
+## Production libraries & getting started
+
+Rather than building provider routing, key management, and usage
+tracking from scratch, teams deploy a dedicated LLM gateway — either
+self-hosted or as a managed proxy — that exposes a unified API in front
+of many model providers.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| LiteLLM | Python | Open-source proxy: one OpenAI-compatible API across 100+ providers, with budgets and routing | [Proxy quick start](https://docs.litellm.ai/docs/proxy/quick_start) |
+| Portkey | SaaS / self-host | AI gateway with routing, fallbacks, caching, and observability | [AI Gateway docs](https://portkey.ai/docs/product/ai-gateway) |
+| Kong AI Gateway | Lua / Kong | LLM plugins layered on the Kong gateway (auth, rate limits, semantic routing) | [AI Gateway docs](https://developer.konghq.com/ai-gateway/) |
+| Cloudflare AI Gateway | Managed (edge) | Edge proxy with caching, rate limiting, and analytics for provider traffic | [Get started](https://developers.cloudflare.com/ai-gateway/get-started/) |
+| Helicone | SaaS / self-host | Observability-first proxy: logging, cost tracking, and caching | [Quick start](https://docs.helicone.ai/getting-started/quick-start) |
+| OpenRouter | Managed API | Single API that routes across many hosted models with unified billing | [Quickstart](https://openrouter.ai/docs/quickstart) |
+
+**Example / reference:** [LiteLLM proxy quick start](https://docs.litellm.ai/docs/proxy/quick_start)
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — an LLM gateway is
@@ -224,3 +242,5 @@ compliant logging correctly.
 
 - [AI gateway capabilities in Azure API Management](https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities)
 - [Throttle requests to your REST APIs — Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html)
+- [OpenAI — rate limits and usage tiers](https://platform.openai.com/docs/guides/rate-limits)
+- [Anthropic — rate limits and the token-bucket model](https://docs.anthropic.com/en/api/rate-limits)

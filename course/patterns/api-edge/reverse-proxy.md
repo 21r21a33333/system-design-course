@@ -115,6 +115,22 @@ website with no authentication or per-client quotas is doing genuine
 reverse-proxy work without any of the API-management layer that would
 make it a gateway.
 
+**Reverse Proxy vs. Forward Proxy.** The two share the word "proxy" and
+the mechanic of relaying traffic on someone's behalf, but they face
+opposite directions and serve opposite parties. A reverse proxy sits in
+front of *servers* and acts on their behalf — clients think they're
+talking to the real backend, and the proxy hides how many backends
+exist and where. A forward proxy sits in front of *clients* and acts on
+their behalf — servers think they're talking to the real client, and
+the proxy hides which client actually originated the request (a
+corporate egress proxy that all employee traffic exits through is the
+classic example). Put simply: a reverse proxy is chosen and operated by
+the service being fronted, a forward proxy is chosen and operated by the
+clients making the requests. The two can even coexist on a single
+request's path — an employee's browser behind a forward proxy calling a
+website behind a reverse proxy — without either knowing the other is
+there.
+
 ## Code example
 
 ```rust
@@ -211,6 +227,22 @@ serving cached copies of frequently requested pages — demonstrating
 that reverse-proxy value doesn't require more than one backend to be
 worthwhile.
 
+## Production libraries & getting started
+
+A reverse proxy sits in front of your services and forwards requests on
+their behalf. These are the battle-tested proxies teams reach for, from
+config-file classics to auto-TLS and service-discovery-native options:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| NGINX | C | The default high-performance reverse proxy: TLS, caching, buffering, config-driven | [NGINX docs](https://nginx.org/en/docs/) |
+| HAProxy | C | Reverse proxy and load balancer known for L4/L7 performance and health checks | [HAProxy docs](https://www.haproxy.org/#docs) |
+| Traefik | Go | Dynamic reverse proxy with automatic service discovery and Let's Encrypt TLS | [Traefik docs](https://doc.traefik.io/traefik/) |
+| Caddy | Go | Reverse proxy with automatic HTTPS and a small, readable config | [Caddy docs](https://caddyserver.com/docs/) |
+| Envoy | C++ | Programmable L7 proxy with dynamic config, observability, and rich routing | [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/) |
+
+**Example / reference:** [NGINX docs](https://nginx.org/en/docs/)
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — a reverse proxy
@@ -235,3 +267,4 @@ worthwhile.
 - [API Management overview — Microsoft Learn](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-implementation)
 - DesignGurus' System Design Patterns course covers this as "Reverse Proxy" in its The Entry Point (API and Edge) module.
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Reverse Proxy as a named topic.
+- [Proxy server (forward vs. reverse) — Wikipedia](https://en.wikipedia.org/wiki/Proxy_server)

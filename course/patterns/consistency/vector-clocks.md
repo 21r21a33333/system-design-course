@@ -71,6 +71,26 @@ only taken when a conflict is real — updates that have a genuine causal
 order are still correctly and automatically resolved without ever
 reaching the conflict-handling path at all.
 
+**Vector clocks vs. Lamport clocks vs. version vectors.** These three
+are frequently confused because they all timestamp events with logical
+counters, but they answer different questions. A **Lamport clock** is a
+single scalar counter per node: it guarantees that if event A causally
+happened-before event B then A's timestamp is less than B's, which is
+enough to build a total order but *cannot detect concurrency* — two
+concurrent events can still get different scalar timestamps, so a
+smaller Lamport timestamp does not imply a causal relationship. A
+**vector clock** carries one counter *per node* precisely so that the
+comparison rule can return "concurrent" as a distinct answer, which
+scalar Lamport clocks structurally can't. A **version vector** is the
+same data structure and comparison rule as a vector clock, but applied
+to *replicas of a data item* to track which updates each replica has
+seen (rather than to *events/processes* to order a computation) — the
+distinction is one of purpose and what each entry counts, not of
+mechanism. Rule of thumb: reach for a Lamport clock when you only need
+a consistent total order and don't care about detecting conflicts;
+reach for a vector clock or version vector when you must tell genuine
+concurrency apart from causal succession, as leaderless replicas do.
+
 **Failure modes.** The primary practical failure mode is **unbounded
 vector growth**: the vector has one entry per node that has ever
 produced an update, so in a system with many transient or frequently
@@ -212,6 +232,25 @@ that accepted genuinely concurrent writes during the partition (both
 returned to the client, since discarding either one would silently
 lose a write that was valid when it was made).
 
+## Production libraries & getting started
+
+Vector clocks are usually *embedded inside* a datastore or a
+conflict-free replication library rather than pulled in as a standalone
+dependency — the honest state of the ecosystem is that there is no
+widely-adopted, general-purpose "vector clock library" you drop into a
+service; the real production choices are the systems and CRDT toolkits
+that implement causal-context tracking for you.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Riak KV | Erlang (as a datastore; any client language) | Leaderless key-value store that attaches causal context (dotted version vectors) to every object and returns concurrent siblings for the app to reconcile | [Causal context / conflict resolution](https://docs.riak.com/riak/kv/latest/learn/concepts/causal-context/index.html) |
+| Automerge | Rust core, JS/TS + others | CRDT document library that tracks causal history internally so concurrent edits merge automatically — the "you don't hand-roll a vector clock" path | [Automerge getting started](https://automerge.org/docs/hello/) |
+| Yjs | JavaScript / TypeScript | High-performance CRDT framework for collaborative editing; encodes causal/version metadata so offline edits reconcile on reconnect | [Yjs docs](https://docs.yjs.dev/) |
+| `vclock` | Rust | Standalone crate implementing a vector clock with the happened-before / concurrent comparison — a rare genuine drop-in for Rust services | [docs.rs/vclock](https://docs.rs/vclock) |
+| `vectorclock` | JavaScript | Minimal npm package implementing vector-clock increment/merge/compare; small and old, best for prototypes | [npm: vectorclock](https://www.npmjs.com/package/vectorclock) (browser-live; npm returns 403 to curl) |
+
+**Example / reference:** [Dynamo: Amazon's Highly Available Key-value Store (SOSP 2007)](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf) — the paper that popularized vector clocks for reconciling concurrent replica writes.
+
 ## Related patterns
 
 - [Quorum](/docs/patterns/consistency/quorum) — quorum reads are exactly
@@ -223,3 +262,4 @@ lose a write that was valid when it was made).
 
 - [Vector clock — Wikipedia](https://en.wikipedia.org/wiki/Vector_clock)
 - [Dynamo (storage system) — Wikipedia](https://en.wikipedia.org/wiki/Dynamo_(storage_system))
+- [Time, Clocks, and the Ordering of Events in a Distributed System — Leslie Lamport (CACM 1978)](https://lamport.azurewebsites.net/pubs/time-clocks.pdf) — the foundational paper on logical clocks and the happened-before relation that vector clocks extend to detect concurrency.

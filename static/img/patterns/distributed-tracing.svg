@@ -1,0 +1,55 @@
+<svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="340" fill="#ffffff"/>
+
+  <text x="380" y="26" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">One trace_id follows a request across services; each hop adds a child span</text>
+
+  <!-- traceparent header bar -->
+  <rect x="30" y="46" width="700" height="30" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1"/>
+  <text x="46" y="65" font-size="10" fill="#334155" font-weight="600">traceparent:</text>
+  <text x="132" y="65" font-size="10" fill="#1d4ed8" font-family="monospace">00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01</text>
+
+  <!-- services -->
+  <rect x="30" y="120" width="140" height="58" rx="8" fill="#1d4ed8"/>
+  <text x="100" y="145" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">API Gateway</text>
+  <text x="100" y="163" font-size="9" fill="#dbeafe" text-anchor="middle">creates trace + root span</text>
+
+  <rect x="230" y="120" width="140" height="58" rx="8" fill="#0f766e"/>
+  <text x="300" y="145" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Order Service</text>
+  <text x="300" y="163" font-size="9" fill="#ccfbf1" text-anchor="middle">child span</text>
+
+  <rect x="430" y="120" width="140" height="58" rx="8" fill="#0f766e"/>
+  <text x="500" y="145" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Payment Service</text>
+  <text x="500" y="163" font-size="9" fill="#ccfbf1" text-anchor="middle">child span</text>
+
+  <rect x="630" y="120" width="100" height="58" rx="8" fill="#334155"/>
+  <text x="680" y="145" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Database</text>
+  <text x="680" y="163" font-size="9" fill="#cbd5e1" text-anchor="middle">leaf span</text>
+
+  <!-- arrows: inject/extract -->
+  <line x1="170" y1="149" x2="228" y2="149" stroke="#334155" stroke-width="2" marker-end="url(#dtArrow)"/>
+  <text x="199" y="140" font-size="8" fill="#64748b" text-anchor="middle">inject</text>
+  <line x1="370" y1="149" x2="428" y2="149" stroke="#334155" stroke-width="2" marker-end="url(#dtArrow)"/>
+  <text x="399" y="140" font-size="8" fill="#64748b" text-anchor="middle">inject</text>
+  <line x1="570" y1="149" x2="628" y2="149" stroke="#334155" stroke-width="2" marker-end="url(#dtArrow)"/>
+  <text x="599" y="140" font-size="8" fill="#64748b" text-anchor="middle">extract</text>
+
+  <!-- reporting to collector -->
+  <line x1="100" y1="178" x2="330" y2="248" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <line x1="300" y1="178" x2="360" y2="248" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <line x1="500" y1="178" x2="400" y2="248" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <line x1="680" y1="178" x2="430" y2="248" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+  <!-- collector -->
+  <rect x="270" y="250" width="220" height="52" rx="8" fill="#b45309"/>
+  <text x="380" y="272" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Collector + Backend</text>
+  <text x="380" y="290" font-size="9" fill="#fde68a" text-anchor="middle">assembles spans by trace_id into a tree</text>
+
+  <text x="620" y="278" font-size="9" fill="#64748b" text-anchor="middle">Jaeger / Zipkin /</text>
+  <text x="620" y="292" font-size="9" fill="#64748b" text-anchor="middle">OpenTelemetry</text>
+
+  <defs>
+    <marker id="dtArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

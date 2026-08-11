@@ -205,6 +205,17 @@ these updates, flushing the latest timestamp per session periodically,
 since losing the very latest few seconds of activity data on a crash
 has no meaningful downstream impact.
 
+## Production libraries & getting started
+
+Write-behind (write-back) is a cache-provider mode that buffers writes and flushes them to the store asynchronously. These systems ship a real write-behind configuration; a Redis-plus-queue setup is the common roll-your-own equivalent.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Ehcache (write-behind) | Java | `CacheLoaderWriter` in write-behind mode, batching and coalescing writes to the store | [Caching patterns](https://www.ehcache.org/documentation/3.10/caching-patterns.html#write-behind) |
+| Hazelcast MapStore | Java / JVM | `MapStore` with a positive write-delay, flushing buffered entries to the backing store asynchronously | [MapStore docs](https://docs.hazelcast.com/hazelcast/latest/data-structures/working-with-external-data) |
+| Apache Ignite | Java / JVM | Distributed cache with write-behind persistence that drains a queue to the store in the background | [Write-behind docs](https://ignite.apache.org/docs/latest/persistence/external-storage#write-behind-caching) |
+| Redis + go-redis | Go | Roll-your-own write-behind: buffer writes in Redis and drain them to the store with a client such as go-redis | [go-redis docs](https://github.com/redis/go-redis) |
+
 ## Related patterns
 
 - [Write-Through](/docs/patterns/caching/write-through) — the
@@ -223,6 +234,7 @@ has no meaningful downstream impact.
 ## Further reading
 
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
+- [Cache (computing): writing policies — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing)#Writing_policies)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
 - DesignGurus' System Design Patterns course covers this as "Write-Behind" in its Serving Data Fast (Caching) module.
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Write-Behind as a named topic in its interactive caching-strategy node.

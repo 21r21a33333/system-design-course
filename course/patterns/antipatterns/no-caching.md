@@ -226,6 +226,21 @@ balance immediately after a transaction that must reflect that
 transaction on the very next read — skipping caching (or caching with
 immediate, synchronous invalidation) is the deliberately correct choice.
 
+## Libraries & tools that prevent this
+
+Adding caching means putting a remembered answer in front of the expensive computation — an in-process cache for single-node hot paths, a shared store for cross-instance reuse, or a CDN at the edge; these production libraries and services supply that layer with TTLs, eviction, and invalidation built in so you don't hand-roll it.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| Redis | Any (server + clients) | Distributed cache shared across instances, with native TTL/eviction, for results too big or too shared for in-process memory | [redis.io clients](https://redis.io/docs/latest/develop/clients/) |
+| Valkey | Any (server + clients) | Open-source (Linux Foundation) Redis-compatible cache server, a drop-in for the same distributed-cache role | [valkey.io/clients](https://valkey.io/clients/) |
+| Caffeine | Java | High-performance in-process caching library with size/TTL eviction and async loading | [github.com/ben-manes/caffeine](https://github.com/ben-manes/caffeine) |
+| moka | Rust | Concurrent in-memory cache (Caffeine-inspired) with TTL/TTI and size-based eviction | [github.com/moka-rs/moka](https://github.com/moka-rs/moka) |
+| node-cache | JavaScript | Simple in-process TTL cache for Node.js hot paths | [github.com/node-cache/node-cache](https://github.com/node-cache/node-cache) |
+| cachetools | Python | `@cached`/TTLCache decorators to memoize expensive calls with bounded, expiring caches | [cachetools.readthedocs.io](https://cachetools.readthedocs.io/en/latest/) |
+| Cloudflare CDN | Service (any origin) | Edge caching of responses/assets so repeat requests never reach the origin computation | [developers.cloudflare.com/cache](https://developers.cloudflare.com/cache/) |
+| Fastly CDN | Service (any origin) | Edge cache with fine-grained TTL and purge control for cacheable responses | [fastly.com documentation](https://www.fastly.com/documentation/) |
+
 ## Related patterns
 
 - [Cache-Aside](/docs/patterns/caching/cache-aside) — the standard,

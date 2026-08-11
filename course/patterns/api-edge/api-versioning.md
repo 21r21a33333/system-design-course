@@ -53,6 +53,12 @@ path structure, but it's the easiest to omit by accident since it's
 just another optional parameter, silently defaulting callers to
 whatever version the server treats as default.
 
+| Placement | Example | URL stable across versions? | Cache-key friendly? | Easiest to omit by accident? |
+| --- | --- | --- | --- | --- |
+| URI path | `/v2/orders` | No — each version is a distinct URL | Yes — URL is the cache key | No — the prefix is mandatory |
+| Header / media type | `Api-Version: 2` or `Accept: …vnd.example.v2+json` | Yes | Only if caches vary on the header | Somewhat — a missing header silently defaults |
+| Query parameter | `/orders?version=2` | Mostly (path unchanged) | Yes, but the param must be in the key | Yes — just another optional param |
+
 Real public APIs split across these approaches in ways that illustrate
 the trade-offs concretely. X's (formerly Twitter's) API puts the
 version directly in the path (`/2/tweets`), the URI-path approach's
@@ -206,6 +212,25 @@ internal callers with the same compatibility discipline as external
 ones because the coordination cost of a surprise break is just as
 real inside the organization.
 
+## Production libraries & getting started
+
+Versioning is mostly convention plus routing: you carry a version in
+the path, header, or query param and dispatch on it. Web frameworks
+don't offer a dedicated "versioning" primitive so much as route
+grouping/nesting you mount a version prefix onto, so these are the
+framework routing tools you'd build versioned APIs with, plus the REST
+guidance that governs how to place and sunset a version.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Express Router | JS/TS | Mountable routers to isolate `/v1` and `/v2` route trees | [Getting started](https://expressjs.com/en/guide/routing.html) |
+| FastAPI `APIRouter` | Python | Sub-routers with a version prefix for splitting versioned endpoints | [Getting started](https://fastapi.tiangolo.com/tutorial/bigger-applications/) |
+| chi | Go | Composable route groups and sub-routers to mount per-version | [Getting started](https://go-chi.io/#/pages/routing) |
+| gin `RouterGroup` | Go | Route grouping to nest a version prefix over a set of handlers | [Getting started](https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup) |
+| axum `Router::nest` | Rust | Nested routers to compose a versioned sub-API under a path | [Getting started](https://docs.rs/axum/latest/axum/struct.Router.html#method.nest) |
+
+**Example / reference:** [Versioning a RESTful web API — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design)
+
 ## Related patterns
 
 - [Gateway Routing](/docs/patterns/api-edge/gateway-routing) — the
@@ -228,3 +253,5 @@ real inside the organization.
 - [Web API design best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#versioning-a-restful-web-api)
 - DesignGurus' System Design Patterns course covers this as "API Versioning" in its The Entry Point (API and Edge) module.
 - [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes API Versioning as a named topic.
+- [RFC 8594: The Sunset HTTP Header Field — IETF](https://www.rfc-editor.org/rfc/rfc8594)
+- [RFC 9745: The Deprecation HTTP Response Header Field — IETF](https://www.rfc-editor.org/rfc/rfc9745)

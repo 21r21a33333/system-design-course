@@ -218,6 +218,22 @@ threshold alone to distinguish them, since the cost of a wrongly cached
 balance or transaction answer is unacceptable regardless of how the
 threshold is tuned.
 
+## Production libraries & getting started
+
+Semantic caching is usually adopted as a drop-in layer — either a
+dedicated library keyed by embedding similarity or a caching policy
+turned on inside an LLM gateway or vector store — rather than
+implemented from scratch alongside your application.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| GPTCache | Python | Open-source semantic cache: embeds queries and serves near-duplicate hits | [Usage guide](https://gptcache.readthedocs.io/en/latest/usage.html) |
+| Portkey semantic cache | SaaS / self-host | Semantic (embedding-similarity) caching as a gateway policy | [Cache docs](https://portkey.ai/docs/product/ai-gateway/cache-simple-and-semantic) |
+| Redis LangCache | Managed / Redis | Semantic caching service for LLM responses backed by Redis vector search | [LangCache docs](https://redis.io/docs/latest/develop/ai/context-engine/langcache/) |
+| LangChain caching | Python / JS | Built-in LLM response caches, including semantic cache backends | [Caching how-to](https://python.langchain.com/docs/how_to/llm_caching/) |
+
+**Example / reference:** [GPTCache usage guide](https://gptcache.readthedocs.io/en/latest/usage.html)
+
 ## Related patterns
 
 - [Cache](/docs/concepts/cache) — the primer's general treatment of
@@ -231,3 +247,5 @@ threshold is tuned.
 
 - [Semantic similarity — Wikipedia](https://en.wikipedia.org/wiki/Semantic_similarity)
 - [AI gateway capabilities in Azure API Management](https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities)
+- [Cosine similarity — Wikipedia](https://en.wikipedia.org/wiki/Cosine_similarity)
+- [GPTCache — semantic cache for LLM queries](https://github.com/zilliztech/GPTCache)

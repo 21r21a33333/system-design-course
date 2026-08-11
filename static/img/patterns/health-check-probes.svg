@@ -1,0 +1,41 @@
+<svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="300" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Three probe types answer three different questions</text>
+
+  <!-- startup -->
+  <rect x="30" y="52" width="220" height="150" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="140" y="78" font-size="12" fill="#1d4ed8" text-anchor="middle" font-weight="600">Startup</text>
+  <text x="140" y="98" font-size="9" fill="#334155" text-anchor="middle">"Has the slow boot finished?"</text>
+  <text x="46" y="122" font-size="9" fill="#334155">Runs first, with a long timeout.</text>
+  <text x="46" y="138" font-size="9" fill="#334155">Guards liveness/readiness from</text>
+  <text x="46" y="154" font-size="9" fill="#334155">firing during migration or</text>
+  <text x="46" y="170" font-size="9" fill="#334155">cache warm-up.</text>
+  <text x="46" y="192" font-size="9" fill="#1d4ed8" font-weight="600">On fail: keep waiting (then kill).</text>
+
+  <!-- liveness -->
+  <rect x="270" y="52" width="220" height="150" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="380" y="78" font-size="12" fill="#dc2626" text-anchor="middle" font-weight="600">Liveness</text>
+  <text x="380" y="98" font-size="9" fill="#334155" text-anchor="middle">"Is the process alive?"</text>
+  <text x="286" y="122" font-size="9" fill="#334155">Shallow: is the event loop</text>
+  <text x="286" y="138" font-size="9" fill="#334155">running, not deadlocked?</text>
+  <text x="286" y="154" font-size="9" fill="#334155">Must NOT check dependencies —</text>
+  <text x="286" y="170" font-size="9" fill="#334155">that causes restart loops.</text>
+  <text x="286" y="192" font-size="9" fill="#dc2626" font-weight="600">On fail: RESTART the process.</text>
+
+  <!-- readiness -->
+  <rect x="510" y="52" width="220" height="150" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.5"/>
+  <text x="620" y="78" font-size="12" fill="#15803d" text-anchor="middle" font-weight="600">Readiness</text>
+  <text x="620" y="98" font-size="9" fill="#334155" text-anchor="middle">"Can it serve traffic now?"</text>
+  <text x="526" y="122" font-size="9" fill="#334155">Deep: are critical dependencies</text>
+  <text x="526" y="138" font-size="9" fill="#334155">(DB, pool) reachable?</text>
+  <text x="526" y="154" font-size="9" fill="#334155">Flips to not-ready during a</text>
+  <text x="526" y="170" font-size="9" fill="#334155">transient dependency blip.</text>
+  <text x="526" y="192" font-size="9" fill="#15803d" font-weight="600">On fail: REMOVE from LB pool.</text>
+
+  <!-- danger note -->
+  <rect x="30" y="222" width="700" height="58" rx="8" fill="#fff7ed" stroke="#b45309" stroke-width="1"/>
+  <text x="46" y="242" font-size="10" fill="#b45309" font-weight="600">The deep-readiness trap</text>
+  <text x="46" y="260" font-size="9" fill="#334155">If every instance's readiness deep-checks the same shared dependency, one blip in that dependency fails ALL</text>
+  <text x="46" y="273" font-size="9" fill="#334155">of them at once — the load balancer empties the entire pool and turns a partial issue into a full outage.</text>
+</svg>

@@ -94,6 +94,23 @@ of sidecars. A single team running one sidecar for one specific purpose
 pattern without needing a full mesh's control plane or mesh-wide policy
 machinery at all.
 
+**Sidecar vs. Gateway Offloading.** Both move a cross-cutting concern
+(TLS, auth, retries) out of application code, so they can feel like the
+same idea — the difference is *where* the offloaded logic runs relative
+to the instances it serves. [Gateway
+Offloading](/docs/patterns/api-edge/gateway-offloading) pushes the
+concern to a single shared component at the edge that fronts *many*
+backend instances, so the logic is centralized and the backends behind
+it never see it. A sidecar pushes the same kind of concern to a helper
+that is colocated *one-per-instance*, riding along with each application
+rather than sitting in front of a fleet. That placement drives the
+tradeoffs: a gateway is one place to configure and one place to fail,
+but it can't hold per-instance identity (like an instance-specific mTLS
+certificate) the way a sidecar sharing its application's network
+identity can, and it terminates concerns at the edge rather than all
+the way down at each instance — which is exactly why service meshes
+choose the sidecar placement for mutual TLS between individual services.
+
 ## Code example
 
 ```rust
@@ -191,12 +208,31 @@ main application polls, decoupling "how config changes are fetched and
 validated" from the application's own code, which only needs to know
 how to read from its local, already-validated source.
 
+## Production libraries & getting started
+
+The sidecar pattern is usually realized through a container
+orchestrator's native support for co-scheduled containers, plus a
+purpose-built sidecar runtime or proxy for the concern being offloaded.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Kubernetes sidecar containers | YAML / Go platform | Native co-scheduled helper containers sharing a Pod's network and lifecycle | [Getting started](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/) |
+| Dapr | Go (sidecar runtime) | A portable sidecar exposing service invocation, pub/sub, state, and secrets over local APIs | [Getting started](https://docs.dapr.io/getting-started/) |
+| Envoy | C++ | The de facto sidecar proxy for transparent traffic interception, retries, and mTLS | [Getting started](https://www.envoyproxy.io/docs/envoy/latest/start/start) |
+
+**Example / reference:** [Sidecar pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar)
+
 ## Related patterns
 
 - [Service Mesh](/docs/patterns/api-edge/service-mesh) — a fleet of
   sidecar proxies plus a control plane, extending the sidecar idea to
   system-wide service-to-service communication.
+- [Gateway Offloading](/docs/patterns/api-edge/gateway-offloading) — the
+  same concern moved to a single shared edge component rather than a
+  colocated helper per instance; contrast the placement and its
+  tradeoffs.
 
 ## Further reading
 
 - [Sidecar pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar)
+- [Sidecar containers — Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/)

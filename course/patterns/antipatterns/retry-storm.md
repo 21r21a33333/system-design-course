@@ -223,6 +223,21 @@ is specifically about *many* callers retrying *persistently failing*
 calls, not about a bounded handful of retries for genuinely
 instantaneous errors.
 
+## Libraries & tools that prevent this
+
+Avoiding a retry storm means never hand-rolling the naive retry loop — use a library that gives you exponential backoff with jitter plus a circuit breaker that stops attempts once a dependency is confirmed down; these production libraries and SDK modes supply exactly those two mechanisms.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| Resilience4j Retry | Java | Configurable retry with exponential backoff and randomized (jittered) intervals to de-synchronize callers | [resilience4j.readme.io/docs/retry](https://resilience4j.readme.io/docs/retry) |
+| Resilience4j CircuitBreaker | Java | Trips open after a failure threshold so callers stop hammering an already-failing dependency | [resilience4j.readme.io/docs/circuitbreaker](https://resilience4j.readme.io/docs/circuitbreaker) |
+| backon | Rust | Composable retry with exponential backoff and jitter for async and blocking calls | [docs.rs/backon](https://docs.rs/backon/latest/backon/) |
+| tenacity | Python | Retry decorator with `wait_exponential_jitter` and stop conditions to bound retries | [tenacity.readthedocs.io](https://tenacity.readthedocs.io/en/latest/) |
+| opossum | JavaScript | Circuit breaker for Node.js that fails fast when a dependency is unhealthy | [nodeshift.dev/opossum](https://nodeshift.dev/opossum/) |
+| AWS SDK adaptive retry mode | Any (AWS SDKs) | Built-in retry mode with backoff, jitter, and client-side rate limiting to avoid overloading throttled services | [AWS SDK retry behavior](https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html) |
+
+**Example / reference:** [Timeouts, retries, and backoff with jitter — Amazon Builders' Library](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+
 ## Related patterns
 
 - [Retry with Backoff](/docs/patterns/reliability/retry-with-backoff) —

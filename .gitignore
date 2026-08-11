@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Stray Rust build artifacts (from in-place rustc verification)
+*.rlib
+*.rmeta

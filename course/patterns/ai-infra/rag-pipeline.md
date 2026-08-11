@@ -89,6 +89,24 @@ subtly incompatible vector spaces, degrading retrieval quality in a way
 that's hard to detect because search still returns results — just worse
 ones.
 
+**Evaluating a RAG pipeline.** Because a RAG failure can originate in
+either the retrieval stage or the generation stage, evaluating one
+end-to-end score ("was the final answer good") tells you little about
+*where* to fix a regression. Production RAG evaluation is therefore
+usually split by stage, along the lines of:
+
+| Question | Stage measured | What a low score points at |
+| --- | --- | --- |
+| Did retrieval surface the chunks that actually contain the answer? | Retrieval | Chunking, embedding model, index recall, or too-low top-k |
+| Are the retrieved chunks actually relevant to the query? | Retrieval + re-rank | Similarity threshold or a weak/absent re-ranker |
+| Is the generated answer supported by the retrieved chunks (faithfulness)? | Generation | Prompt assembly, positional bias, or model grounding |
+| Does the answer address what the user actually asked? | Generation | Prompt construction or an off-target retrieval upstream |
+
+Separating retrieval-quality metrics from generation-quality metrics is
+what lets the earlier "silent retrieval failure" be diagnosed as a
+retrieval defect rather than misattributed to the model — a distinction a
+single blended score erases.
+
 **RAG vs. semantic caching.** Both patterns sit in front of an LLM call
 and use embedding similarity, which makes them easy to conflate, but
 they answer different questions. RAG's similarity search asks "which
@@ -217,6 +235,21 @@ only needs the new articles chunked and embedded into the index — the
 underlying LLM never needs retraining to reflect a UI change that
 happened last week.
 
+## Production libraries & getting started
+
+Most teams assemble a RAG pipeline from an orchestration framework that
+wires together chunking, embedding, retrieval, and the LLM call, rather
+than gluing each stage by hand.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| LangChain | Python / JS | Composable chains for retrieval + generation, with many retriever and vector-store integrations | [RAG tutorial](https://python.langchain.com/docs/tutorials/rag/) |
+| LlamaIndex | Python / TS | Data framework focused on indexing and retrieval over your documents | [Starter example](https://docs.llamaindex.ai/en/stable/getting_started/starter_example/) |
+| Haystack | Python | Production-oriented pipelines for retrieval, RAG, and agents | [Quick start](https://haystack.deepset.ai/overview/quick-start) |
+| txtai | Python | Embeddings database with built-in RAG and semantic search | [Documentation](https://neuml.github.io/txtai/) |
+
+**Example / reference:** [LangChain RAG tutorial](https://python.langchain.com/docs/tutorials/rag/)
+
 ## Related patterns
 
 - [Vector Database Sharding](/docs/patterns/ai-infra/vector-database-sharding) —
@@ -230,3 +263,6 @@ happened last week.
 
 - [Retrieval-augmented generation — Wikipedia](https://en.wikipedia.org/wiki/Retrieval-augmented_generation)
 - [Vector database — Wikipedia](https://en.wikipedia.org/wiki/Vector_database)
+- [Lewis et al., 2020 — Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
+- [LangChain — retrieval and RAG concepts](https://python.langchain.com/docs/concepts/rag/)
+- [Pinecone — chunking strategies for RAG](https://www.pinecone.io/learn/chunking-strategies/)
