@@ -28,7 +28,11 @@ via the yt-notes pipeline. Branch: `dsa-course-notes` in `system-design-course`.
       inverse-Ackermann, eval-link-update) + S02 start (segment tree, lazy prop, Fenwick/
       sparse). Review fixes: e14 probe-series =1→=2, e15 Bloom unit, s02e02 test value 6→9.
       NOTE: batch-2 lectures have NO Codeforces home-task link (only early lectures did).
-- [ ] Batch 3 — L21–L30 (2D segtree, balanced BSTs, tree decompositions)
+- [x] **Batch 3 — L21–L30** — DONE (C++), build green, adversarial-reviewed. S02 core:
+      2D segtree, BST/AVL, treaps, splay, scapegoat, binary lifting/LCA/Farach-Colton-Bender,
+      heavy-light, link-cut, Euler-tour/Tarjan, centroid decomposition. Review fixes:
+      e04 2D coverage event-order (Major), e09 Farach-Colton-Bender partial-block (Major),
+      several CSES number/title corrections.
 - [ ] Batch 4 — L31–L40 (external memory, complexity classes, graphs start)
 - [ ] Batch 5 — L41–L50 (strings, suffix structures, matchings/flows start)
 - [ ] Batch 6 — L51–L60 (flows, number theory, crypto, FFT, approximation)
