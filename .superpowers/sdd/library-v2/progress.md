@@ -1071,3 +1071,62 @@ separately): Google Maps/Yelp/Newsfeed; Typeahead/Google
 Docs/Payment System/Deployment System; Data Infrastructure/ChatGPT/LLM
 Support Bot/Code Assistant — 11 more case studies still on the old
 template, to be brought up to the tinyurl.md bar in follow-on tasks.
+
+## Deep-dive rewrite B — Google Maps, Yelp, Newsfeed (commit 3661cb3)
+
+Follow-on task after deep-dive rewrite A (commit 5d16dae). Rewrote
+Step 3, Step 4, and Additional talking points for
+google-maps.md/yelp.md/newsfeed.md to the same template, replacing
+prose paragraphs with concrete, checkable technical content per use
+case (working Python/SQL, literal schemas, wire-format examples, REST
+contracts), plus a new "Source(s) and further reading" section per
+file. Step 1 and Step 2 left untouched in all three files (confirmed
+via diff hunk boundaries — every change starts at or after each
+file's Step 3 heading).
+
+Core spec shape used per use case:
+- **Google Maps**: Dijkstra/A* shortest-path search
+  (`dijkstra_shortest_path`) as the classic-algorithm core spec, with
+  Contraction Hierarchies named explicitly (not left as plain
+  Dijkstra) as the offline shortcut-precomputation step that makes
+  sub-second routing viable at ~700M edges — code comments mark
+  exactly where CH's shortcuts would prune the search; scale claim
+  kept qualitative ("dramatic reduction," "small bounded
+  neighborhood") rather than an unverified specific number, per
+  instructions. Plus an async `TrafficAggregator` for live traffic
+  ingestion and a throttled `should_reroute` function for
+  bounded-interval re-routing (10% improvement floor to avoid
+  rerouting on noise).
+- **Yelp**: schema + geohash indexing core spec — literal `CREATE
+  TABLE businesses` DDL with a `geohash` column and index,
+  index-to-query reasoning explained in prose. "The boundary problem"
+  named explicitly as its own labeled gotcha, with real
+  neighbor-cell-expansion code (`geohash_neighbors`, 9-cell query in
+  `nearby_search`) as the fix. Plus a weighted distance+rating
+  `rank_score` function and an incremental `record_review` rating
+  aggregate update.
+- **Newsfeed**: differentiated from instagram.md by explicitly
+  deferring fan-out mechanics ("see that case study... not re-derived
+  here") and making ranking the central, distinguishing use case.
+  EdgeRank named explicitly as the canonical reference formula and
+  implemented as a simplified `EdgeRankScorer` class
+  (affinity_score × edge_weight × time_decay), positioned in the
+  gotcha as the concrete alternative to a hand-waved "rank by
+  relevance."
+
+Verification: all 7 Python code blocks parsed via `ast.parse` (0
+failures); the 1 SQL DDL block hand-checked; 13 unique external links
+curl-verified live (200) — Contraction Hierarchies/A*/Dijkstra/OSRM/
+GraphHopper (Wikipedia + real routing-engine homepages) for Google
+Maps, Geohash/S2/H3/PostGIS/Elasticsearch geo_distance for Yelp,
+EdgeRank/Facebook News Feed/News Feed (Wikipedia) for Newsfeed;
+`npm run typecheck` and `npm run build` both pass clean with zero
+broken links; diffs confirmed to only touch each file from its Step 3
+heading onward. Committed as a single `feat(case-studies):` commit
+(3661cb3) on `library-v2-expansion`.
+
+Remaining deep-dive rewrite scope (not part of this entry, tracked
+separately): Typeahead/Google Docs/Payment System/Deployment System;
+Data Infrastructure/ChatGPT/LLM Support Bot/Code Assistant — 8 more
+case studies still on the old template, to be brought up to the
+tinyurl.md bar in follow-on tasks.
