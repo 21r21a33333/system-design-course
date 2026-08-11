@@ -1019,3 +1019,55 @@ lesson pages, title-only awareness only) held constant across every
 phase even as the vendor-naming and citation-generosity policy relaxed
 partway through. This is the last entry in this ledger for the
 library-v2-expansion project.
+
+## Deep-dive rewrite A — Uber, WhatsApp, Instagram, YouTube (commit 5d16dae)
+
+Follow-on task after tinyurl.md was rewritten (commit f918629) as the
+reference implementation of a new, much deeper case-study template.
+Rewrote Step 3, Step 4, and Additional talking points for
+uber.md/whatsapp.md/instagram.md/youtube.md to match that template,
+replacing long connected prose paragraphs with concrete, checkable
+technical content per use case (working Python/SQL, literal schemas,
+wire-format examples, REST contracts), plus a new "Source(s) and
+further reading" section per file. Step 1 and Step 2 left untouched in
+all four files (confirmed via diff hunk boundaries — every change
+starts at or after each file's Step 3 heading).
+
+Core spec shape used per use case:
+- **Uber**: geohash-based spatial index (`DriverLocationIndex` class)
+  with expanding-ring nearest-driver search as the classic-algorithm
+  core spec for driver discovery; a second `SurgePricingEngine` class
+  for per-cell demand/supply pricing with spatial smoothing across
+  neighboring cells (the required non-trivial treatment, not just a
+  mention).
+- **WhatsApp**: schema + indexing (literal `CREATE TABLE` DDL for
+  `messages` partitioned by `conversation_id` with a sortable
+  `message_id`, and `pending_delivery` partitioned by `recipient_id`)
+  plus a protocol/state-machine core spec for the sent -> delivered ->
+  read three-checkmark lifecycle with named failure/rollback branches.
+  End-to-end encryption named explicitly as a constraint that rules
+  out server-side search/content-routing.
+- **Instagram**: hybrid push/pull fan-out algorithm (`FanOutService`
+  class) as the classic-algorithm core spec, with an explicit "the
+  celebrity problem" gotcha (naive push-only fan-out at millions of
+  followers) and a 10,000-follower threshold in code; plus a sharded
+  `LikeCounter` for the likes/comments use case.
+- **YouTube**: DAG-based parallel chunked transcoding as a
+  MapReduce-shaped batch/pipeline core spec (`TranscodingCoordinator`
+  with `mapper`/`reducer` methods, keyframe-aware chunk-boundary gotcha
+  named explicitly), plus a literal HLS `.m3u8` master/child manifest
+  wire-format example for adaptive bitrate playback.
+
+Verification: all 5 Python code blocks parsed via `ast.parse` (0
+failures); the 1 SQL block hand-checked; 15 unique external links
+curl-verified live (200, one transient 000 on ffmpeg.org resolved to
+200 on verbose retry); `npm run typecheck` and `npm run build` both
+pass clean with zero broken links; diffs confirmed to only touch each
+file from its Step 3 heading onward. Committed as a single
+`feat(case-studies):` commit (5d16dae) on `library-v2-expansion`.
+
+Remaining deep-dive rewrite scope (not part of this entry, tracked
+separately): Google Maps/Yelp/Newsfeed; Typeahead/Google
+Docs/Payment System/Deployment System; Data Infrastructure/ChatGPT/LLM
+Support Bot/Code Assistant — 11 more case studies still on the old
+template, to be brought up to the tinyurl.md bar in follow-on tasks.
