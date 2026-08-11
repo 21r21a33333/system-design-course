@@ -228,3 +228,4 @@ it implies is comfortably above any load the system will actually see.
 - [Synchronous I/O antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/synchronous-io/)
 - [Asynchronous I/O — Wikipedia](https://en.wikipedia.org/wiki/Asynchronous_I/O)
 - [Blocking (computing) — Wikipedia](https://en.wikipedia.org/wiki/Blocking_(computing))
+- [The C10K problem — Dan Kegel](https://www.kegel.com/c10k.html)

@@ -223,3 +223,4 @@ tradeoff.
 
 - [Busy Database antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/busy-database/)
 - [Stored procedure — Wikipedia](https://en.wikipedia.org/wiki/Stored_procedure)
+- [CQRS — Martin Fowler](https://martinfowler.com/bliki/CQRS.html)

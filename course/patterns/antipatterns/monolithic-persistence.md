@@ -219,3 +219,4 @@ hard constraint rather than an assumption nobody's revisited.
 
 - [Monolithic Persistence antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/monolithic-persistence/)
 - [Polyglot persistence — Wikipedia](https://en.wikipedia.org/wiki/Polyglot_persistence)
+- [Polyglot Persistence — Martin Fowler](https://martinfowler.com/bliki/PolyglotPersistence.html)

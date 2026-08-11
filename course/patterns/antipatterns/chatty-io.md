@@ -200,3 +200,4 @@ different store) rather than a batching call that doesn't exist.
 
 - [Chatty I/O antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/chatty-io/)
 - [Thundering herd problem — Wikipedia](https://en.wikipedia.org/wiki/Thundering_herd_problem)
+- [The N plus one problem — SQLAlchemy glossary](https://docs.sqlalchemy.org/en/20/glossary.html#term-N-plus-one-problem)

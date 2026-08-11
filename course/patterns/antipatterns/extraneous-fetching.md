@@ -183,3 +183,4 @@ a pre-shaped version — rather than at the fetch call itself.
 
 - [Extraneous Fetching antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/extraneous-fetching/)
 - [Database normalization — Wikipedia](https://en.wikipedia.org/wiki/Database_normalization)
+- [EXPLAIN — PostgreSQL documentation](https://www.postgresql.org/docs/current/sql-explain.html)

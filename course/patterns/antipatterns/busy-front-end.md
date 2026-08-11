@@ -206,3 +206,4 @@ operational simplicity of skipping a job queue can be the right call.
 
 - [Busy Front End antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/busy-front-end/)
 - [Thread pool — Wikipedia](https://en.wikipedia.org/wiki/Thread_pool)
+- [Best practices for background jobs — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/background-jobs)

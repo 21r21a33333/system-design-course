@@ -191,3 +191,4 @@ unbounded free-for-all.
 
 - [Noisy Neighbor antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/)
 - [Multitenancy — Wikipedia](https://en.wikipedia.org/wiki/Multitenancy)
+- [Using load shedding to avoid overload — Amazon Builders' Library](https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/)

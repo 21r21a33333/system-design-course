@@ -202,3 +202,4 @@ there would be its own bug.
 
 - [Improper Instantiation antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/improper-instantiation/)
 - [Connection pool — Wikipedia](https://en.wikipedia.org/wiki/Connection_pool)
+- [HttpClient guidelines for .NET — Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines)
