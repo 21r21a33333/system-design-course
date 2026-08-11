@@ -514,3 +514,119 @@ result). 8 original SVGs (2 per case study) in the established teal/
 blue/slate/amber/green palette and viewBox conventions, one amended
 post-fix to match the corrected peak-throughput number. Committed as
 a single `feat(case-studies):` commit, hash `b74fa9e`.
+
+## Phase 4.4: Case studies — Data Infrastructure, ChatGPT, LLM Support Bot, Code Assistant
+
+Added the final 4 case studies of Phase 4 (sidebar_position 21-24),
+bringing the supplementary system-design case-study count to 16. Read
+payment-system.md and google-docs.md fresh first as structure/depth
+reference, per the task brief, noting the standard payment-system.md
+was corrected to after review: every Step 3 "Use case:" subsection
+must have a 1:1 matching Step 1 bullet, with no synthesized topics
+introduced in Step 3 that weren't previewed in Step 1. Verified this
+correspondence explicitly for all 4 new files by extracting every
+Step-1 bullet and every Step-3 "### Use case:" header and diffing them
+— all 4 files pass clean (every Step 3 use case matches a Step 1
+bullet; a small number of Step 1 bullets are intentionally cross-cutting
+concerns covered in Step 4 or Additional talking points rather than a
+dedicated Step 3 subsection, the same pattern payment-system.md's own
+"high availability" bullet uses).
+
+This was flagged as the highest-overlap-risk task in the phase: 3 of
+the 4 subjects (chatgpt.md, llm-support-bot.md, code-assistant.md) are
+all mechanically "send a prompt to a model, return a response."
+Differentiated by the actual hard problem each one solves, not just
+application domain:
+
+- **chatgpt.md** — inference-serving-and-scaling: open-domain
+  multi-turn conversation at extreme concurrent volume (~4,600 msg/sec
+  avg, ~14,000 peak; ~42,000 concurrent in-flight generations at peak
+  via Little's Law), where the central engineering problem is model-
+  serving capacity, not conversation quality. Genuinely engages
+  Model Serving (micro-batching tradeoff) and GPU Auto-Scaling (warm
+  minimum pool vs. reactive scale-to-zero) as the two most load-bearing
+  pattern links; LLM Gateway for the safety-filtering choke point.
+- **llm-support-bot.md** — grounding-plus-escalation: a narrower,
+  multi-tenant RAG problem where the hard question is knowing when
+  *not* to answer and escalating to a human instead of hallucinating.
+  Genuinely engages RAG Pipeline (full chunk/embed/retrieve/re-rank
+  loop, plus the silent-retrieval-failure caution applied directly to
+  the escalation-confidence design), Vector Database Sharding (per-
+  tenant isolation doubling as the sharding key), Semantic Caching
+  (with an explicit account-data carve-out mirroring that pattern's own
+  transactional-query caution), and Handoff Orchestration (bot-to-human
+  context handoff explicitly compared to that pattern's context-
+  preservation tradeoff).
+- **code-assistant.md** — structured-context-plus-tool-use: understanding
+  a codebase's dependency graph (not prose-chunk similarity alone) and
+  taking real, sandboxed actions (search, read, run tests) with a hard
+  human-approval boundary before any edit lands. Genuinely engages RAG
+  Pipeline (contrasted directly — code relevance depends on call/import
+  structure a text-similarity search can't see), Sequential Orchestration
+  (search-then-read-then-propose for multi-file changes, argued for
+  specifically because that task has a genuine fixed ordering dependency,
+  per that pattern's own "when to use it" guidance), Vector Database
+  Sharding (per-repository), and Semantic Caching (explicitly withheld
+  from both inline completions and tool-execution results, unlike the
+  chat/agentic path).
+- **data-infrastructure.md** — batch/streaming ingestion, warehousing,
+  and analytics query serving; confirmed near-zero overlap risk with
+  the other 3, and cross-checked separately.
+
+10-gram overlap check across chatgpt.md / llm-support-bot.md /
+code-assistant.md found zero non-boilerplate shared prose — the only
+shared 8-12-grams across all pairs were the site-wide "We'll scope the
+problem to handle the following use cases" heading template (present
+verbatim in all 24 case-study files, confirmed pre-existing) and my
+own deliberately parallel "why this design's hard problem is X, not Y"
+framing phrase reused across my own 3 files' Additional-talking-points
+sections as an intentional differentiation device, not accidental
+duplication. Checked all 4 new files against all 20 pre-existing case
+studies at 9-grams: only structural/heading-adjacent overlap found
+(e.g. WhatsApp's own "User sends a message" bullet colliding with the
+"Step 3: Design core components" + "### Use case:" heading template),
+plus one recurring legitimate sharding-justification idiom ("since
+every/almost every read and write is scoped to a single X") already
+used for the same Sharding pattern link in payment-system.md — a
+reusable justification pattern, not copied reasoning.
+
+All back-of-envelope numbers independently recomputed in Python against
+each file's stated assumptions before finalizing (Little's Law
+concurrency-from-arrival-rate math in chatgpt.md checked with particular
+care per the task brief's warning about prior arithmetic slips) — every
+number in all 4 files matched on first check: data-infrastructure.md's
+ingestion volume/storage/compression/query-load figures; chatgpt.md's
+message/token volume, concurrency, replica count, storage; llm-support-
+bot.md's conversation/turn volume, index size, re-indexing load,
+escalation rate; code-assistant.md's completion/chat volume, per-repo
+and total index size, re-indexing file-change volume. No arithmetic
+errors found or needed fixing this round.
+
+Manifest: bumped `expectedSupplementaryCaseStudyCount` from 12 to 16 in
+`scripts/ingest/run.ts`, ran `npm run ingest -- /tmp/system-design-
+primer-src`, got "All counts match expected inventory." All 4 new pages
+confirmed present in `src/data/courseManifest.ts`. `npm run typecheck`
+and `npm run build` both clean (zero broken links). Zero disallowed
+vendor/domain names across all 4 files (grep clean for the full AI-
+vendor list — OpenAI, Anthropic, GPT, ChatGPT-as-product-claim, Claude,
+GitHub Copilot, LangChain, Pinecone/Weaviate, Hugging Face, TensorFlow/
+PyTorch, Nvidia, plus the standard non-AI vendor list — and the full
+disallowed-citation-domain list); the only "ChatGPT" hit is the title's
+allowed real-world-example reference, exactly like Uber/WhatsApp did for
+their domains, with the body describing "a large language model"/"the
+model" generically throughout. All 17 internal pattern links (spanning
+both ai-infra and ai-agent-orchestration groups, plus batch-streaming
+and storage) verified to resolve to real files on disk. 8 original SVGs
+(2 per case study) in the established teal/blue/slate/amber/green
+palette and viewBox conventions, validated as well-formed XML. Committed
+as a single `feat(case-studies):` commit, hash `dbf963e`.
+
+**Phase 4 is now complete.** 16 new supplementary case studies total
+across 4 tasks (Phase 4.1-4.4), manifest `expectedSupplementaryCaseStudyCount`
+at 16, `course/case-studies/system-design/` now holds 8 primer-derived
+(sidebar_position 1-8) + 16 original (sidebar_position 9-24) case
+studies, 20 sidebar_position 9-24 originals in total covering: Uber,
+WhatsApp, Instagram, YouTube, Google Maps, Yelp, Newsfeed, TinyURL,
+Typeahead, Google Docs, Payment System, Deployment System, Data
+Infrastructure Platform, Conversational AI System, LLM Support Bot, AI
+Code Assistant.
