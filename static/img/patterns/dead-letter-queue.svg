@@ -1,0 +1,72 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <text x="360" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">After N failed attempts, a poison message is moved to the DLQ — the main queue keeps flowing</text>
+
+  <!-- Main queue -->
+  <rect x="30" y="70" width="200" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="130" y="96" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Main queue</text>
+  <text x="130" y="114" font-size="9" fill="#dbeafe" text-anchor="middle">msg · msg · poison · msg</text>
+
+  <!-- Consumer -->
+  <rect x="300" y="70" width="150" height="60" rx="8" fill="#0f766e"/>
+  <text x="375" y="96" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Consumer</text>
+  <text x="375" y="114" font-size="9" fill="#ccfbf1" text-anchor="middle">try, count attempts</text>
+
+  <!-- Retry loop -->
+  <path d="M 375 130 C 340 160, 340 160, 340 130" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#dlqArrowAmber)"/>
+  <text x="290" y="158" font-size="9" fill="#b45309" text-anchor="middle">retry w/ backoff (≤ N)</text>
+
+  <!-- Success -->
+  <rect x="520" y="55" width="170" height="55" rx="8" fill="#15803d"/>
+  <text x="605" y="79" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Processed OK</text>
+  <text x="605" y="97" font-size="9" fill="#dcfce7" text-anchor="middle">ack &amp; delete</text>
+
+  <!-- DLQ -->
+  <rect x="300" y="215" width="220" height="80" rx="8" fill="#dc2626"/>
+  <text x="410" y="243" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Dead Letter Queue</text>
+  <text x="410" y="263" font-size="9" fill="#fee2e2" text-anchor="middle">poison msg + reason + attempts</text>
+  <text x="410" y="279" font-size="9" fill="#fee2e2" text-anchor="middle">alarm on depth · triage</text>
+
+  <!-- Triage / redrive -->
+  <rect x="560" y="220" width="130" height="70" rx="8" fill="#334155"/>
+  <text x="625" y="248" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Redrive</text>
+  <text x="625" y="266" font-size="9" fill="#cbd5e1" text-anchor="middle">fix root cause,</text>
+  <text x="625" y="280" font-size="9" fill="#cbd5e1" text-anchor="middle">replay to main</text>
+
+  <!-- queue -> consumer -->
+  <line x1="230" y1="100" x2="298" y2="100" stroke="#1d4ed8" stroke-width="2.5" marker-end="url(#dlqArrowBlue)"/>
+
+  <!-- consumer -> success -->
+  <line x1="450" y1="90" x2="518" y2="82" stroke="#15803d" stroke-width="2.5" marker-end="url(#dlqArrowGreen)"/>
+  <text x="484" y="76" font-size="9" fill="#15803d" text-anchor="middle">success</text>
+
+  <!-- consumer -> DLQ (after N) -->
+  <line x1="375" y1="130" x2="392" y2="213" stroke="#dc2626" stroke-width="2.5" marker-end="url(#dlqArrowRed)"/>
+  <text x="452" y="180" font-size="9" fill="#dc2626" text-anchor="middle">attempts = N: move</text>
+
+  <!-- DLQ -> redrive -->
+  <line x1="520" y1="255" x2="558" y2="255" stroke="#334155" stroke-width="2" marker-end="url(#dlqArrowSlate)"/>
+
+  <!-- redrive -> main queue (curve back up) -->
+  <path d="M 625 220 C 625 160, 130 175, 130 132" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#dlqArrowSlate)"/>
+  <text x="360" y="150" font-size="9" fill="#64748b" text-anchor="middle">replay after fix (idempotent consumer)</text>
+
+  <defs>
+    <marker id="dlqArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="dlqArrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/>
+    </marker>
+    <marker id="dlqArrowRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="dlqArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="dlqArrowSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

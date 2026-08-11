@@ -1,0 +1,49 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <text x="360" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">A breaker sits between caller and dependency; when open it fails fast instead of calling</text>
+
+  <!-- Caller -->
+  <rect x="30" y="130" width="120" height="70" rx="8" fill="#1d4ed8"/>
+  <text x="90" y="160" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Caller</text>
+  <text x="90" y="178" font-size="9" fill="#dbeafe" text-anchor="middle">request</text>
+
+  <!-- Breaker -->
+  <rect x="270" y="120" width="170" height="90" rx="8" fill="#334155"/>
+  <text x="355" y="150" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Circuit Breaker</text>
+  <text x="355" y="170" font-size="9" fill="#cbd5e1" text-anchor="middle">tracks recent failures</text>
+  <text x="355" y="186" font-size="9" fill="#cbd5e1" text-anchor="middle">Closed / Open / Half-Open</text>
+
+  <!-- Dependency -->
+  <rect x="560" y="60" width="130" height="60" rx="8" fill="#dc2626"/>
+  <text x="625" y="86" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Dependency</text>
+  <text x="625" y="104" font-size="9" fill="#fee2e2" text-anchor="middle">failing / overloaded</text>
+
+  <!-- Fallback -->
+  <rect x="560" y="215" width="130" height="60" rx="8" fill="#b45309"/>
+  <text x="625" y="241" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Fallback</text>
+  <text x="625" y="259" font-size="9" fill="#fde68a" text-anchor="middle">cached / default</text>
+
+  <!-- caller -> breaker -->
+  <line x1="150" y1="165" x2="268" y2="165" stroke="#1d4ed8" stroke-width="2.5" marker-end="url(#cbBlue)"/>
+
+  <!-- breaker -> dependency (blocked when open) -->
+  <line x1="440" y1="150" x2="558" y2="100" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#cbRed)"/>
+  <text x="500" y="118" font-size="9" fill="#dc2626" text-anchor="middle">open: call skipped</text>
+
+  <!-- breaker -> fallback (fast) -->
+  <line x1="440" y1="185" x2="558" y2="240" stroke="#b45309" stroke-width="2.5" marker-end="url(#cbAmber)"/>
+  <text x="500" y="228" font-size="9" fill="#b45309" text-anchor="middle">fail fast</text>
+
+  <!-- probe -->
+  <text x="500" y="150" font-size="8.5" fill="#64748b" text-anchor="middle">half-open: 1 probe</text>
+
+  <rect x="30" y="290" width="660" height="34" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="360" y="311" font-size="9" fill="#334155" text-anchor="middle">Closed lets calls through; after N failures it Opens and returns fallback; after a cooldown a Half-Open probe tests recovery</text>
+
+  <defs>
+    <marker id="cbBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/></marker>
+    <marker id="cbRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/></marker>
+    <marker id="cbAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/></marker>
+  </defs>
+</svg>
