@@ -1,0 +1,59 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <text x="360" y="28" font-size="15" fill="#334155" text-anchor="middle" font-weight="600">The untrusted &#8594; validation &#8594; trusted promotion pipeline</text>
+
+  <!-- Submit -->
+  <rect x="30" y="130" width="120" height="66" rx="8" fill="#1d4ed8"/>
+  <text x="90" y="160" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Incoming</text>
+  <text x="90" y="178" font-size="11" fill="#dbeafe" text-anchor="middle">artifact</text>
+
+  <!-- Quarantine holding area -->
+  <rect x="195" y="115" width="150" height="96" rx="8" fill="#b45309"/>
+  <text x="270" y="145" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Quarantine</text>
+  <text x="270" y="165" font-size="11" fill="#ffedd5" text-anchor="middle">isolated holding</text>
+  <text x="270" y="183" font-size="11" fill="#ffedd5" text-anchor="middle">area</text>
+  <text x="270" y="201" font-size="10.5" fill="#ffedd5" text-anchor="middle">state: Quarantined</text>
+
+  <!-- Validation gates -->
+  <rect x="390" y="100" width="160" height="126" rx="8" fill="#334155"/>
+  <text x="470" y="126" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Validation gates</text>
+  <text x="470" y="150" font-size="10.5" fill="#cbd5e1" text-anchor="middle">1. size / rate limit</text>
+  <text x="470" y="168" font-size="10.5" fill="#cbd5e1" text-anchor="middle">2. format / schema</text>
+  <text x="470" y="186" font-size="10.5" fill="#cbd5e1" text-anchor="middle">3. malware scan</text>
+  <text x="470" y="204" font-size="10.5" fill="#cbd5e1" text-anchor="middle">4. policy check</text>
+  <text x="470" y="220" font-size="10" fill="#fca5a5" text-anchor="middle">first failure short-circuits</text>
+
+  <!-- Trusted store -->
+  <rect x="595" y="55" width="100" height="66" rx="8" fill="#15803d"/>
+  <text x="645" y="82" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Trusted</text>
+  <text x="645" y="100" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">store</text>
+
+  <!-- Rejected -->
+  <rect x="595" y="215" width="100" height="66" rx="8" fill="#dc2626"/>
+  <text x="645" y="242" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Rejected</text>
+  <text x="645" y="260" font-size="10" fill="#fecaca" text-anchor="middle">deleted + audited</text>
+
+  <!-- arrows -->
+  <line x1="150" y1="163" x2="193" y2="163" stroke="#334155" stroke-width="2" marker-end="url(#qArr)"/>
+  <line x1="345" y1="163" x2="388" y2="163" stroke="#334155" stroke-width="2" marker-end="url(#qArr)"/>
+  <line x1="550" y1="130" x2="593" y2="95" stroke="#15803d" stroke-width="2" marker-end="url(#qArrGreen)"/>
+  <text x="548" y="112" font-size="10" fill="#15803d">promote (all pass)</text>
+  <line x1="550" y1="195" x2="593" y2="235" stroke="#dc2626" stroke-width="2" marker-end="url(#qArrRed)"/>
+  <text x="548" y="222" font-size="10" fill="#dc2626">reject (any fail)</text>
+
+  <!-- read path note -->
+  <text x="360" y="315" font-size="11" fill="#64748b" text-anchor="middle">Production read path touches only the trusted store &#8212; never the quarantine area.</text>
+
+  <defs>
+    <marker id="qArr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+    <marker id="qArrGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#15803d"/>
+    </marker>
+    <marker id="qArrRed" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+</svg>
