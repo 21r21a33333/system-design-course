@@ -242,7 +242,7 @@ Debezium is the de facto CDC standard; the rest cover lighter-weight or database
 | Kafka Connect | JVM | The connector runtime Debezium ships on; source/sink pipelines to Kafka | [Kafka Connect docs](https://kafka.apache.org/documentation/#connect) |
 | Maxwell's Daemon | JVM | Reads the MySQL binlog and emits row changes as JSON | [Maxwell docs](https://maxwells-daemon.io/) |
 | PostgreSQL logical decoding | SQL / C | Native change stream via replication slots (pgoutput / wal2json) | [Logical decoding docs](https://www.postgresql.org/docs/current/logicaldecoding.html) · [wal2json](https://github.com/eulerto/wal2json) |
-| Sequin | Go | Postgres-native CDC to streams and queues with a managed runtime | [Sequin docs](https://sequinstream.com/docs) |
+| Sequin | Elixir | Postgres-native CDC to streams and queues with a managed runtime | [Sequin docs](https://sequinstream.com/docs) |
 | Materialize source | SQL | Consume Postgres/MySQL CDC directly as a streaming SQL source | [CREATE SOURCE](https://materialize.com/docs/sql/create-source/) |
 
 **Example / reference:** [The Transactional Outbox pattern — microservices.io](https://microservices.io/patterns/data/transactional-outbox.html)

@@ -223,7 +223,7 @@ The strongest end-to-end exactly-once support lives in the Kafka and Flink ecosy
 | Library / Tool | Language | What it gives you | Getting started |
 | --- | --- | --- | --- |
 | Kafka transactions / EOS | JVM | Idempotent producer (PID + sequence) plus transactional produce-and-commit-offsets | [Confluent EOS explainer](https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/) |
-| Kafka transaction design | JVM | Reference for the transactional protocol and read-committed isolation | [Kafka transactions design](https://docs.confluent.io/kafka/design/transactions.html) |
+| Kafka delivery semantics | JVM | Reference for the transactional protocol, idempotent producer, and read-committed isolation | [Kafka message delivery guarantees](https://docs.confluent.io/kafka/design/delivery-semantics.html) |
 | Kafka Streams EOS | JVM | `processing.guarantee=exactly_once_v2` — atomic input offset + output commit | [Streams processing guarantee](https://kafka.apache.org/documentation/streams/core-concepts#streams_processing_guarantee) |
 | Flink checkpointing + 2PC sink | JVM | State snapshots aligned with source offsets; two-phase-commit sinks for external systems | [End-to-end exactly-once in Flink](https://flink.apache.org/2018/02/28/an-overview-of-end-to-end-exactly-once-processing-in-apache-flink-with-apache-kafka-too/) |
 | Flink stateful processing | JVM | The checkpoint/state model underneath exactly-once | [Stateful stream processing](https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/stateful-stream-processing/) |
