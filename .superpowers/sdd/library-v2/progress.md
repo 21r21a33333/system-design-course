@@ -877,3 +877,145 @@ pass (two Wikipedia URLs returned transient 429 rate-limit responses
 on the first pass, confirmed 200 on retry with a short delay — not
 broken links). Committed as a single `feat(patterns):` commit
 (793f319).
+
+## Phase 5.4: Cross-links — 16 Design-X case studies to Educative modules (FINAL TASK — Phase 5 complete)
+
+Retrofitted the 16 Design-X case studies under
+`course/case-studies/system-design/{uber,whatsapp,instagram,youtube,
+google-maps,yelp,newsfeed,tinyurl,typeahead,google-docs,
+payment-system,deployment-system,data-infrastructure,chatgpt,
+llm-support-bot,code-assistant}.md` — real-tech grounding retrofit
+(Part A) plus one Educative module cross-reference per file (Part B).
+Read `improper-instantiation.md` first as the tone reference, then all
+16 case studies in full before editing.
+
+Real-tech grounding added (2-3 verified-accurate mentions per file,
+additive only, no design advice made vendor-specific): uber — Uber's
+own H3 grid / Google's S2 as real hierarchical-geospatial-index
+implementations, Kafka for the location-ping ingest queue; whatsapp —
+WhatsApp's real Erlang-based connection-layer architecture (web-
+verified: ~2M+ connections/server, lightweight-process model), Redis-
+style in-memory store for the presence directory, Kafka for the
+durability queue; instagram — S3-style blob storage, a real CDN
+(Cloudflare/Fastly/cloud-provider-edge), Kafka for the fan-out queue;
+youtube — FFmpeg as the real transcoding-worker tool, HLS/MPEG-DASH as
+the real adaptive-bitrate packaging protocols, Elasticsearch/OpenSearch
+for the search index; google-maps — contraction hierarchies named
+directly as the real routing-literature technique (web-verified against
+OSRM and GraphHopper, both of which implement it), the OSM-style
+slippy-map tile pyramid; yelp — Geohash/S2/H3 as three real grid
+implementations, Elasticsearch `geo_distance` + PostgreSQL PostGIS as
+real geo-filtering examples; newsfeed — Kafka for fan-out, Redis/
+Memcached for the feed-store cache; tinyurl — Twitter's real Snowflake
+ID scheme as the distributed-ID-generation precedent, Redis/Memcached
+for the redirect cache; typeahead — Elasticsearch's completion
+suggester named directly as a real FST-based prefix-index
+implementation (web-verified), Spark as a real MapReduce-style
+aggregation engine; google-docs — Google Docs' own real, publicly-
+documented Jupiter OT lineage (web-verified) named directly as the
+mechanism this design uses, Yjs/Automerge as real production CRDT
+libraries; payment-system — kept to illustrative-only real-provider
+mentions per the task's explicit narrower instruction for this file
+(Stripe/Adyen named twice as examples of the generic "payment gateway"
+role, design advice left fully generic, no implementation claims);
+deployment-system — similarly scoped: Argo Rollouts/Flagger named as
+real Kubernetes canary-controller implementations of the batch-and-
+soak mechanics already described (web-verified), LaunchDarkly named as
+one illustrative real feature-flag-service example alongside "commonly
+built in-house"; data-infrastructure — Kafka for the ingestion log,
+Spark and Flink/Kafka Streams for the Lambda batch/stream layers,
+Snowflake/BigQuery/Redshift as real columnar-warehouse examples;
+chatgpt — vLLM and NVIDIA TensorRT-LLM named directly as real
+continuous-batching inference engines (web-verified), Server-Sent
+Events for the token-streaming transport; llm-support-bot — Pinecone/
+Weaviate/pgvector as real vector-index choices, Zendesk/Intercom as
+real human-agent-tooling examples for the out-of-scope handoff
+boundary; code-assistant — GitHub Copilot/Cursor named as the real
+product category this design targets, Docker-style containers for the
+tool-execution sandbox, tree-sitter named directly as the real multi-
+language incremental parser (web-verified) underlying the codebase-
+indexing pipeline's parse step.
+
+Every real-product technical claim was independently web-verified
+before being added, not assumed from training knowledge: WhatsApp's
+Erlang connection-count claims, OSRM/GraphHopper's use of contraction
+hierarchies, Elasticsearch completion-suggester's FST internals,
+Google Docs/Jupiter's real OT lineage, vLLM/TensorRT-LLM's continuous-
+batching mechanics, Argo Rollouts/Flagger's automated canary-analysis
+behavior, and tree-sitter's incremental multi-language parsing were
+each confirmed via live web search before the claim was written into
+the page. No designgurus.io or educative.io pages were fetched or read
+at any point, consistent with the hard, unchanged content-origin rule.
+
+Educative cross-references: added exactly one per file, plain italic
+prose (`*Educative's Grokking Modern System Design Interview course
+covers this same system in its "..." module...*`), never markdown link
+syntax, placed right after the framing paragraph and before Step 1 in
+all 16 files. Module titles and mock-interview sub-lesson mentions
+(Uber Eats, Facebook Messenger, TikTok, NewsFeed, ChatGPT) match the
+exact mapping given in the task. Confirmed via grep that roadmap.sh and
+DesignGurus have zero mentions across all 16 files, per the task's
+explicit instruction that neither source has case-study-shaped content
+to cross-reference for these pages.
+
+Verification: grepped all 16 files for "educative" (case-insensitive)
+— exactly 16 total occurrences, one per file, all plain text, none
+inside `[...]()` link syntax. Grepped for "designgurus" and
+"roadmap.sh" — zero hits. Read all 16 files back in full after editing
+and diffed each against the pre-edit version: 16 files changed, 67
+insertions, 35 deletions — every deleted line is the pre-edit version
+of a sentence extended in place with grounding text (confirmed by
+inspecting every removed line directly, same pattern as prior 5.x
+sub-phases), nothing removed or weakened. `npm run typecheck` and `npm
+run build` both clean, zero broken links. Manifest
+(`src/data/courseManifest.ts`) confirmed unchanged and already correct
+at 121 `design-patterns` entries and 24 total `system-design-case-
+studies` entries (16 `supplementary` + 8 `primer`), matching the task's
+required final counts — no re-ingest needed since this was a prose-only
+retrofit with no file adds/removes/renames. Committed as a single
+`feat(case-studies):` commit (fb05faa).
+
+## Phase 5 complete — 5-phase project summary
+
+This was the final task of the final phase (5.4) of a 5-phase library
+expansion project on `library-v2-expansion`, starting from a base of
+91 pattern pages (merged and deployed on `main` @ aac1e7a). Total scope
+delivered across all 5 phases:
+
+- **Phase 1** (gap-fill, 15 pages at v3 template): new Caching group (5
+  pages) + Consistency/Storage/Reliability gap patterns (5 pages) +
+  API-edge gaps and concept-to-pattern promotions (5 pages).
+- **Phase 2** (new catalogs, 15 pages at v3): new AI Agent Orchestration
+  group (5 pages) + new Azure-style Antipatterns catalog (10 pages).
+- **Phase 3** (deep-rewrite of the original 91 pages to v3 template):
+  full build-out (diagram + code + v3 sections) for pages that had
+  none, and v3-sections-only additions for the 31 pages that already
+  had diagrams/code from a prior merge. Brought the full pre-existing
+  library up to the v3 template standard (Technical Architecture &
+  Implementation, Use-Case Scenarios, etc.).
+- **Phase 4** (Design-X case studies, ~17 new original pages): full
+  Step-1-through-4 system-design walkthroughs for Uber, WhatsApp,
+  Instagram, YouTube, Google Maps, Yelp, Newsfeed, TinyURL, Typeahead,
+  Google Docs, Payment System, Deployment System, Data Infrastructure,
+  ChatGPT, LLM Support Bot, Code Assistant, and others — all original
+  writing, never copied from any source.
+- **Phase 5** (source cross-linking pass across the full final library,
+  5 sub-phases): retrofitted every new-in-this-project page under the
+  policy relaxation approved mid-phase (real vendor/technology names
+  now allowed where accurate and additive; external citations more
+  generous) and added cross-references to DesignGurus/Educative/
+  roadmap.sh/Azure Architecture Center where a genuine topical match
+  existed — 5.1 Caching + gap-fill patterns (10 pages), 5.2 API-edge
+  gaps + AI Agent Orchestration (10 pages), 5.3 Antipatterns (10
+  pages), 5.4 the 16 Design-X case studies (this entry).
+
+Final library state: 121 design-patterns entries + 24 system-design
+case studies (16 supplementary + 8 primer) per the manifest, `npm run
+typecheck` and `npm run build` both clean across the whole site. All
+content across all 5 phases is original writing informed by research
+citations, never verbatim from any source, with the two hard rules
+(no verbatim copying; no reading paywalled DesignGurus/Educative
+lesson pages, title-only awareness only) held constant across every
+phase even as the vendor-naming and citation-generosity policy relaxed
+partway through. This is the last entry in this ledger for the
+library-v2-expansion project.
