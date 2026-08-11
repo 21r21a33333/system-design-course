@@ -786,6 +786,13 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/scaling/compute-resource-consolidation",
+    "title": "Compute Resource Consolidation",
+    "path": "/docs/patterns/scaling/compute-resource-consolidation",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/scaling/connection-pooling",
     "title": "Connection Pooling",
     "path": "/docs/patterns/scaling/connection-pooling",
@@ -824,6 +831,20 @@ export const courseManifest: ManifestEntry[] = [
     "id": "patterns/storage/event-sourcing",
     "title": "Event Sourcing",
     "path": "/docs/patterns/storage/event-sourcing",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/storage/index-table",
+    "title": "Index Table",
+    "path": "/docs/patterns/storage/index-table",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/storage/materialized-view",
+    "title": "Materialized View",
+    "path": "/docs/patterns/storage/materialized-view",
     "category": "design-patterns",
     "source": "supplementary"
   },
