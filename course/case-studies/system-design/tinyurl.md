@@ -58,44 +58,158 @@ The read/write asymmetry here (roughly 100:1, and considerably higher for indivi
 
 ### Use case: User submits a long URL and gets a short code
 
-The core question here is how to generate a short code that's guaranteed collision-free without serializing every creation through a single point. Two broad approaches, with real tradeoffs:
+The hard problem: generate a short code that's guaranteed collision-free, without serializing every creation through a single lock.
 
-**Hash-and-truncate:** derive a code from a hash of the long URL (and perhaps a timestamp or random salt, so re-shortening the same URL twice can still yield different codes if desired), truncated to the target length. This is simple and needs no coordination between servers, but truncating a hash to 7 characters means collisions are possible — different inputs can hash to the same short code — and the service has to detect that (a lookup against the mapping store before committing the write) and handle it (retry with a different salt), which reintroduces a check-then-write pattern that's awkward to make race-free under concurrent creation of the same collision.
+**Core algorithm: range-based ID allocation + base-62 encoding**
 
-**Pre-generated unique ID range, encoded to a short code:** a **code generator** component hands out globally unique numeric IDs — for instance, by giving each application server a reserved range of IDs to allocate from locally before requesting a new range, so no two servers ever hand out the same ID without needing to coordinate on every single request, similar in spirit to how Twitter's real-world Snowflake ID scheme generates unique IDs across many machines without a per-request coordination step — and each ID is deterministically encoded (base-62, using the 7-character alphabet from Step 1's math) into a short code. This guarantees uniqueness by construction: since the underlying IDs are unique and the encoding is a deterministic one-to-one function, no collision-detection step is ever needed on the write path. The tradeoff is operational complexity (something has to durably track which ID ranges have been allocated to which server, and survive a server crashing mid-range without losing or double-issuing IDs) in exchange for removing collision-checking entirely from the hot path.
+```
+# Each app server, on startup or when its local range is exhausted:
+1. request_range(server_id) -> (range_start, range_end)
+   # a coordinator hands out non-overlapping ranges, durably recorded
+   # so a crash mid-range never re-issues an already-owned range
+2. next_id = pop next unused integer from [range_start, range_end)
+   # purely local after this point — no network call per creation
 
-This design favors the second approach specifically because it turns "avoid collisions" from a per-request runtime check into a property that's true by construction — which matters more here than it might elsewhere, because a collision in this system isn't a retryable failure, it's silent data corruption (URL A's short link starts resolving to URL B). Range allocation itself is infrequent (a server requests a new range only after exhausting its current one, not per creation), so the coordination cost is amortized across potentially thousands of ID allocations per range request, keeping the write path's steady-state cost low despite the low absolute write volume this design already established isn't the bottleneck.
+# Encoding, once an id is obtained:
+function base62_encode(num):
+    digits = []
+    alphabet = "0-9a-zA-Z"          # 62 symbols
+    while num > 0:
+        digits.push(alphabet[num % 62])
+        num = num // 62
+    return reverse(digits).left_pad_to(7)   # fixed 7-char code
+```
 
-Custom aliases are the one case that still needs a uniqueness check against the mapping store, since a user-supplied alias isn't drawn from the generator's guaranteed-unique ID space — but custom aliases are a small fraction of total creations, so a conditional write (insert only if the alias doesn't already exist) on that minority path doesn't threaten the throughput of the generated-code majority path. See [Idempotency](/docs/patterns/reliability/idempotency) for the general shape of making a write safe to retry without double-applying it, relevant here if a client retries a creation request after a timeout.
+Because the underlying integer IDs are unique by construction and the encoding is a deterministic one-to-one function, **no collision-detection step ever runs on the write path** — this is the entire point of choosing this algorithm over hash-and-truncate (hash a URL, truncate to 7 chars, then have to detect and retry on collision).
+
+**Data structures:**
+* `id_ranges` (coordinator-owned table) — `server_id`, `range_start`, `range_end`, `allocated_at`
+* `mappings` (main store) — `short_code` (PK), `long_url`, `created_at`, `expires_at`, `click_count`
+
+**Trade-offs:**
+* **The gotcha:** hash-and-truncate is the answer most candidates reach for first, and it's the wrong one at scale — truncating a hash to 7 characters makes collisions *inevitable* (not just possible) once enough codes exist, which reintroduces a check-then-write race under concurrent creation. Range-based allocation sidesteps this entirely by making uniqueness a property of construction, not a runtime check — this is the specific decision that separates a working design from a design that silently corrupts data under load.
+* Range allocation adds one piece of durable coordination state (who owns which range), but it's requested only when a server's local range runs out — not per creation — so its request volume is orders of magnitude below the write rate.
+* Custom aliases don't come from the generator's ID space, so they're the one write path that still needs a uniqueness check (insert-if-absent against `mappings`) — a small minority of total creations, so it doesn't threaten the generated-code majority path's throughput. See [Idempotency](/docs/patterns/reliability/idempotency) for making that write safe to retry after a timeout.
+
+See: [Snowflake ID](https://en.wikipedia.org/wiki/Snowflake_ID) for a real-world distributed unique-ID scheme built on this same "coordinate rarely, generate locally" shape, and [Base 62 encoding explained](https://www.kerstner.at/2012/07/shortening-strings-using-base-62-encoding/) for the encoding step's mechanics.
+
+**REST API:**
+
+```
+$ curl -X POST https://tinyurl.example/api/v1/links \
+    -d '{"long_url": "https://example.com/some/very/long/path", "custom_alias": null, "expires_in_days": 30}'
+```
+
+Response:
+
+```json
+{
+  "short_code": "aZ3kP9x",
+  "short_url": "https://tny.co/aZ3kP9x",
+  "long_url": "https://example.com/some/very/long/path",
+  "expires_at": "2026-09-10T00:00:00Z"
+}
+```
 
 ### Use case: User visits a short URL and is redirected
 
-* The **redirect service** receives the short code, looks up the corresponding long URL, and returns an HTTP redirect
-* Because the mapping is immutable once created, this lookup has none of the freshness concerns most read paths in this course worry about — a cached mapping is never stale in a way that matters, since the underlying data can't change (aside from expiration, discussed below)
+**Core mechanism: cache-first lookup on an immutable key**
 
-This immutability is what makes the redirect path almost entirely a caching problem: once a mapping is read once, it can be cached aggressively and indefinitely (until expiration) with no invalidation logic needed beyond a TTL, which is a meaningfully simpler caching story than most of this course's other read-heavy systems have to deal with, since none of them get to assume the underlying data never changes. See [Cache-Aside](/docs/patterns/caching/cache-aside) and [Read-Through](/docs/patterns/caching/read-through) for the general mechanism — a redirect for a popular link is served from cache essentially every time after its first request, and only genuinely long-tail, rarely-clicked links ever touch the durable mapping store repeatedly.
+* `redirect_service.handle(short_code)`:
+  1. Look up `short_code` in cache → hit: return cached `long_url` (see below for status code choice)
+  2. Miss → look up in `mappings` store, populate cache, return
 
-One design choice worth being explicit about: an HTTP redirect can be issued as a permanent (301) or temporary (302) response. A 301 lets browsers and intermediate caches remember the redirect themselves, reducing load on this system even further on repeat visits from the same client — but it also means this service loses visibility into those repeat clicks for the click-counting use case, since a browser that's cached a 301 may never ask again. A 302 keeps every click visible to the service (better for accurate counts) at the cost of not benefiting from client-side caching. This design uses 302 specifically because Step 1 scopes in click counting as a real use case, which makes counting accuracy worth the extra requests.
+**Data structures:** same `mappings` record as above; cache keyed by `short_code`.
+
+**Trade-offs:**
+* **The gotcha:** the 301-vs-302 choice looks cosmetic but isn't — a 301 lets browsers cache the redirect client-side, which is *more* efficient but silently breaks click counting, since a browser holding a cached 301 may never ask this service again. A 302 costs more requests but keeps every click visible. This design uses **302**, specifically because Step 1 scopes in click counting as a real requirement — picking 301 "for performance" without checking that constraint is the classic version of this mistake.
+* Mapping is immutable once created (aside from expiration) → once cached, a value is never stale, so caching here is a pure TTL/eviction problem with no invalidation logic — see [Cache-Aside](/docs/patterns/caching/cache-aside) and [Read-Through](/docs/patterns/caching/read-through).
+
+See: [HTTP 301](https://en.wikipedia.org/wiki/HTTP_301) vs. [HTTP 302](https://en.wikipedia.org/wiki/HTTP_302) for the formal semantics of each status code.
+
+**REST API:**
+
+```
+$ curl -i https://tny.co/aZ3kP9x
+```
+
+Response:
+
+```
+HTTP/1.1 302 Found
+Location: https://example.com/some/very/long/path
+```
 
 ### Use case: Service tracks click counts
 
-Incrementing a durable counter synchronously on every redirect would add a write, and its latency, to the critical path of a redirect that's supposed to be as fast as possible — directly working against the "redirect must feel instantaneous" constraint from Step 1. Instead, the redirect service fires an asynchronous "click happened" event and returns the redirect immediately, without waiting for that event to be durably counted — see [Event-Driven Architecture](/docs/patterns/communication/event-driven-architecture). A separate counting path consumes those events and updates `click_count` for the corresponding short code, similar in shape to the incremental-aggregate approach this course's Yelp case study uses for rating counts, though here the write pattern is even more skewed toward a small number of very popular links receiving the overwhelming majority of click events — which makes a [Sharded Counter](/docs/patterns/building-blocks/sharded-counters)-style approach worth applying specifically to whichever short codes are currently receiving high click volume, rather than uniformly to every code, since most codes never get anywhere near enough traffic to need it.
+**Core mechanism: async increment against a sharded counter, off the redirect's critical path**
+
+```python
+import random
+
+class ClickCounter:
+    """Sharded counter: a hot code's count is spread across N shards to
+    avoid every click on a viral link serializing on one row's lock.
+    """
+    SHARDS_PER_KEY = 10
+
+    def __init__(self, store):
+        self.store = store  # key: (short_code, shard_id) -> count
+
+    def record_click(self, short_code):
+        # Pick a random shard for this write — spreads contention across
+        # SHARDS_PER_KEY rows instead of hammering one.
+        shard_id = random.randint(0, self.SHARDS_PER_KEY - 1)
+        self.store.increment((short_code, shard_id))
+
+    def total_clicks(self, short_code):
+        # Reads are rare (an analytics dashboard, not the hot path) so
+        # summing shards at read time is the right trade: writes stay
+        # cheap and uncontended, at the cost of a fan-out read.
+        return sum(
+            self.store.get((short_code, shard_id)) or 0
+            for shard_id in range(self.SHARDS_PER_KEY)
+        )
+```
+
+* Redirect service emits a `click_happened` event and returns immediately — does *not* wait for the count to be durably written. See [Event-Driven Architecture](/docs/patterns/communication/event-driven-architecture).
+* A separate consumer processes `click_happened` events and calls `record_click`.
+
+**Data structures:** `click_counts` keyed by `(short_code, shard_id)` — a wide, sparse table rather than one row per `short_code`.
+
+**Trade-offs:**
+* **The gotcha:** a single `UPDATE clicks SET count = count + 1 WHERE short_code = X` looks correct and is correct — right up until one link goes viral and every click serializes on that one row's lock. Sharding the counter is what keeps a single hot link from becoming a write bottleneck for the whole system; see [Sharded Counter](/docs/patterns/building-blocks/sharded-counters).
+* Most codes never get enough traffic to need sharding at all — `SHARDS_PER_KEY = 10` is a fixed cost paid on every code for the benefit of the rare hot ones; an adaptive scheme (shard only once a code crosses a traffic threshold) trades implementation complexity for avoiding that fixed cost on the long tail.
+* Similar shape to this course's Yelp case study incrementally aggregating rating counts, but here the traffic skew toward a handful of hot keys is more extreme.
 
 ### Use case: Link expiration
 
-Expired links need to stop resolving without requiring every redirect to run an expensive expiration check against a slow path. Because `expires_at` is stored alongside the mapping and read as part of the same cached lookup the redirect path already does, checking it costs nothing extra on the read path — the redirect service just also checks whether the fetched record's `expires_at` has passed before honoring it. Actually reclaiming the short code and freeing it for reuse (if a design decision is made to allow that) is a separate, lower-urgency background sweep over expired records, not something that needs to happen synchronously at the moment of expiration.
+**Core mechanism: piggyback the check on the existing cached read**
+
+```python
+def resolve(short_code, mappings_store, cache, now):
+    record = cache.get(short_code) or mappings_store.get(short_code)
+    if record is None:
+        return None  # unknown code
+    if record.expires_at is not None and record.expires_at <= now:
+        return None  # expired: treat identically to "not found"
+    return record.long_url
+```
+
+**Data structures:** reuses the `mappings` record's existing `expires_at` field — no new storage.
+
+**Trade-offs:**
+* Checking `expires_at` costs nothing extra on the read path since it's already part of the record the redirect handler fetches — no separate lookup, no separate service.
+* Actually reclaiming an expired code (freeing it for reuse) is a separate, lower-urgency background sweep — not something that needs to happen synchronously at expiration time, and not something the hot redirect path should ever wait on.
 
 ## Step 4: Scale the design
 
 ![TinyURL scaled architecture](/img/case-studies/tinyurl-scaled.svg)
 
-**The redirect path is almost entirely solved by aggressive caching, given the mapping's immutability.** A [Distributed Cache](/docs/patterns/building-blocks/distributed-cache) (Redis or Memcached are the two systems most commonly reached for here) sized to hold the working set of currently-popular links absorbs the overwhelming majority of the ~16,000 redirects/sec peak this design calculated, leaving only cold, long-tail lookups to reach the durable mapping store — a much larger cache hit-rate ceiling than most systems get to assume, precisely because there's no invalidation problem to fight, only a TTL/eviction one.
-
-**The mapping store scales by sharding on short code**, which distributes evenly by construction if codes come from the sequential-range generator in Step 3 spread across a hash-like encoding — see [Sharding](/docs/patterns/storage/sharding) and [Consistent Hashing](/docs/patterns/storage/consistent-hashing) for keeping shard rebalancing proportional to what actually changed rather than triggering a wholesale remap when capacity is added. Because writes are low-volume (~16/sec average) relative to what any single shard can handle, sharding here is driven far more by total dataset size and read fan-out than by write throughput.
-
-**The code generator's range-allocation coordination is a small, infrequent, and isolated hot spot — worth designing carefully precisely because it's the one place correctness (no duplicate ranges ever handed out) matters more than throughput.** Because each application server only contacts the generator when it exhausts its current range (not per creation), the generator's own request volume is orders of magnitude below the creation rate, making it a natural candidate for a simple, strongly-consistent design even while the rest of the system optimizes for read throughput — see [Idempotency](/docs/patterns/reliability/idempotency) for making a range request safe to retry if a server crashes mid-request without ending up with two servers believing they own the same range.
-
-**Redirect service instances are stateless and scale horizontally behind a standard load-balanced edge tier**, since all state (the mapping, the cache) lives in shared backing stores rather than any individual server — see [Horizontal Scaling](/docs/patterns/scaling/horizontal-scaling) and [Load Balancing](/docs/patterns/api-edge/load-balancing). This is the least novel part of this design, deliberately: the interesting engineering budget here goes into code generation correctness and redirect caching, not into the request-routing tier.
+* **Redirect path — caching.** A [Distributed Cache](/docs/patterns/building-blocks/distributed-cache) (Redis or Memcached) sized to hold the working set of popular links absorbs the overwhelming majority of the ~16,000 redirects/sec peak, leaving only cold, long-tail lookups to hit the durable mapping store. Immutability means no invalidation logic — TTL/eviction only.
+* **Mapping store — sharding.** Shards evenly by construction if codes come from the sequential-range generator spread across a hash-like encoding. See [Sharding](/docs/patterns/storage/sharding) and [Consistent Hashing](/docs/patterns/storage/consistent-hashing) for rebalancing proportional to what actually changed. Driven by dataset size and read fan-out, not write throughput (~16/sec average is trivial for any single shard).
+* **Code generator — isolated, low-volume, strongly-consistent.** Each server only contacts it on range exhaustion, not per creation, so its request volume is orders of magnitude below the creation rate — a natural candidate for a simple, strongly-consistent design even while the rest of the system optimizes for throughput. See [Idempotency](/docs/patterns/reliability/idempotency) for making a range request safe to retry after a crash without two servers believing they own the same range.
+* **Redirect service — stateless horizontal scaling.** All state lives in the cache/mapping store, not on any instance, so it scales behind a standard load-balanced edge tier. See [Horizontal Scaling](/docs/patterns/scaling/horizontal-scaling) and [Load Balancing](/docs/patterns/api-edge/load-balancing). Deliberately the least novel part of this design — the engineering budget goes into code-generation correctness and redirect caching, not the routing tier.
 
 ## Additional talking points
 
@@ -103,3 +217,11 @@ Expired links need to stop resolving without requiring every redirect to run an 
 * **Why not just use the full hash as the short code instead of truncating or generating a separate ID?** A full hash (say, 32+ hex characters) is unique enough to avoid collisions on its own, but defeats the entire purpose of a *short* URL — the length constraint is the whole point of the product, which is exactly why this design accepts the extra engineering complexity of a dedicated code generator rather than sidestepping collisions by simply using a longer code.
 * **Malicious or spam URLs.** Out of scope to design in depth, but worth naming: a shortener that redirects blindly is an attractive vector for disguising malicious links, and a production system would need some check (a blocklist, a reputation service) in the creation path — which would add latency and complexity specifically to the write path this design otherwise keeps deliberately simple.
 * **Custom aliases and the vanity-URL tension.** Allowing user-chosen aliases reintroduces exactly the collision-checking cost the generated-code path was designed to avoid, and a popular alias namespace (short, memorable words) can be contested — worth a brief mention of reserving or auctioning particularly desirable aliases as a product question, not an infrastructure one.
+
+## Source(s) and further reading
+
+* [URL shortening — Wikipedia](https://en.wikipedia.org/wiki/URL_shortening)
+* [Snowflake ID](https://en.wikipedia.org/wiki/Snowflake_ID) — a real-world distributed unique-ID scheme built on the same "coordinate rarely, generate locally" shape as this design's code generator
+* [Ticket Servers: Distributed Unique Primary Keys on the Cheap — Flickr Engineering](https://code.flickr.net/2010/02/08/ticket-servers-distributed-unique-primary-keys-on-the-cheap/) — a real production write-up of the range-allocation idea this design's code generator is built on
+* [Base 62 encoding explained](https://www.kerstner.at/2012/07/shortening-strings-using-base-62-encoding/)
+* [HTTP 301](https://en.wikipedia.org/wiki/HTTP_301) vs. [HTTP 302](https://en.wikipedia.org/wiki/HTTP_302)
