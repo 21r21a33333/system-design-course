@@ -477,3 +477,25 @@ valet-key differentiations consistent with target pages.
 Independent review: all 10 checks pass, 1 MINOR fix (Envoy 404 ->
 what_is_envoy). Build/typecheck clean, manifest 121. 10 of 14 groups
 complete (94 pages).
+
+### Phase 3 (relaunched) — Groups: Caching / AI-Infra / AI-Agent-Orchestration / Antipatterns (27 pages) — COMPLETE
+Commits: d515c4c (caching 5), cc26e85 (ai-infra 7), bf52eb3 (ai-agent-
+orchestration 5), a24b3a3 (antipatterns 10) + review-fix. All ALREADY at
+their target template (v3 / antipattern-template), so LIGHT-ENHANCE only:
+additive comparison tables (caching-strategies, stampede-mitigations,
+orchestration-patterns, ANN-index-types, RAG-eval) + a few subsections
+(model-serving quantization/GPU-util, rag eval, vector-db shard-vs-
+replicate) + generous external links (Feast/Tecton/KEDA/Triton/vLLM/KServe,
+RAG+HNSW papers, Semantic Kernel/Anthropic/OpenAI-Agents/CrewAI/Magentic-
+One, Azure antipattern catalog w/ trailing slash, Fowler, AWS Builders',
+C10K, SQLAlchemy N+1, PostgreSQL EXPLAIN). model-serving stray off-topic
+link fixed.
+
+One consolidated independent review (27 pages): all 10 checks pass. Re-ran
+the 3 concurrency no-regression snippets (gpu-auto-scaling 205ms, vector-
+database-sharding 205ms, synchronous-io fix 205ms vs 613ms) — all still
+genuinely concurrent. 37/37 rust blocks compile individually (antipattern
+pages have 2 each). Preservation confirmed additive (+N/-0 except model-
+serving -1 stray-link fix). Fixed 2 dead links (KServe, Tecton 404s).
+Antipattern template + corrective links intact (retry-storm keeps both).
+Build/typecheck clean, manifest 121. ALL 14 GROUPS COMPLETE (121 pages).
