@@ -1,0 +1,62 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">One tenant's unbounded usage starves shared infrastructure for everyone else</text>
+
+  <rect x="30" y="55" width="120" height="45" rx="6" fill="#dc2626"/>
+  <text x="90" y="75" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Tenant B</text>
+  <text x="90" y="90" font-size="8" fill="#fee2e2" text-anchor="middle">bulk import, 100x load</text>
+
+  <rect x="30" y="115" width="120" height="40" rx="6" fill="#1d4ed8"/>
+  <text x="90" y="135" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Tenant A</text>
+  <text x="90" y="149" font-size="8" fill="#dbeafe" text-anchor="middle">normal, steady load</text>
+
+  <line x1="150" y1="77" x2="278" y2="90" stroke="#dc2626" stroke-width="3" marker-end="url(#nnArrowRed)"/>
+  <line x1="150" y1="135" x2="278" y2="115" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#nnArrowBlue)"/>
+
+  <rect x="280" y="65" width="180" height="90" rx="8" fill="#dc2626"/>
+  <text x="370" y="88" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Shared Connection Pool</text>
+  <text x="370" y="106" font-size="9" fill="#fee2e2" text-anchor="middle">no per-tenant cap</text>
+  <text x="370" y="121" font-size="9" fill="#ffe4b5" text-anchor="middle" font-weight="600">B claims most of it</text>
+  <text x="370" y="136" font-size="9" fill="#fecaca" text-anchor="middle">A starved, unrelated to A's own load</text>
+
+  <rect x="500" y="70" width="220" height="80" rx="8" fill="none" stroke="#b45309" stroke-width="1.5"/>
+  <text x="610" y="90" font-size="10" fill="#b45309" text-anchor="middle" font-weight="600">Tenant A's view</text>
+  <text x="610" y="108" font-size="8" fill="#334155" text-anchor="middle">own metrics look normal —</text>
+  <text x="610" y="122" font-size="8" fill="#334155" text-anchor="middle">latency spikes correlate with</text>
+  <text x="610" y="136" font-size="8" fill="#334155" text-anchor="middle">B's load, not A's own traffic</text>
+
+  <!-- fix inset -->
+  <rect x="30" y="200" width="700" height="100" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="380" y="219" font-size="10" fill="#0f766e" text-anchor="middle" font-weight="600">THE FIX — enforced per-tenant cap</text>
+
+  <rect x="55" y="233" width="110" height="45" rx="6" fill="#dc2626"/>
+  <text x="110" y="252" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Tenant B</text>
+  <text x="110" y="266" font-size="8" fill="#fee2e2" text-anchor="middle">capped fairly</text>
+
+  <rect x="185" y="233" width="110" height="45" rx="6" fill="#1d4ed8"/>
+  <text x="240" y="252" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Tenant A</text>
+  <text x="240" y="266" font-size="8" fill="#dbeafe" text-anchor="middle">unaffected</text>
+
+  <line x1="165" y1="255" x2="330" y2="255" stroke="#0f766e" stroke-width="2" marker-end="url(#nnArrowTeal)"/>
+  <line x1="295" y1="255" x2="330" y2="255" stroke="#0f766e" stroke-width="2" marker-end="url(#nnArrowTeal)"/>
+
+  <rect x="335" y="233" width="180" height="45" rx="6" fill="#0f766e"/>
+  <text x="425" y="252" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Fair Pool</text>
+  <text x="425" y="266" font-size="8" fill="#ccfbf1" text-anchor="middle">per-tenant cap enforced</text>
+
+  <text x="620" y="255" font-size="8" fill="#334155" text-anchor="middle">no single tenant</text>
+  <text x="620" y="267" font-size="8" fill="#334155" text-anchor="middle">exceeds fair share</text>
+
+  <defs>
+    <marker id="nnArrowRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="nnArrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="nnArrowTeal" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

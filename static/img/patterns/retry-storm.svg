@@ -1,0 +1,64 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Synchronized, unbounded retries pile on a dependency that's already struggling</text>
+
+  <rect x="30" y="55" width="80" height="35" rx="6" fill="#1d4ed8"/>
+  <text x="70" y="77" font-size="8" fill="#ffffff" text-anchor="middle">Caller 1</text>
+  <rect x="30" y="95" width="80" height="35" rx="6" fill="#1d4ed8"/>
+  <text x="70" y="117" font-size="8" fill="#ffffff" text-anchor="middle">Caller 2</text>
+  <rect x="30" y="135" width="80" height="35" rx="6" fill="#1d4ed8"/>
+  <text x="70" y="157" font-size="8" fill="#ffffff" text-anchor="middle">Caller 3</text>
+
+  <line x1="110" y1="72" x2="238" y2="90" stroke="#dc2626" stroke-width="2" marker-end="url(#rsArrowRed)"/>
+  <line x1="110" y1="112" x2="238" y2="110" stroke="#dc2626" stroke-width="2" marker-end="url(#rsArrowRed)"/>
+  <line x1="110" y1="152" x2="238" y2="130" stroke="#dc2626" stroke-width="2" marker-end="url(#rsArrowRed)"/>
+  <text x="175" y="55" font-size="8" fill="#dc2626" text-anchor="middle">retry immediately, no backoff, no circuit</text>
+
+  <rect x="240" y="65" width="200" height="90" rx="8" fill="#dc2626"/>
+  <text x="340" y="88" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Struggling Service</text>
+  <text x="340" y="106" font-size="9" fill="#fee2e2" text-anchor="middle">already overloaded</text>
+  <text x="340" y="121" font-size="9" fill="#ffe4b5" text-anchor="middle" font-weight="600">retries add MORE load</text>
+  <text x="340" y="136" font-size="9" fill="#fecaca" text-anchor="middle">right when it needs less</text>
+
+  <rect x="480" y="70" width="240" height="80" rx="8" fill="none" stroke="#b45309" stroke-width="1.5"/>
+  <text x="600" y="90" font-size="10" fill="#b45309" text-anchor="middle" font-weight="600">Total Request Rate</text>
+  <rect x="495" y="102" width="210" height="14" rx="3" fill="#fee2e2"/>
+  <rect x="495" y="102" width="70" height="14" rx="3" fill="#1d4ed8"/>
+  <rect x="565" y="102" width="140" height="14" rx="3" fill="#dc2626"/>
+  <text x="600" y="135" font-size="8" fill="#334155" text-anchor="middle">real traffic vs. retry volume —</text>
+  <text x="600" y="147" font-size="8" fill="#334155" text-anchor="middle">retries now dominate</text>
+
+  <!-- fix inset -->
+  <rect x="30" y="195" width="700" height="105" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="380" y="214" font-size="10" fill="#0f766e" text-anchor="middle" font-weight="600">THE FIX — backoff + circuit breaker</text>
+
+  <rect x="55" y="228" width="90" height="50" rx="6" fill="#1d4ed8"/>
+  <text x="100" y="250" font-size="9" fill="#ffffff" text-anchor="middle">Caller</text>
+  <text x="100" y="264" font-size="7" fill="#dbeafe" text-anchor="middle">100ms→200ms→400ms</text>
+
+  <line x1="145" y1="253" x2="220" y2="253" stroke="#0f766e" stroke-width="2" marker-end="url(#rsArrowTeal)"/>
+
+  <rect x="222" y="228" width="150" height="50" rx="6" fill="#0f766e"/>
+  <text x="297" y="248" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Circuit Breaker</text>
+  <text x="297" y="262" font-size="7" fill="#ccfbf1" text-anchor="middle">opens after threshold</text>
+
+  <line x1="372" y1="253" x2="440" y2="253" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#rsArrowGray)"/>
+  <text x="405" y="243" font-size="7" fill="#64748b" text-anchor="middle">fails fast, no call</text>
+
+  <rect x="442" y="228" width="160" height="50" rx="6" fill="#334155"/>
+  <text x="522" y="248" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Downstream Service</text>
+  <text x="522" y="262" font-size="7" fill="#cbd5e1" text-anchor="middle">recovers without retry pressure</text>
+
+  <defs>
+    <marker id="rsArrowRed" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="rsArrowTeal" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="rsArrowGray" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

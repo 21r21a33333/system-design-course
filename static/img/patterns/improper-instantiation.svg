@@ -1,0 +1,61 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">A new expensive client is constructed and discarded on every call</text>
+
+  <rect x="30" y="60" width="110" height="45" rx="8" fill="#1d4ed8"/>
+  <text x="85" y="82" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Handler</text>
+  <text x="85" y="97" font-size="8" fill="#dbeafe" text-anchor="middle">per request</text>
+
+  <!-- repeated new/discard cycle -->
+  <rect x="180" y="45" width="130" height="40" rx="6" fill="#dc2626"/>
+  <text x="245" y="69" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">new HttpClient()</text>
+  <line x1="245" y1="85" x2="245" y2="105" stroke="#dc2626" stroke-width="1.5" marker-end="url(#iiArrowRed)"/>
+  <text x="290" y="100" font-size="8" fill="#dc2626">discarded</text>
+
+  <rect x="180" y="110" width="130" height="40" rx="6" fill="#dc2626"/>
+  <text x="245" y="134" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">new HttpClient()</text>
+  <line x1="245" y1="150" x2="245" y2="170" stroke="#dc2626" stroke-width="1.5" marker-end="url(#iiArrowRed)"/>
+
+  <rect x="180" y="175" width="130" height="40" rx="6" fill="#dc2626"/>
+  <text x="245" y="199" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">new HttpClient()</text>
+
+  <text x="245" y="35" font-size="9" fill="#dc2626" text-anchor="middle">TLS handshake + socket setup, every time</text>
+
+  <rect x="360" y="80" width="180" height="110" rx="8" fill="none" stroke="#b45309" stroke-width="1.5"/>
+  <text x="450" y="100" font-size="10" fill="#b45309" text-anchor="middle" font-weight="600">Symptoms</text>
+  <text x="450" y="120" font-size="8" fill="#334155" text-anchor="middle">socket / port exhaustion</text>
+  <text x="450" y="135" font-size="8" fill="#334155" text-anchor="middle">under concurrent load</text>
+  <text x="450" y="152" font-size="8" fill="#334155" text-anchor="middle">higher latency than a</text>
+  <text x="450" y="167" font-size="8" fill="#334155" text-anchor="middle">warm reused connection</text>
+
+  <!-- fix inset -->
+  <rect x="30" y="205" width="700" height="95" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="380" y="224" font-size="10" fill="#0f766e" text-anchor="middle" font-weight="600">THE FIX — construct once, share by reference</text>
+
+  <rect x="55" y="238" width="150" height="45" rx="6" fill="#334155"/>
+  <text x="130" y="257" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">App Startup</text>
+  <text x="130" y="271" font-size="8" fill="#cbd5e1" text-anchor="middle">builds client once</text>
+
+  <line x1="205" y1="260" x2="270" y2="260" stroke="#0f766e" stroke-width="2" marker-end="url(#iiArrowTeal)"/>
+
+  <rect x="272" y="238" width="140" height="45" rx="6" fill="#0f766e"/>
+  <text x="342" y="257" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">HttpClient</text>
+  <text x="342" y="271" font-size="8" fill="#ccfbf1" text-anchor="middle">warm pool, long-lived</text>
+
+  <line x1="412" y1="255" x2="480" y2="248" stroke="#0f766e" stroke-width="1.5" marker-end="url(#iiArrowTeal)"/>
+  <line x1="412" y1="262" x2="480" y2="262" stroke="#0f766e" stroke-width="1.5" marker-end="url(#iiArrowTeal)"/>
+  <line x1="412" y1="269" x2="480" y2="276" stroke="#0f766e" stroke-width="1.5" marker-end="url(#iiArrowTeal)"/>
+  <text x="600" y="252" font-size="8" fill="#334155" text-anchor="middle">every request shares</text>
+  <text x="600" y="265" font-size="8" fill="#334155" text-anchor="middle">the same instance —</text>
+  <text x="600" y="278" font-size="8" fill="#334155" text-anchor="middle">no repeated setup cost</text>
+
+  <defs>
+    <marker id="iiArrowRed" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="iiArrowTeal" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

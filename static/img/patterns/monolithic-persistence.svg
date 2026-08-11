@@ -1,0 +1,66 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Every workload forced into one store regardless of access pattern</text>
+
+  <rect x="220" y="45" width="320" height="140" rx="8" fill="#dc2626"/>
+  <text x="380" y="68" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">One Relational Database</text>
+
+  <rect x="235" y="80" width="130" height="30" rx="5" fill="#b91c1c"/>
+  <text x="300" y="99" font-size="9" fill="#ffffff" text-anchor="middle">orders (txn)</text>
+
+  <rect x="375" y="80" width="150" height="30" rx="5" fill="#b91c1c"/>
+  <text x="450" y="99" font-size="9" fill="#ffffff" text-anchor="middle">sessions (high-freq k/v)</text>
+
+  <rect x="235" y="118" width="130" height="30" rx="5" fill="#b91c1c"/>
+  <text x="300" y="137" font-size="9" fill="#ffffff" text-anchor="middle">search index (LIKE)</text>
+
+  <rect x="375" y="118" width="150" height="30" rx="5" fill="#b91c1c"/>
+  <text x="450" y="137" font-size="9" fill="#ffffff" text-anchor="middle">metrics (time-series)</text>
+
+  <text x="380" y="167" font-size="9" fill="#ffe4b5" text-anchor="middle">all compete for the same connection pool + buffer cache</text>
+
+  <rect x="30" y="80" width="150" height="40" rx="6" fill="none" stroke="#b45309" stroke-width="1.5"/>
+  <text x="105" y="103" font-size="8" fill="#b45309" text-anchor="middle">search scan evicts</text>
+  <text x="105" y="115" font-size="8" fill="#b45309" text-anchor="middle">order-checkout cache pages</text>
+  <line x1="180" y1="100" x2="218" y2="100" stroke="#b45309" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#mpArrowAmber)"/>
+
+  <rect x="30" y="130" width="150" height="40" rx="6" fill="none" stroke="#b45309" stroke-width="1.5"/>
+  <text x="105" y="153" font-size="8" fill="#b45309" text-anchor="middle">scale for sessions =</text>
+  <text x="105" y="165" font-size="8" fill="#b45309" text-anchor="middle">scale the whole instance</text>
+  <line x1="180" y1="150" x2="218" y2="130" stroke="#b45309" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#mpArrowAmber)"/>
+
+  <!-- fix inset -->
+  <rect x="30" y="200" width="700" height="105" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="380" y="218" font-size="10" fill="#0f766e" text-anchor="middle" font-weight="600">THE FIX — the right store per workload (Federation)</text>
+
+  <rect x="55" y="232" width="130" height="55" rx="6" fill="#0f766e"/>
+  <text x="120" y="253" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Relational DB</text>
+  <text x="120" y="267" font-size="8" fill="#ccfbf1" text-anchor="middle">orders</text>
+  <text x="120" y="279" font-size="8" fill="#ccfbf1" text-anchor="middle">(transactional)</text>
+
+  <rect x="200" y="232" width="130" height="55" rx="6" fill="#0f766e"/>
+  <text x="265" y="253" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Key-Value Store</text>
+  <text x="265" y="267" font-size="8" fill="#ccfbf1" text-anchor="middle">sessions</text>
+  <text x="265" y="279" font-size="8" fill="#ccfbf1" text-anchor="middle">(TTL, low latency)</text>
+
+  <rect x="345" y="232" width="130" height="55" rx="6" fill="#0f766e"/>
+  <text x="410" y="253" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Search Index</text>
+  <text x="410" y="267" font-size="8" fill="#ccfbf1" text-anchor="middle">product catalog</text>
+  <text x="410" y="279" font-size="8" fill="#ccfbf1" text-anchor="middle">(ranked full-text)</text>
+
+  <rect x="490" y="232" width="130" height="55" rx="6" fill="#0f766e"/>
+  <text x="555" y="253" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="600">Time-Series DB</text>
+  <text x="555" y="267" font-size="8" fill="#ccfbf1" text-anchor="middle">metrics</text>
+  <text x="555" y="279" font-size="8" fill="#ccfbf1" text-anchor="middle">(append-heavy)</text>
+
+  <text x="680" y="255" font-size="8" fill="#0f766e" text-anchor="middle">scales</text>
+  <text x="680" y="267" font-size="8" fill="#0f766e" text-anchor="middle">indepen-</text>
+  <text x="680" y="279" font-size="8" fill="#0f766e" text-anchor="middle">dently</text>
+
+  <defs>
+    <marker id="mpArrowAmber" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>

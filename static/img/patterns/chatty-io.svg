@@ -1,0 +1,56 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Many small round trips instead of one batched request (N+1 query pattern)</text>
+
+  <rect x="30" y="70" width="110" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="85" y="92" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">App</text>
+  <text x="85" y="108" font-size="9" fill="#dbeafe" text-anchor="middle">for each order</text>
+
+  <!-- 5 chatty round trips -->
+  <line x1="140" y1="55" x2="290" y2="55" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ciArrowRed)"/>
+  <line x1="140" y1="72" x2="290" y2="72" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ciArrowRed)"/>
+  <line x1="140" y1="89" x2="290" y2="89" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ciArrowRed)"/>
+  <line x1="140" y1="106" x2="290" y2="106" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ciArrowRed)"/>
+  <line x1="140" y1="123" x2="290" y2="123" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ciArrowRed)"/>
+  <text x="215" y="45" font-size="9" fill="#dc2626" text-anchor="middle">51 round trips for 50 orders</text>
+
+  <rect x="292" y="45" width="180" height="95" rx="8" fill="#dc2626"/>
+  <text x="382" y="70" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Database</text>
+  <text x="382" y="88" font-size="9" fill="#fee2e2" text-anchor="middle">1 query per order</text>
+  <text x="382" y="103" font-size="9" fill="#fee2e2" text-anchor="middle">each fast alone —</text>
+  <text x="382" y="118" font-size="9" fill="#fee2e2" text-anchor="middle">overhead dominates in sum</text>
+
+  <rect x="520" y="55" width="200" height="80" rx="8" fill="none" stroke="#b45309" stroke-width="1.5"/>
+  <text x="620" y="75" font-size="10" fill="#b45309" text-anchor="middle" font-weight="600">Query Log</text>
+  <text x="620" y="93" font-size="8" fill="#334155" text-anchor="middle">SELECT * FROM items</text>
+  <text x="620" y="105" font-size="8" fill="#334155" text-anchor="middle">WHERE order_id = ?</text>
+  <text x="620" y="120" font-size="8" fill="#b45309" text-anchor="middle">repeated 50x, param changes</text>
+
+  <!-- fix inset -->
+  <rect x="30" y="195" width="700" height="105" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="380" y="215" font-size="10" fill="#0f766e" text-anchor="middle" font-weight="600">THE FIX — one batched round trip</text>
+
+  <rect x="55" y="230" width="110" height="50" rx="6" fill="#1d4ed8"/>
+  <text x="110" y="252" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">App</text>
+  <text x="110" y="268" font-size="8" fill="#dbeafe" text-anchor="middle">collects all ids</text>
+
+  <line x1="165" y1="255" x2="300" y2="255" stroke="#0f766e" stroke-width="2.5" marker-end="url(#ciArrowTeal)"/>
+  <text x="232" y="246" font-size="8" fill="#0f766e" text-anchor="middle">WHERE order_id IN (...)</text>
+
+  <rect x="302" y="230" width="150" height="50" rx="6" fill="#0f766e"/>
+  <text x="377" y="251" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Database</text>
+  <text x="377" y="267" font-size="8" fill="#ccfbf1" text-anchor="middle">1 round trip total</text>
+
+  <text x="600" y="252" font-size="8" fill="#334155" text-anchor="middle">re-associate results</text>
+  <text x="600" y="264" font-size="8" fill="#334155" text-anchor="middle">in memory, no more I/O</text>
+
+  <defs>
+    <marker id="ciArrowRed" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="ciArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

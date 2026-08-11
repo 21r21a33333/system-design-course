@@ -1,0 +1,63 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Heavy work runs inline on the request thread, blocking it for the whole task</text>
+
+  <rect x="30" y="60" width="120" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="90" y="82" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Client</text>
+  <text x="90" y="98" font-size="9" fill="#dbeafe" text-anchor="middle">upload</text>
+
+  <line x1="150" y1="85" x2="248" y2="85" stroke="#dc2626" stroke-width="2.5" marker-end="url(#bfArrowRed)"/>
+
+  <rect x="250" y="45" width="220" height="120" rx="8" fill="#dc2626"/>
+  <text x="360" y="68" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Request Thread</text>
+  <text x="360" y="86" font-size="9" fill="#fee2e2" text-anchor="middle">resize image</text>
+  <text x="360" y="101" font-size="9" fill="#fee2e2" text-anchor="middle">transcode video</text>
+  <text x="360" y="116" font-size="9" fill="#fee2e2" text-anchor="middle">generate PDF</text>
+  <text x="360" y="131" font-size="9" fill="#fee2e2" text-anchor="middle">— all inline, blocking —</text>
+  <text x="360" y="149" font-size="9" fill="#ffe4b5" text-anchor="middle" font-weight="600">client waits 30s</text>
+
+  <rect x="510" y="60" width="210" height="90" rx="8" fill="none" stroke="#b45309" stroke-width="1.5"/>
+  <text x="615" y="80" font-size="10" fill="#b45309" text-anchor="middle" font-weight="600">Thread Pool</text>
+  <rect x="525" y="92" width="26" height="26" rx="4" fill="#b45309"/>
+  <rect x="558" y="92" width="26" height="26" rx="4" fill="#b45309"/>
+  <rect x="591" y="92" width="26" height="26" rx="4" fill="#b45309"/>
+  <rect x="624" y="92" width="26" height="26" rx="4" fill="#e2e8f0"/>
+  <rect x="657" y="92" width="26" height="26" rx="4" fill="#e2e8f0"/>
+  <text x="615" y="138" font-size="8" fill="#334155" text-anchor="middle">occupied by heavy tasks —</text>
+  <text x="615" y="148" font-size="8" fill="#334155" text-anchor="middle">cheap requests queue behind them</text>
+
+  <!-- fix inset -->
+  <rect x="30" y="195" width="700" height="105" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="380" y="215" font-size="10" fill="#0f766e" text-anchor="middle" font-weight="600">THE FIX — enqueue and return immediately</text>
+
+  <rect x="55" y="230" width="130" height="50" rx="6" fill="#1d4ed8"/>
+  <text x="120" y="251" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Request</text>
+  <text x="120" y="267" font-size="8" fill="#dbeafe" text-anchor="middle">Thread</text>
+
+  <line x1="185" y1="255" x2="270" y2="255" stroke="#0f766e" stroke-width="2" marker-end="url(#bfArrowTeal)"/>
+  <text x="228" y="246" font-size="8" fill="#0f766e" text-anchor="middle">enqueue</text>
+
+  <rect x="272" y="230" width="130" height="50" rx="6" fill="#0f766e"/>
+  <text x="337" y="251" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Job Queue</text>
+  <text x="337" y="267" font-size="8" fill="#ccfbf1" text-anchor="middle">durable</text>
+
+  <line x1="402" y1="255" x2="487" y2="255" stroke="#0f766e" stroke-width="2" marker-end="url(#bfArrowTeal)"/>
+  <text x="445" y="246" font-size="8" fill="#0f766e" text-anchor="middle">pulls at own pace</text>
+
+  <rect x="489" y="230" width="140" height="50" rx="6" fill="#334155"/>
+  <text x="559" y="251" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Background Worker</text>
+  <text x="559" y="267" font-size="8" fill="#cbd5e1" text-anchor="middle">scales independently</text>
+
+  <text x="680" y="252" font-size="8" fill="#0f766e" text-anchor="middle">thread free</text>
+  <text x="680" y="264" font-size="8" fill="#0f766e" text-anchor="middle">for next request</text>
+
+  <defs>
+    <marker id="bfArrowRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="bfArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

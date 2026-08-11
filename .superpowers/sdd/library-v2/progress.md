@@ -121,3 +121,45 @@ explanatory prose — shared 6/8-grams are limited to the required
 "Related patterns" link boilerplate and Further Reading URLs. Manifest
 bumped 106->111, ingest run confirmed 111 design-patterns entries.
 Typecheck and build both clean, zero broken links.
+Review: 1 Critical (handoff-orchestration.md's Rust snippet didn't
+compile — unused/unimplemented `Agent::name()` trait method, dropped
+it) + 1 Important (group-chat-orchestration.md's architecture section
+ran 754 words, 26% over budget — trimmed to ~660 without losing the
+maker-checker sub-case or cross-differentiation). Both fixed directly,
+commit `a6edf07`. Cross-pattern differentiation verified to actually
+hold up mechanically on close reading (not just self-report) — the two
+hardest pairs (Handoff vs Group Chat, Sequential vs Magentic) both
+correctly and explicitly cross-referenced in both directions.
+
+## PHASE 2 TASK A COMPLETE.
+
+## PHASE 2 TASK B — Antipatterns catalog (10 pages, new group).
+New "Antipatterns — What Not To Do" group at position 14 (no collision,
+audited every existing _category_.json first). 10 pages built to the
+antipattern-variant template (How it manifests / Why it happens / Code
+example (the antipattern) / The fix / How to detect it / When it's
+actually fine / Related patterns / Further reading) — verified all 10
+files' `## ` headings match exactly. 10 original SVGs, red/amber "bad"
+flow with a green/teal "fix" inset panel where a clear corrective
+pattern exists, matching failover.svg's style baseline. All 20 Rust
+snippets (2 per page, antipattern + fix) extracted to individual temp
+files and compiled one at a time via `rustc --edition 2021 --crate-type
+lib` — zero errors, only expected dead-code warnings, none spot-checked.
+Zero disallowed-domain citations (grep clean); all Further Reading URLs
+verified live via curl before use, including discovering the Azure
+antipatterns catalog pages need a trailing slash (the bare-suffix form
+in the task prompt 404s). Paragraph- and n-gram-level duplication check
+across all 10 files found zero duplicated explanatory prose — overlap
+is limited to the Further Reading URL/link boilerplate. "Related
+patterns" mapped to the genuine corrective pattern per antipattern:
+busy-database->CQRS, busy-front-end->Queue-Based Load Leveling,
+chatty-io->Gateway Aggregation, extraneous-fetching->Materialized View,
+improper-instantiation->Connection Pooling, monolithic-
+persistence->Federation, no-caching->Cache-Aside, noisy-
+neighbor->Rate Limiter/Throttling/Bulkhead, retry-storm->Circuit
+Breaker + Retry with Backoff (both, as mandated), synchronous-
+io->Asynchronous Request-Reply. Manifest bumped 111->121, ingest run
+confirmed 121 design-patterns entries. Typecheck and build both clean,
+zero broken links.
+
+## PHASE 2 TASK B COMPLETE.

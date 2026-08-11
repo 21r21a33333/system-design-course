@@ -352,6 +352,76 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/antipatterns/busy-database",
+    "title": "Busy Database",
+    "path": "/docs/patterns/antipatterns/busy-database",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/busy-front-end",
+    "title": "Busy Front End",
+    "path": "/docs/patterns/antipatterns/busy-front-end",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/chatty-io",
+    "title": "Chatty I/O",
+    "path": "/docs/patterns/antipatterns/chatty-io",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/extraneous-fetching",
+    "title": "Extraneous Fetching",
+    "path": "/docs/patterns/antipatterns/extraneous-fetching",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/improper-instantiation",
+    "title": "Improper Instantiation",
+    "path": "/docs/patterns/antipatterns/improper-instantiation",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/monolithic-persistence",
+    "title": "Monolithic Persistence",
+    "path": "/docs/patterns/antipatterns/monolithic-persistence",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/no-caching",
+    "title": "No Caching",
+    "path": "/docs/patterns/antipatterns/no-caching",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/noisy-neighbor",
+    "title": "Noisy Neighbor",
+    "path": "/docs/patterns/antipatterns/noisy-neighbor",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/retry-storm",
+    "title": "Retry Storm",
+    "path": "/docs/patterns/antipatterns/retry-storm",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/antipatterns/synchronous-io",
+    "title": "Synchronous I/O",
+    "path": "/docs/patterns/antipatterns/synchronous-io",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/api-edge/api-gateway",
     "title": "API Gateway",
     "path": "/docs/patterns/api-edge/api-gateway",
