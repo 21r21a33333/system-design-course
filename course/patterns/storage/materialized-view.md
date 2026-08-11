@@ -262,4 +262,4 @@ view.
 - [Materialized View pattern — Azure Architecture Center (Microsoft)](https://learn.microsoft.com/en-us/azure/architecture/patterns/materialized-view)
 - [Materialized views — PostgreSQL documentation](https://www.postgresql.org/docs/current/rules-materializedviews.html)
 - [Materialized view — Wikipedia](https://en.wikipedia.org/wiki/Materialized_view)
-- [Incremental view maintenance — Wikipedia](https://en.wikipedia.org/wiki/Materialized_view#Incremental_maintenance)
+- [Materialized view (incremental view maintenance) — Wikipedia](https://en.wikipedia.org/wiki/Materialized_view)
