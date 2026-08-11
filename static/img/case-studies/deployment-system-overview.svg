@@ -1,0 +1,79 @@
+<svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="400" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Zero-Downtime Deployment: initial high-level design</text>
+
+  <!-- Operator -->
+  <rect x="20" y="160" width="120" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="80" y="185" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Operator</text>
+  <text x="80" y="202" font-size="9" fill="#dbeafe" text-anchor="middle">submits artifact</text>
+
+  <!-- Deployment orchestrator -->
+  <rect x="200" y="160" width="170" height="60" rx="8" fill="#0f766e"/>
+  <text x="285" y="182" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Deployment</text>
+  <text x="285" y="198" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Orchestrator</text>
+  <text x="285" y="212" font-size="8" fill="#ccfbf1" text-anchor="middle">batch + soak</text>
+
+  <line x1="140" y1="190" x2="198" y2="190" stroke="#1d4ed8" stroke-width="2" marker-end="url(#dsArrowBlue)"/>
+
+  <!-- Old instances -->
+  <rect x="440" y="90" width="150" height="50" rx="8" fill="#334155"/>
+  <text x="515" y="111" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Old-Version</text>
+  <text x="515" y="126" font-size="8" fill="#cbd5e1" text-anchor="middle">Instances (kept live)</text>
+
+  <!-- New instances -->
+  <rect x="440" y="160" width="150" height="50" rx="8" fill="#15803d"/>
+  <text x="515" y="181" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">New-Version</text>
+  <text x="515" y="196" font-size="8" fill="#dcfce7" text-anchor="middle">Instances (batch)</text>
+
+  <!-- Health check -->
+  <rect x="440" y="230" width="150" height="50" rx="8" fill="#b45309"/>
+  <text x="515" y="251" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Health Checks</text>
+  <text x="515" y="266" font-size="8" fill="#fde68a" text-anchor="middle">readiness gate</text>
+
+  <line x1="370" y1="175" x2="438" y2="115" stroke="#0f766e" stroke-width="2" marker-end="url(#dsArrowTeal)"/>
+  <line x1="370" y1="185" x2="438" y2="185" stroke="#0f766e" stroke-width="2" marker-end="url(#dsArrowTeal)"/>
+  <line x1="370" y1="200" x2="438" y2="255" stroke="#0f766e" stroke-width="2" marker-end="url(#dsArrowTeal)"/>
+
+  <!-- Load balancer -->
+  <rect x="640" y="125" width="130" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="705" y="148" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Load Balancer</text>
+  <text x="705" y="164" font-size="8" fill="#dbeafe" text-anchor="middle">% traffic shift</text>
+
+  <line x1="590" y1="115" x2="640" y2="145" stroke="#334155" stroke-width="2" marker-end="url(#dsArrowSlate)"/>
+  <line x1="590" y1="185" x2="640" y2="155" stroke="#15803d" stroke-width="2" marker-end="url(#dsArrowGreen)"/>
+
+  <!-- Metrics -->
+  <rect x="200" y="270" width="170" height="55" rx="8" fill="#b45309"/>
+  <text x="285" y="292" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Metrics / Monitoring</text>
+  <text x="285" y="308" font-size="8" fill="#fde68a" text-anchor="middle">promote / abort signal</text>
+
+  <line x1="515" y1="280" x2="285" y2="290" stroke="#b45309" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#dsArrowAmber)"/>
+  <line x1="285" y1="270" x2="285" y2="222" stroke="#b45309" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#dsArrowAmber)"/>
+
+  <rect x="630" y="220" width="160" height="110" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="710" y="240" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Old instances are never</text>
+  <text x="710" y="254" font-size="9" fill="#334155" text-anchor="middle">torn down until the new</text>
+  <text x="710" y="268" font-size="9" fill="#334155" text-anchor="middle">batch is confirmed healthy —</text>
+  <text x="710" y="282" font-size="9" fill="#334155" text-anchor="middle">capacity never drops, and</text>
+  <text x="710" y="296" font-size="9" fill="#334155" text-anchor="middle">rollback is just re-pointing</text>
+  <text x="710" y="310" font-size="9" fill="#334155" text-anchor="middle">traffic, not a redeploy</text>
+
+  <defs>
+    <marker id="dsArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="dsArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="dsArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="dsArrowSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+    <marker id="dsArrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/>
+    </marker>
+  </defs>
+</svg>

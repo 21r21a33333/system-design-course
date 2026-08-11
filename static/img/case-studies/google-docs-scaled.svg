@@ -1,0 +1,71 @@
+<svg viewBox="0 0 860 430" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="860" height="430" fill="#ffffff"/>
+
+  <text x="430" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Google Docs: scaled design (sharded by document)</text>
+
+  <!-- Editors -->
+  <rect x="20" y="150" width="110" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="75" y="171" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Editors</text>
+  <text x="75" y="186" font-size="8" fill="#dbeafe" text-anchor="middle">doc X (2-5)</text>
+
+  <rect x="20" y="250" width="110" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="75" y="271" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Editors</text>
+  <text x="75" y="286" font-size="8" fill="#dbeafe" text-anchor="middle">doc Y (2-5)</text>
+
+  <!-- Router -->
+  <rect x="170" y="200" width="110" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="225" y="221" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Connection</text>
+  <text x="225" y="236" font-size="8" fill="#dbeafe" text-anchor="middle">Router (by doc_id)</text>
+
+  <line x1="130" y1="175" x2="170" y2="215" stroke="#1d4ed8" stroke-width="2" marker-end="url(#gsArrowBlue)"/>
+  <line x1="130" y1="275" x2="170" y2="240" stroke="#1d4ed8" stroke-width="2" marker-end="url(#gsArrowBlue)"/>
+
+  <!-- Collab shard 1 -->
+  <rect x="330" y="120" width="150" height="55" rx="8" fill="#15803d"/>
+  <text x="405" y="142" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Collab Shard 1</text>
+  <text x="405" y="158" font-size="8" fill="#dcfce7" text-anchor="middle">OT for doc X only</text>
+
+  <!-- Collab shard 2 -->
+  <rect x="330" y="270" width="150" height="55" rx="8" fill="#15803d"/>
+  <text x="405" y="292" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Collab Shard 2</text>
+  <text x="405" y="308" font-size="8" fill="#dcfce7" text-anchor="middle">OT for doc Y only</text>
+
+  <line x1="280" y1="215" x2="330" y2="155" stroke="#1d4ed8" stroke-width="2" marker-end="url(#gsArrowBlue)"/>
+  <line x1="280" y1="235" x2="330" y2="290" stroke="#1d4ed8" stroke-width="2" marker-end="url(#gsArrowBlue)"/>
+
+  <!-- Doc store + log per shard -->
+  <rect x="540" y="120" width="140" height="55" rx="8" fill="#334155"/>
+  <text x="610" y="142" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Doc X store + log</text>
+  <text x="610" y="158" font-size="8" fill="#cbd5e1" text-anchor="middle">co-located w/ shard 1</text>
+
+  <rect x="540" y="270" width="140" height="55" rx="8" fill="#334155"/>
+  <text x="610" y="292" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Doc Y store + log</text>
+  <text x="610" y="308" font-size="8" fill="#cbd5e1" text-anchor="middle">co-located w/ shard 2</text>
+
+  <line x1="480" y1="147" x2="538" y2="147" stroke="#0f766e" stroke-width="2" marker-end="url(#gsArrowTeal)"/>
+  <line x1="480" y1="297" x2="538" y2="297" stroke="#0f766e" stroke-width="2" marker-end="url(#gsArrowTeal)"/>
+
+  <!-- Presence, fanned separately -->
+  <rect x="330" y="30" width="150" height="50" rx="8" fill="#b45309"/>
+  <text x="405" y="51" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Presence Fan-Out</text>
+  <text x="405" y="66" font-size="8" fill="#fde68a" text-anchor="middle">small audience, cheap</text>
+
+  <line x1="405" y1="80" x2="405" y2="118" stroke="#b45309" stroke-width="2" stroke-dasharray="4,3"/>
+
+  <rect x="700" y="150" width="140" height="110" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="770" y="170" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Green = per-document</text>
+  <text x="770" y="184" font-size="9" fill="#334155" text-anchor="middle">shard. All concurrent</text>
+  <text x="770" y="198" font-size="9" fill="#334155" text-anchor="middle">edits to one doc pass</text>
+  <text x="770" y="212" font-size="9" fill="#334155" text-anchor="middle">through the same shard —</text>
+  <text x="770" y="226" font-size="9" fill="#334155" text-anchor="middle">correctness requirement,</text>
+  <text x="770" y="240" font-size="9" fill="#334155" text-anchor="middle">not just read efficiency</text>
+
+  <defs>
+    <marker id="gsArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="gsArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

@@ -1115,6 +1115,20 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "case-studies/system-design/deployment-system",
+    "title": "Design a Zero-Downtime Deployment System",
+    "path": "/docs/case-studies/system-design/deployment-system",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/google-docs",
+    "title": "Design a Collaborative Document Editor (like Google Docs)",
+    "path": "/docs/case-studies/system-design/google-docs",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
     "id": "case-studies/system-design/google-maps",
     "title": "Design Google Maps (or Turn-by-Turn Navigation)",
     "path": "/docs/case-studies/system-design/google-maps",
@@ -1136,9 +1150,23 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "case-studies/system-design/payment-system",
+    "title": "Design a Payment Processing System",
+    "path": "/docs/case-studies/system-design/payment-system",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
     "id": "case-studies/system-design/tinyurl",
     "title": "Design TinyURL (a URL Shortening Service)",
     "path": "/docs/case-studies/system-design/tinyurl",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/typeahead",
+    "title": "Design Typeahead Suggestion (Search Autocomplete)",
+    "path": "/docs/case-studies/system-design/typeahead",
     "category": "system-design-case-studies",
     "source": "supplementary"
   },

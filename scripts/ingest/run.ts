@@ -147,7 +147,7 @@ function main(): void {
     );
   }
 
-  const expectedSupplementaryCaseStudyCount = 8;
+  const expectedSupplementaryCaseStudyCount = 12;
   if (supplementaryCaseStudyEntries.length !== expectedSupplementaryCaseStudyCount) {
     throw new Error(
       `Supplementary case study count mismatch: expected ${expectedSupplementaryCaseStudyCount}, got ${supplementaryCaseStudyEntries.length}`,
