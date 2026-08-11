@@ -320,3 +320,99 @@ phrasings (api-gateway.md<->backend-for-frontend.md, service-
 mesh.md<->sidecar.md) restating the same relationship consistently from
 each side. Manifest untouched at 121, `npm run typecheck` and `npm run
 build` both clean with zero broken links.
+
+### Phase 4.1 review — Uber/WhatsApp/Instagram/YouTube — COMPLETE, no fixes
+Independent review of commit `0b687b9`: all 4 critical checks passed —
+8 SVGs real/valid/pure-vector (no repeat of the old pages' broken imgur
+links), zero primer-anchor-link pattern, all 29 internal pattern/concept
+links verified real and contextually relevant, back-of-envelope math
+independently recomputed and internally consistent across all 4 files
+(not just the 2 the implementer quoted), Instagram-vs-YouTube
+differentiation verified accurate with genuine mutual cross-references.
+Manifest confirmed 125 supplementary entries (121 patterns + 4 case
+studies). Zero vendor name-drops, zero disallowed citations, fresh
+build/typecheck clean. Ready to proceed, no fix round needed.
+
+### Phase 4.2 — Google Maps, Yelp, Newsfeed, TinyURL — COMPLETE
+Added 4 more system-design case studies (sidebar_position 13-16),
+following the uber.md/instagram.md template exactly: Step 1
+(use cases + honest out-of-scope + state assumptions + calculate
+usage), Step 2 (high-level design + SVG), Step 3 (3-5 "Use case:"
+subsections matching Step 1's scoped list 1:1, verified by direct
+grep-diff, not eyeballing), Step 4 (scaled design + SVG, bottlenecks
+genuinely specific to each system rather than generic "add a cache"
+filler), Additional talking points.
+
+Google Maps and Yelp were the two highest collision-risk pages (both
+"nearby location" systems) and were deliberately differentiated at
+the mechanism level, not just the prose level: Google Maps is framed
+as a graph/shortest-path problem (bidirectional search + precomputed
+hierarchical shortcuts over a road graph, live traffic as a
+continuously-overwritten per-edge aggregate feeding edge weights) —
+the hard problem is traversal. Yelp is framed as a static-point
+spatial-indexing problem (geo-cell index mapping cell_id -> business
+ids, index-table-shaped, rebuilt only on rare listing changes since
+businesses don't move) — the hard problem is fast radius/candidate-set
+retrieval, not traversal. Each page's high-level design section states
+the mirror-image relationship explicitly. An 8-gram overlap check
+confirmed the two files share zero substantive prose — only heading/
+link boilerplate ("Step 1: Outline...", shared `/docs/patterns/...`
+anchor text).
+
+TinyURL vs. the pre-existing pastebin.md (untouched primer-era page)
+was the other flagged risk. TinyURL is framed around ID-generation-
+at-scale under concurrent writes (hash-and-truncate vs. pre-allocated
+unique-ID-range-encoded-to-base62, chosen specifically because it
+makes collision-freedom a construction guarantee rather than a
+runtime check) and redirect latency (mapping immutability is exploited
+for maximal, invalidation-free caching; 301-vs-302 tradeoff against
+the click-counting requirement is discussed explicitly). Pastebin's
+own (pre-existing, unmodified) hard problem is the hash-table-plus-
+large-object-storage split for variable-sized paste bodies. TinyURL's
+"Additional talking points" section names this distinction directly
+(mapping value is always a trivially small, uniform-size URL string,
+never the bottleneck, vs. Pastebin's variable-and-sometimes-large
+content body). 6-gram check against pastebin.md found zero shared
+substantive prose.
+
+Newsfeed vs. Instagram initially showed real (not just boilerplate)
+duplication on first pass — an 8-gram check caught 64 shared grams,
+concentrated in the social-graph-sharding paragraph (near-verbatim
+"who does this user follow / who follows this user... keyed off a
+single user... aggressively caching graph reads on top of a sharded
+durable store") and two shorter phrases (a cache-aside paragraph, a
+"feed service answers what should this user see" phrasing, an
+"ends at durably recorded" phrasing). All four were rewritten with
+genuinely different angles/phrasing (the social-graph paragraph now
+argues from "multiple subsystems depend on the same graph answer"
+rather than restating Instagram's read/write-ratio framing) and
+re-checked down to 31 shared grams, all of which are pure heading/
+link-anchor boilerplate shared by every case study on the site (a
+manual read-through of the remaining list confirmed this). Newsfeed's
+own differentiator from Instagram's single-content-type fan-out is
+explicit in Step 3: fan-out here is fan-out of *heterogeneous,
+multi-producer* activity through a shared normalized envelope, and the
+push/pull threshold split is motivated partly by a different problem
+(a high-volume source drowning out other sources by sheer count in a
+merged feed, not just push cost) than Instagram's follower-count-only
+framing.
+
+All back-of-envelope numbers independently recomputed in Python against
+each file's stated assumptions (route computations/sec, concurrent
+navigators, ping rates, storage GB/TB, read:write ratios, code-space
+exhaustion years) — every derived number matches what's written, no
+arithmetic drift.
+
+Manifest: bumped `expectedSupplementaryCaseStudyCount` from 4 to 8 in
+`scripts/ingest/run.ts`, ran `npm run ingest -- /tmp/system-design-
+primer-src`, got "All counts match expected inventory" (sdCaseStudies:
+8). All 4 new pages confirmed present in `src/data/courseManifest.ts`.
+`npm run typecheck` and `npm run build` both clean (zero broken links/
+anchors) both before and after the newsfeed.md rewrite. Zero disallowed
+vendor/domain names (grep clean for Kafka, Redis, Cassandra, DynamoDB,
+S3, Elasticsearch, Memcached, ZooKeeper, PostGIS, nginx, HAProxy,
+CloudFront, Kubernetes, AWS/GCP/Azure, Postgres, MySQL, MongoDB).
+8 original SVGs (2 per case study), all validated as well-formed XML,
+matching the established teal/blue/slate/amber/green palette and
+viewBox conventions. Committed as a single `feat(case-studies):`
+commit.

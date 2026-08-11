@@ -1,0 +1,94 @@
+<svg viewBox="0 0 860 430" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="860" height="430" fill="#ffffff"/>
+
+  <text x="430" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Google Maps: scaled design</text>
+
+  <!-- clients -->
+  <rect x="20" y="180" width="120" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="80" y="201" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Navigating Clients</text>
+  <text x="80" y="217" font-size="8" fill="#dbeafe" text-anchor="middle">millions, worldwide</text>
+
+  <!-- edge / LB -->
+  <rect x="175" y="180" width="110" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="230" y="201" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Regional Edge</text>
+  <text x="230" y="217" font-size="8" fill="#dbeafe" text-anchor="middle">routes to nearest region</text>
+
+  <line x1="140" y1="205" x2="173" y2="205" stroke="#1d4ed8" stroke-width="2" marker-end="url(#gmsArrowBlue)"/>
+
+  <!-- Routing region A -->
+  <rect x="330" y="70" width="150" height="55" rx="8" fill="#0f766e"/>
+  <text x="405" y="93" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Routing — Region A</text>
+  <text x="405" y="109" font-size="8" fill="#ccfbf1" text-anchor="middle">graph shard + traffic layer</text>
+
+  <!-- Routing region B -->
+  <rect x="330" y="140" width="150" height="55" rx="8" fill="#0f766e"/>
+  <text x="405" y="163" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Routing — Region B</text>
+  <text x="405" y="179" font-size="8" fill="#ccfbf1" text-anchor="middle">graph shard + traffic layer</text>
+
+  <text x="405" y="215" font-size="10" fill="#64748b" text-anchor="middle">... per region ...</text>
+
+  <line x1="285" y1="205" x2="328" y2="105" stroke="#1d4ed8" stroke-width="2" marker-end="url(#gmsArrowBlue)"/>
+  <line x1="285" y1="210" x2="328" y2="168" stroke="#1d4ed8" stroke-width="2" marker-end="url(#gmsArrowBlue)"/>
+
+  <!-- Precomputed shortcut hierarchy -->
+  <rect x="540" y="55" width="150" height="50" rx="8" fill="#15803d"/>
+  <text x="615" y="76" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Shortcut Hierarchy</text>
+  <text x="615" y="91" font-size="8" fill="#dcfce7" text-anchor="middle">precomputed offline</text>
+
+  <line x1="480" y1="90" x2="538" y2="80" stroke="#15803d" stroke-width="2" marker-end="url(#gmsArrowGreen)"/>
+
+  <!-- Traffic ingestion, partitioned by region -->
+  <rect x="540" y="130" width="150" height="55" rx="8" fill="#b45309"/>
+  <text x="615" y="153" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Traffic Ingestion</text>
+  <text x="615" y="169" font-size="8" fill="#fde68a" text-anchor="middle">partitioned by region</text>
+
+  <line x1="480" y1="170" x2="538" y2="158" stroke="#b45309" stroke-width="2" marker-end="url(#gmsArrowAmber)"/>
+
+  <!-- Ping queue -->
+  <rect x="540" y="205" width="150" height="50" rx="8" fill="#15803d"/>
+  <text x="615" y="226" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Ping Queue</text>
+  <text x="615" y="241" font-size="8" fill="#dcfce7" text-anchor="middle">partitioned by region</text>
+
+  <line x1="140" y1="230" x2="538" y2="235" stroke="#15803d" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gmsArrowGreen)"/>
+  <text x="330" y="255" font-size="8" fill="#15803d">position pings, absorbed async</text>
+
+  <line x1="615" y1="255" x2="615" y2="128" stroke="#b45309" stroke-width="2" marker-end="url(#gmsArrowAmber)"/>
+
+  <!-- Re-route monitor, throttled -->
+  <rect x="330" y="280" width="150" height="55" rx="8" fill="#0f766e"/>
+  <text x="405" y="303" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Re-route Monitor</text>
+  <text x="405" y="319" font-size="8" fill="#ccfbf1" text-anchor="middle">throttled check interval</text>
+
+  <line x1="405" y1="195" x2="405" y2="278" stroke="#0f766e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gmsArrowTeal)"/>
+
+  <!-- Tile CDN -->
+  <rect x="540" y="280" width="150" height="55" rx="8" fill="#334155"/>
+  <text x="615" y="303" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Tile CDN</text>
+  <text x="615" y="319" font-size="8" fill="#cbd5e1" text-anchor="middle">edge-cached, static</text>
+
+  <line x1="230" y1="230" x2="230" y2="307" stroke="#334155" stroke-width="2"/>
+  <line x1="230" y1="307" x2="538" y2="307" stroke="#334155" stroke-width="2" marker-end="url(#gmsArrowSlate)"/>
+
+  <rect x="20" y="350" width="290" height="65" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="165" y="368" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Green = scaled/redundant additions</text>
+  <text x="165" y="383" font-size="9" fill="#334155" text-anchor="middle">Per-region graph shards + shortcut</text>
+  <text x="165" y="397" font-size="9" fill="#334155" text-anchor="middle">hierarchy bound query cost and blast radius</text>
+
+  <defs>
+    <marker id="gmsArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="gmsArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="gmsArrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/>
+    </marker>
+    <marker id="gmsArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="gmsArrowSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

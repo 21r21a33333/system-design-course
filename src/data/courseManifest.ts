@@ -1115,9 +1115,30 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "case-studies/system-design/google-maps",
+    "title": "Design Google Maps (or Turn-by-Turn Navigation)",
+    "path": "/docs/case-studies/system-design/google-maps",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
     "id": "case-studies/system-design/instagram",
     "title": "Design Instagram (or a Photo-Sharing Feed)",
     "path": "/docs/case-studies/system-design/instagram",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/newsfeed",
+    "title": "Design a Generic Newsfeed System",
+    "path": "/docs/case-studies/system-design/newsfeed",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/tinyurl",
+    "title": "Design TinyURL (a URL Shortening Service)",
+    "path": "/docs/case-studies/system-design/tinyurl",
     "category": "system-design-case-studies",
     "source": "supplementary"
   },
@@ -1132,6 +1153,13 @@ export const courseManifest: ManifestEntry[] = [
     "id": "case-studies/system-design/whatsapp",
     "title": "Design WhatsApp (or a Real-Time Messaging System)",
     "path": "/docs/case-studies/system-design/whatsapp",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/yelp",
+    "title": "Design Yelp (or a Proximity/Nearby-Search Service)",
+    "path": "/docs/case-studies/system-design/yelp",
     "category": "system-design-case-studies",
     "source": "supplementary"
   },
