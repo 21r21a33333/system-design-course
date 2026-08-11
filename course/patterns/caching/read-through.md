@@ -144,7 +144,11 @@ both `cache.get` and `store.query` itself.
   without duplicating loader logic in each one.
 - The caching layer or library in use supports configuring a loader
   directly (many managed and in-process cache libraries do), so
-  read-through doesn't require building custom infrastructure.
+  read-through doesn't require building custom infrastructure. Amazon
+  DynamoDB Accelerator (DAX) is a widely cited example at the managed-
+  service level: it sits in front of DynamoDB and is configured once to
+  know how to load from the table on a miss, so callers only ever talk
+  to DAX.
 - Deduplicating concurrent loads for the same key is valuable, and
   centralizing the load path makes that feasible to implement once.
 
@@ -208,3 +212,4 @@ orchestrate the miss path, the caching layer does.
 
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
+- DesignGurus' System Design Patterns course covers this as "Read-Through" in its Serving Data Fast (Caching) module.

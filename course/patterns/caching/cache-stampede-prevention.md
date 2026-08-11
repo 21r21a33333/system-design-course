@@ -58,7 +58,13 @@ result once it completes. This collapses N concurrent misses into
 exactly one store query, at the cost of the waiting requests seeing
 slightly higher latency than a hit would (they wait for the one load to
 finish) — a latency cost that is trivial compared to the alternative of
-N requests competing for store capacity at once. This is precisely the
+N requests competing for store capacity at once. Memcached's own
+protocol has direct, first-class support for this: a client that gets a
+miss can issue an `add` for a short-lived placeholder value, and only
+the client whose `add` succeeds proceeds to load from the store, while
+every other client's `add` fails and knows to wait — single-flight
+coalescing built directly on a primitive the cache already exposes,
+with no separate distributed lock needed. This is precisely the
 deduplication opportunity mentioned on the [Read-Through](/docs/patterns/caching/read-through)
 page: because a read-through cache already centralizes the load path in
 one component, it's a natural place to add single-flight coalescing;
@@ -243,3 +249,4 @@ every client's polling interval converging on the same instant.
 
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
 - [Cache stampede — Wikipedia](https://en.wikipedia.org/wiki/Cache_stampede)
+- DesignGurus' System Design Patterns course covers this as "Cache Stampede Prevention" in its Serving Data Fast (Caching) module.

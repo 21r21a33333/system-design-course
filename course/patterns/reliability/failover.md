@@ -75,6 +75,14 @@ this requires the same fencing discipline described on the
 failover should bump a generation number that downstream systems use to
 reject actions from the instance that's been superseded.
 
+PostgreSQL clusters commonly delegate exactly this detection-and-
+promotion step to an external failover manager such as Patroni, which
+health-checks the primary, coordinates the promotion of a replica
+through a distributed configuration store, and updates where clients
+connect — a concrete, widely deployed instance of the health-detection
+and redirection steps described above being handled by dedicated
+tooling rather than hand-rolled scripts.
+
 **Failover vs. Bulkhead / Circuit Breaker / Graceful Degradation.**
 These reliability patterns are frequently grouped together but solve
 different-shaped problems, and the distinction matters for picking the

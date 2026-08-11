@@ -40,7 +40,11 @@ write-ahead log the primary already maintains for its own crash
 recovery — and ships that stream to each replica. Each replica applies
 the incoming stream in order to its own local copy of the data,
 converging toward the same state the primary has, just slightly
-behind.
+behind. PostgreSQL's streaming replication ships its write-ahead log
+(WAL) to replicas this exact way, and MySQL's replication is built on
+an equivalent binary log (binlog) — both are the canonical open-source
+examples of the write-ahead-log-as-replication-stream design described
+here, rather than a separately maintained replication format.
 
 **Synchronous vs. asynchronous replication.** How the primary handles
 that lag is the central design decision. In *synchronous* replication,
@@ -219,3 +223,4 @@ operation.
 
 - [Replication (computing) — Wikipedia](https://en.wikipedia.org/wiki/Replication_(computing))
 - [Geodes pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes)
+- DesignGurus' System Design Patterns course covers this as "Primary-Replica" in its Storing Data module.

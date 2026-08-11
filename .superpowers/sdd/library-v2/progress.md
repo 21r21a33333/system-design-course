@@ -630,3 +630,75 @@ WhatsApp, Instagram, YouTube, Google Maps, Yelp, Newsfeed, TinyURL,
 Typeahead, Google Docs, Payment System, Deployment System, Data
 Infrastructure Platform, Conversational AI System, LLM Support Bot, AI
 Code Assistant.
+
+## Phase 5.1: Policy retrofit + cross-links — Caching + gap-fill patterns (10 pages)
+
+Retrofitted 10 already-published pages under the relaxed real-vendor-
+naming policy: `course/patterns/caching/{cache-aside,read-through,
+write-through,write-behind,cache-stampede-prevention}.md`,
+`course/patterns/consistency/leader-election.md`,
+`course/patterns/storage/{primary-replica-replication,federation}.md`,
+`course/patterns/reliability/failover.md`,
+`course/patterns/building-blocks/pipes-and-filters.md`.
+
+Real-tech grounding added (1-2 concrete, verified-accurate mentions per
+file, additive only): cache-aside — Redis/Memcached as the canonical
+plain get/set/del cache; read-through and write-through — DynamoDB
+Accelerator (DAX) as a managed read-through/write-through cache in
+front of DynamoDB; write-behind — Redis AOF `everysec` fsync as a
+real-world instance of the same ack-then-flush-later trade-off;
+cache-stampede-prevention — Memcached's `add` command used as a
+first-class single-flight/mutex primitive; leader-election — ZooKeeper
+ephemeral sequential znodes as the textbook lease+expiry building
+block, plus etcd leases and Consul sessions/locks as first-class-API
+equivalents; primary-replica-replication — PostgreSQL streaming
+replication (WAL-shipping) and MySQL binlog replication as the
+canonical open-source write-ahead-log-as-replication-stream examples;
+federation — "polyglot persistence" (Elasticsearch for catalog,
+PostgreSQL for billing) as the real-world naming of the
+different-federates-different-engines outcome; failover — Patroni as a
+widely deployed PostgreSQL failover manager implementing the
+health-detection/promotion/redirection steps; pipes-and-filters — Kafka
+Streams and Apache Flink as stream-processing generalizations of the
+Unix-pipe shape at network scale. No false or invented capabilities
+stated about any named product — every claim checked against
+well-documented, well-known real behavior before inclusion.
+
+Cross-reference links added to each page's Further reading, all URLs
+curl-verified live (200) both when first found and again in a final
+recheck pass before finishing: cache-aside — DesignGurus "Cache-Aside"
+(Serving Data Fast module, text-only) + roadmap.sh/system-design;
+read-through — DesignGurus "Read-Through" only (no roadmap.sh node,
+no Azure entry for read-through specifically); write-through —
+DesignGurus "Write-Through" + roadmap.sh; write-behind — DesignGurus
+"Write-Behind" + roadmap.sh; cache-stampede-prevention — DesignGurus
+"Cache Stampede Prevention" only (no roadmap.sh node); leader-election —
+roadmap.sh only added (Azure Leader Election link was already present
+pre-retrofit; no DesignGurus module covers leader election);
+primary-replica-replication — DesignGurus "Primary-Replica" (Storing
+Data module) only (no roadmap.sh node covers primary-replica
+specifically as its own node beyond the general page). Deliberately
+skipped, no genuine match found: federation and failover have no
+DesignGurus lesson (federation got a roadmap.sh link since it's a real
+named node there; failover has neither a DesignGurus lesson nor a
+roadmap.sh node, so its Further reading section is unchanged from
+before this pass); pipes-and-filters has neither a DesignGurus lesson
+nor a roadmap.sh node, so only the real-tech grounding was added there,
+Further reading section unchanged (Azure's existing Pipes and Filters
+link was reverified live and left in place).
+
+Verified `https://learn.microsoft.com/en-us/azure/architecture/patterns/
+cache-aside` (200 — exists in the current catalog, already linked
+pre-retrofit) before relying on it. Re-read all 10 files in full after
+editing: fixed two placement issues found on this pass (the ZooKeeper/
+etcd/Consul insertion in leader-election.md originally split a paired
+"the first ingredient... the second ingredient..." sentence — moved to
+its own paragraph after both ingredients are stated; the Patroni
+insertion in failover.md originally ran on into the split-brain
+sentence with no paragraph break — given its own paragraph). Confirmed
+via `git diff` that all "deletions" across the 10-file diff are
+line-rewrap artifacts from paragraph insertion, not content removal —
+76 insertions vs. 7 deletions total, no existing prose, code examples,
+headings, or citations removed or weakened. `npm run typecheck` and
+`npm run build` both clean, zero broken links. Committed as a single
+`feat(patterns):` commit.

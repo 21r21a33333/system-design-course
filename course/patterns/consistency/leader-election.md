@@ -45,6 +45,17 @@ must periodically renew its lease before it expires, and if it fails to
 coordination store — the lease expires and any node still able to
 reach the store can now acquire it and become the new leader.
 
+Apache ZooKeeper's ephemeral sequential znodes are the textbook
+building block for exactly this pair of ingredients: a node creates an
+ephemeral, sequentially numbered znode under a shared path, the node
+holding the lowest-numbered znode is leader, and if that node's session
+dies ZooKeeper automatically removes its znode — which is what makes
+the lease-expiry half of the mechanism happen without any node having
+to poll for the leader's health directly. etcd's lease API and Consul's
+session-and-lock primitives are the same idea offered as a first-class
+API rather than something built on top of a more general node
+primitive.
+
 **Split-brain — the central failure mode.** The mechanical risk in
 every leader election implementation is two nodes simultaneously
 believing they are leader — split-brain — and both acting on that
@@ -220,3 +231,4 @@ work.
 
 - [Leader Election pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election)
 - [Leader election — Wikipedia](https://en.wikipedia.org/wiki/Leader_election)
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Leader Election as a named topic in its interactive consistency/coordination node.

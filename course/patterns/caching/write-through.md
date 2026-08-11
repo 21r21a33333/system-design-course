@@ -58,6 +58,11 @@ for the read side: write-through keeps written data fresh, and a
 lazy-load strategy fills in reads for keys that predate the current
 cache instance.
 
+Amazon DynamoDB Accelerator (DAX), for instance, supports a
+write-through configuration in front of DynamoDB specifically so a
+cache miss can never be produced by a write that hasn't reached the
+table yet.
+
 **Failure modes.** The core failure mode is a *partial* write: the
 cache accepts and stores the value, but the downstream store write
 fails or times out after the cache commit. If the implementation
@@ -207,3 +212,5 @@ evaluated against the updated permission set rather than a cached
 
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
+- DesignGurus' System Design Patterns course covers this as "Write-Through" in its Serving Data Fast (Caching) module.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Write-Through as a named topic in its interactive caching-strategy node.

@@ -44,7 +44,12 @@ billing service requiring strict transactional guarantees have little
 reason to share a storage technology just because they once lived in
 the same database. This is a design-time, largely static decision
 (which domain does this table belong to) rather than a runtime routing
-function computed per request the way a shard key is.
+function computed per request the way a shard key is. The outcome is
+what large engineering organizations commonly describe as "polyglot
+persistence" — a catalog domain moving to a search-oriented store like
+Elasticsearch while a billing or ledger domain stays on a strictly
+transactional relational database such as PostgreSQL, different
+federates deliberately running on different engines.
 
 **Routing and query patterns.** An application (or a routing/gateway
 layer in front of the federates) directs each request to the federate
@@ -243,3 +248,4 @@ well.
 
 - [Federated database system — Wikipedia](https://en.wikipedia.org/wiki/Federated_database_system)
 - [Data federation — Wikipedia](https://en.wikipedia.org/wiki/Data_federation)
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Federation as a named topic in its interactive database-scaling node.

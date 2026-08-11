@@ -47,7 +47,11 @@ half of the name literal rather than just a metaphor — a Unix shell
 pipeline (`grep | sort | uniq`) is pipes and filters with actual
 operating-system pipes connecting actual separate processes, each
 reading stdin and writing stdout with zero awareness of what's on
-either end.
+either end. Stream-processing frameworks such as Kafka Streams and
+Apache Flink generalize the same shape to networked, fault-tolerant
+pipelines at much larger scale, where each processing stage is a filter
+and a topic or network channel takes the place of the operating-system
+pipe connecting it to the next stage.
 
 **Streaming vs. batch data flow through the pipe.** A pipe can move
 data between filters in two different ways, and the choice shapes the

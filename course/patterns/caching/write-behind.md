@@ -87,7 +87,13 @@ if the process dies before flushing. Neither is strictly better — a
 system can even use both for different keys, write-through for data
 where loss is unacceptable (balances, inventory) and write-behind for
 data where a small loss window is a reasonable price for throughput
-(metrics, view counts, non-critical activity logs).
+(metrics, view counts, non-critical activity logs). Redis's AOF
+(append-only file) persistence with the `everysec` fsync policy is a
+well-known real-world instance of the same trade-off in miniature:
+writes are acknowledged to the client immediately and the log is
+fsynced to disk on a one-second cadence rather than on every write,
+which bounds — but does not eliminate — the same kind of data-loss
+window write-behind describes.
 
 ## Code example
 
@@ -218,3 +224,5 @@ has no meaningful downstream impact.
 
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
+- DesignGurus' System Design Patterns course covers this as "Write-Behind" in its Serving Data Fast (Caching) module.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Write-Behind as a named topic in its interactive caching-strategy node.

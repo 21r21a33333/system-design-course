@@ -68,7 +68,12 @@ system's behavior before the cache existed — slower, not broken. This
 is the property that makes cache-aside the default choice: unlike
 strategies where the cache sits *in front of* the store as the
 authoritative write path, here the store is always the source of
-truth and the cache is disposable. A cold cache after a restart or a
+truth and the cache is disposable. In practice, the cache in a
+cache-aside deployment is very often an in-memory key-value store like
+Redis or Memcached — both expose exactly the plain `get`/`set`/`del`
+interface cache-aside needs and nothing more, which is precisely why
+cache-aside is the pattern most tutorials reach for first when
+introducing either one. A cold cache after a restart or a
 node loss produces a temporary spike in store load as entries get
 repopulated one miss at a time (sometimes called a "cold start," and at
 larger scale a contributor to the thundering-herd problem covered
@@ -224,3 +229,5 @@ every refresh.
 - [Cache-aside pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside)
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
+- DesignGurus' System Design Patterns course covers this as "Cache-Aside" in its Serving Data Fast (Caching) module.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Cache-Aside as a named topic in its interactive caching-strategy node.
