@@ -50,7 +50,18 @@ all. Latency percentiles for the affected endpoint tend to be
 uniformly high (p50 close to p99) rather than showing the bimodal
 shape — most requests fast, a smaller tail slow — that's typical of a
 system where a cache absorbs the common case and only misses fall
-through to the expensive path.
+through to the expensive path. Distributed caches like Redis and
+Memcached exist specifically to be that layer — a shared, low-latency
+place to remember an already-computed answer — and a large share of
+their operational value in a real deployment comes down to exactly
+this: absorbing the repeat requests that no-caching would otherwise
+send straight through to a database or an external API every time.
+Skipping that layer entirely doesn't just cost throughput on a good
+day — it also removes the one thing that would have absorbed a sudden
+spike of identical requests (many clients asking for the same
+now-expired or never-cached value at once, a failure mode generally
+called a thundering herd) instead of letting all of them hit the
+expensive path simultaneously.
 
 ## Why it happens
 
@@ -230,3 +241,5 @@ immediate, synchronous invalidation) is the deliberately correct choice.
 
 - [No Caching antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/no-caching/)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
+- [Thundering herd problem — Wikipedia](https://en.wikipedia.org/wiki/Thundering_herd_problem) — the specific failure mode a missing cache layer leaves fully exposed.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes No Caching as a named antipattern topic.

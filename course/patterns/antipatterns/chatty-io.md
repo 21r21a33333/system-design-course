@@ -58,11 +58,20 @@ a loop, and a loop over "fetch related data" naturally becomes a loop
 over individual fetch calls, especially when using an ORM that makes
 lazy-loading a related object look exactly like accessing a local field
 — the fact that `order.line_items` triggers a network round trip is
-invisible at the call site. Batching, by contrast, requires actively
+invisible at the call site. This is well-known enough that ORMs like
+Hibernate and Django's ORM ship dedicated eager-loading APIs (`JOIN
+FETCH`, `select_related`/`prefetch_related`) specifically so a
+developer can opt out of the lazy, one-query-per-access default at the
+call sites where it matters. Batching, by contrast, requires actively
 restructuring the code: collecting all the IDs first, making one call
 with the whole list, then re-associating results back with their
 parent records — more code, and a less direct mapping from "what I want"
-to "how I wrote it."
+to "how I wrote it." On the network side, GraphQL's whole premise is a
+direct answer to the same problem shape: a client sends one request
+describing every resource and relationship it needs, and the server
+resolves the graph server-side in one round trip, instead of the
+client making one REST call per resource the way a naive chatty client
+would.
 
 It's also close to free to introduce and invisible until scale exposes
 it: with 3 test records in a local dev database, an N+1 query pattern
@@ -200,3 +209,5 @@ different store) rather than a batching call that doesn't exist.
 
 - [Chatty I/O antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/chatty-io/)
 - [Thundering herd problem — Wikipedia](https://en.wikipedia.org/wiki/Thundering_herd_problem)
+- [GraphQL — official site](https://graphql.org/) — a single-request, client-specified-shape query model designed as a direct antidote to per-resource chatty REST calls.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Chatty I/O as a named antipattern topic.

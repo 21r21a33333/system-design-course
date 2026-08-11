@@ -50,6 +50,15 @@ those calls have no actual dependency on each other and could be
 issued concurrently, with the thread blocked for the sum of all three
 wait times instead of the maximum of the three.
 
+Node.js's own documentation makes the rationale for avoiding this
+explicit, since it's baked directly into the runtime's design: Node.js
+executes JavaScript on a single thread, so any blocking call would stall
+every other request that thread could otherwise be servicing during an
+I/O wait — the runtime's non-blocking, event-loop model exists
+specifically so that a request spending most of its time waiting on
+database or network I/O doesn't cost a dedicated, otherwise-idle thread
+for that entire wait.
+
 ## Why it happens
 
 Synchronous code is simply easier to read and reason about — a
@@ -228,3 +237,5 @@ it implies is comfortably above any load the system will actually see.
 - [Synchronous I/O antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/synchronous-io/)
 - [Asynchronous I/O — Wikipedia](https://en.wikipedia.org/wiki/Asynchronous_I/O)
 - [Blocking (computing) — Wikipedia](https://en.wikipedia.org/wiki/Blocking_(computing))
+- [Overview of Blocking vs. Non-Blocking — Node.js documentation](https://nodejs.org/en/learn/asynchronous-work/overview-of-blocking-vs-non-blocking) — a widely used runtime's own documented rationale for its non-blocking I/O model.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Synchronous I/O as a named antipattern topic.

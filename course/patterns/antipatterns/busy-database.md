@@ -35,7 +35,12 @@ optimize. Because none of this logic is visible in application code, it
 doesn't show up in code review, isn't covered by the application's unit
 tests, and often isn't even known to the current team — someone finds
 out a trigger exists by reading a slow query plan, not by reading the
-schema.
+schema. PostgreSQL and SQL Server both let a table dispatch arbitrary
+procedural logic on every insert or update through triggers and
+stored procedures — a genuinely useful capability for the narrow,
+data-integrity cases described below, but the same capability makes it
+just as easy to grow a trigger chain into an undocumented workflow
+engine that only the database itself fully understands.
 
 Scaling responses make the antipattern worse before anyone notices it's
 the actual problem: the database gets a bigger instance, more read
@@ -223,3 +228,4 @@ tradeoff.
 
 - [Busy Database antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/busy-database/)
 - [Stored procedure — Wikipedia](https://en.wikipedia.org/wiki/Stored_procedure)
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Busy Database as a named antipattern topic.

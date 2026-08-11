@@ -29,7 +29,15 @@ then closes) its own sockets rather than sharing a pool of already-warm
 ones. Symptoms include intermittent connection-refused or
 socket-exhaustion errors under load that don't reproduce in
 low-concurrency testing, plus consistently higher per-request latency
-than the same operation would take on a warm, reused connection.
+than the same operation would take on a warm, reused connection. This
+exact failure mode is well documented for .NET's `HttpClient`: each
+instance owns its own connection pool, so disposing and recreating one
+per request means every request opens fresh sockets instead of reusing
+already-open ones, which is exactly what runs an application out of
+available sockets under real load. Microsoft's own guidance is
+explicit that reusing a single `HttpClient` (directly, or via
+`IHttpClientFactory`) is what avoids the socket-exhaustion issue,
+rather than constructing and disposing one per request.
 
 The same shape recurs with database connections and clients — creating
 a fresh connection (or a fresh connection pool) per request instead of
@@ -202,3 +210,5 @@ there would be its own bug.
 
 - [Improper Instantiation antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/improper-instantiation/)
 - [Connection pool — Wikipedia](https://en.wikipedia.org/wiki/Connection_pool)
+- [Guidelines for using HttpClient — .NET documentation, Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines) — the canonical, well-documented real case of this exact antipattern and its fix.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Improper Instantiation as a named antipattern topic.

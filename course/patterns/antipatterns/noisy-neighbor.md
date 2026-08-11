@@ -49,7 +49,15 @@ directing it. Two tenants with wildly different workload sizes sharing
 infrastructure sized for the average case is the most common trigger:
 a platform built assuming roughly similar tenant sizes gets one
 customer whose usage is 100x the median, and that one customer's normal
-behavior becomes everyone else's noisy neighbor.
+behavior becomes everyone else's noisy neighbor. Cloud providers build
+enforcement for exactly this problem at the infrastructure layer
+because multi-tenancy is their entire business: AWS's burstable EC2
+instance families meter CPU usage in "CPU credits" precisely so one
+tenant's process can't permanently monopolize a shared physical core
+the way an uncapped scheduler would allow, and provisioned-IOPS EBS
+volumes exist so a tenant's storage throughput is a guaranteed,
+isolated allocation rather than whatever's left over after noisier
+neighbors on the same physical disk have taken their share.
 
 ## Why it happens
 
@@ -191,3 +199,5 @@ unbounded free-for-all.
 
 - [Noisy Neighbor antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/)
 - [Multitenancy — Wikipedia](https://en.wikipedia.org/wiki/Multitenancy)
+- [Burstable performance instances — Amazon EC2 documentation, AWS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-performance-instances.html) — a documented, production example of a cloud platform enforcing per-tenant resource isolation with a CPU-credit mechanism.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Noisy Neighbor as a named antipattern topic.

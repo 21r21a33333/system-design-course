@@ -25,7 +25,14 @@ are in there somewhere, and nothing about the output is wrong, only the
 cost of producing it. The tell is usually in the query's actual
 execution and transfer size relative to its logical output — a query
 that scans and returns megabytes of row data to ultimately render a
-short summary line.
+short summary line. This is exactly what the relational projection
+operation exists to avoid — selecting only the named columns a query
+actually needs, rather than every column a table happens to have — and
+it's why production query-review guidance across relational databases
+consistently steers away from an unqualified `SELECT *` on any table
+with large or numerous columns: it forces the engine to read and
+transfer far more than a narrow, explicit column list would, purely
+because the query never said which columns actually mattered.
 
 It also shows up as full object graphs loaded through ORM relationships
 when only a leaf property is needed: fetching a `User` entity, which
@@ -183,3 +190,5 @@ a pre-shaped version — rather than at the fetch call itself.
 
 - [Extraneous Fetching antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/extraneous-fetching/)
 - [Database normalization — Wikipedia](https://en.wikipedia.org/wiki/Database_normalization)
+- [Projection (relational algebra) — Wikipedia](https://en.wikipedia.org/wiki/Projection_(relational_algebra)) — the formal operation behind "select only the columns you need," the direct fix for this antipattern's `SELECT *` shape.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Extraneous Fetching as a named antipattern topic.

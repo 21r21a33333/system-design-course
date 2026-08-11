@@ -168,7 +168,14 @@ TTL-aware key-value store instead of competing for relational locks and
 buffer cache it doesn't need, and search gets an index built for
 ranking and relevance instead of a linear scan. Each store can now be
 scaled, tuned, and operated independently, and load on one no longer
-degrades the others.
+degrades the others. This mix-of-stores approach has a name —
+"polyglot persistence" — and it's how most large-scale systems
+actually look in practice rather than an exotic choice: a relational
+database for transactional records, a search engine like Elasticsearch
+or OpenSearch for full-text and faceted search, and an in-memory store
+like Redis for sessions and hot-key lookups, each chosen because it's
+genuinely the right tool for that one workload rather than a single
+database stretched to cover all three.
 
 ## How to detect it
 
@@ -219,3 +226,4 @@ hard constraint rather than an assumption nobody's revisited.
 
 - [Monolithic Persistence antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/monolithic-persistence/)
 - [Polyglot persistence — Wikipedia](https://en.wikipedia.org/wiki/Polyglot_persistence)
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Monolithic Persistence as a named antipattern topic.

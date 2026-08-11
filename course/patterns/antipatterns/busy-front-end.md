@@ -156,6 +156,12 @@ and a separate pool of background workers — sized and scaled
 independently of the request-handling tier — consumes the queue at its
 own pace. The client gets an immediate acknowledgment and a way to
 check on or be notified of completion, instead of a blocked connection.
+This is exactly the shape Ruby on Rails' Active Job and Sidekiq, or
+Laravel's queue system, exist to make a first-class convention rather
+than something each team wires up ad hoc — "enqueue a job, let a
+worker process pull it" is a named, supported path in those
+frameworks specifically because inline processing on the request
+thread is such a common early mistake.
 
 ## How to detect it
 
@@ -206,3 +212,5 @@ operational simplicity of skipping a job queue can be the right call.
 
 - [Busy Front End antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/busy-front-end/)
 - [Thread pool — Wikipedia](https://en.wikipedia.org/wiki/Thread_pool)
+- [Active Job Basics — Ruby on Rails Guides](https://guides.rubyonrails.org/active_job_basics.html) — a mainstream web framework's built-in convention for moving work off the request thread onto a background worker.
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Busy Front End as a named antipattern topic.

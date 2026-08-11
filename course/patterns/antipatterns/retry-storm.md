@@ -39,7 +39,13 @@ that burst, it can look briefly healthy, encourage even more retries
 from callers who were about to give up, and then collapse again under
 the renewed burst — an oscillating pattern of brief apparent recovery
 followed by renewed collapse that can persist far longer than the
-original failure would have on its own.
+original failure would have on its own. This dynamic is well
+documented rather than theoretical — it's specifically why AWS's own
+engineering guidance on handling downstream failures spends as much
+time on jittered backoff as it does on the retry logic itself: the
+jitter (randomizing each caller's delay rather than using the same
+fixed schedule for everyone) is the direct countermeasure to
+synchronized retry bursts, not an optional refinement on top of retry.
 
 The operational signature is a clear divergence between the downstream
 service's actual unique-request load and its *total* request volume:
@@ -234,3 +240,4 @@ instantaneous errors.
 - [Retry Storm antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/retry-storm/)
 - [Exponential backoff — Wikipedia](https://en.wikipedia.org/wiki/Exponential_backoff)
 - [Timeouts, retries, and backoff with jitter — AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_avoid_overload.html)
+- [System Design roadmap — roadmap.sh](https://roadmap.sh/system-design) — includes Retry Storm as a named antipattern topic.
