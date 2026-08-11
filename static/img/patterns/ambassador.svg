@@ -1,0 +1,36 @@
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="320" fill="#ffffff"/>
+
+  <!-- Host boundary -->
+  <rect x="40" y="40" width="300" height="220" rx="10" fill="#f4f6fb" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="60" y="66" font-size="15" fill="#475569" font-weight="600">Host / Pod</text>
+
+  <!-- Client app -->
+  <rect x="70" y="90" width="220" height="70" rx="8" fill="#1d4ed8"/>
+  <text x="180" y="120" font-size="16" fill="#ffffff" text-anchor="middle" font-weight="600">Client Application</text>
+  <text x="180" y="142" font-size="12" fill="#dbeafe" text-anchor="middle">business logic only</text>
+
+  <!-- Ambassador sidecar -->
+  <rect x="70" y="190" width="220" height="60" rx="8" fill="#0f766e"/>
+  <text x="180" y="215" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="600">Ambassador</text>
+  <text x="180" y="234" font-size="11" fill="#ccfbf1" text-anchor="middle">retries, TLS, circuit breaking</text>
+
+  <!-- arrow app -> ambassador -->
+  <line x1="180" y1="160" x2="180" y2="188" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="192" y="177" font-size="11" fill="#334155">local call</text>
+
+  <!-- arrow ambassador -> remote -->
+  <line x1="290" y1="220" x2="470" y2="220" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="330" y="212" font-size="11" fill="#334155">network call (retried, TLS)</text>
+
+  <!-- Remote service -->
+  <rect x="480" y="185" width="200" height="70" rx="8" fill="#7c3aed"/>
+  <text x="580" y="215" font-size="16" fill="#ffffff" text-anchor="middle" font-weight="600">Remote Service</text>
+  <text x="580" y="237" font-size="11" fill="#ede9fe" text-anchor="middle">unaware of retries/TLS logic</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

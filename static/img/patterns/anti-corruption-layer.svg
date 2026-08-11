@@ -1,0 +1,38 @@
+<svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="300" fill="#ffffff"/>
+
+  <!-- Modern app -->
+  <rect x="40" y="110" width="180" height="80" rx="8" fill="#1d4ed8"/>
+  <text x="130" y="145" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="600">Modern App</text>
+  <text x="130" y="166" font-size="11" fill="#dbeafe" text-anchor="middle">clean domain model</text>
+
+  <!-- ACL -->
+  <rect x="280" y="90" width="180" height="120" rx="8" fill="#0f766e"/>
+  <text x="370" y="130" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="600">Anti-Corruption</text>
+  <text x="370" y="150" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="600">Layer</text>
+  <text x="370" y="175" font-size="11" fill="#ccfbf1" text-anchor="middle">translate + isolate</text>
+
+  <!-- Legacy system -->
+  <rect x="500" y="110" width="180" height="80" rx="8" fill="#b45309"/>
+  <text x="590" y="145" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="600">Legacy System</text>
+  <text x="590" y="166" font-size="11" fill="#ffedd5" text-anchor="middle">incompatible data model</text>
+
+  <!-- arrows -->
+  <line x1="220" y1="150" x2="278" y2="150" stroke="#334155" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="222" y="140" font-size="11" fill="#334155">domain calls</text>
+
+  <line x1="460" y1="150" x2="498" y2="150" stroke="#334155" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="463" y="140" font-size="11" fill="#334155">legacy calls</text>
+
+  <line x1="498" y1="170" x2="460" y2="170" stroke="#334155" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="463" y="190" font-size="11" fill="#334155">legacy shapes</text>
+
+  <line x1="278" y1="170" x2="220" y2="170" stroke="#334155" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="225" y="190" font-size="11" fill="#334155">clean types</text>
+
+  <defs>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

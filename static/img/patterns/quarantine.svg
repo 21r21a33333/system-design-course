@@ -1,0 +1,48 @@
+<svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="300" fill="#ffffff"/>
+
+  <!-- Upload -->
+  <rect x="30" y="115" width="130" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="150" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">File Upload</text>
+
+  <!-- Quarantine bucket -->
+  <rect x="220" y="95" width="170" height="100" rx="8" fill="#b45309"/>
+  <text x="305" y="130" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Quarantine</text>
+  <text x="305" y="150" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="600">Bucket</text>
+  <text x="305" y="172" font-size="11" fill="#ffedd5" text-anchor="middle">unverified</text>
+
+  <!-- Scanner -->
+  <rect x="450" y="95" width="150" height="100" rx="8" fill="#334155"/>
+  <text x="525" y="135" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Scan / Verify</text>
+  <text x="525" y="155" font-size="11" fill="#cbd5e1" text-anchor="middle">virus + format</text>
+  <text x="525" y="173" font-size="11" fill="#cbd5e1" text-anchor="middle">check</text>
+
+  <!-- Production bucket -->
+  <rect x="650" y="40" width="90" height="60" rx="8" fill="#0f766e"/>
+  <text x="695" y="65" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Production</text>
+  <text x="695" y="82" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Bucket</text>
+
+  <!-- Rejected -->
+  <rect x="650" y="200" width="90" height="60" rx="8" fill="#b91c1c"/>
+  <text x="695" y="235" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Rejected</text>
+
+  <!-- arrows -->
+  <line x1="160" y1="145" x2="218" y2="145" stroke="#334155" stroke-width="2" marker-end="url(#arrow5)"/>
+  <line x1="390" y1="145" x2="448" y2="145" stroke="#334155" stroke-width="2" marker-end="url(#arrow5)"/>
+  <line x1="580" y1="120" x2="648" y2="80" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="590" y="100" font-size="10" fill="#0f766e">promote (verified)</text>
+  <line x1="580" y1="175" x2="648" y2="220" stroke="#b91c1c" stroke-width="2" marker-end="url(#arrowRed2)"/>
+  <text x="588" y="205" font-size="10" fill="#b91c1c">delete (failed)</text>
+
+  <defs>
+    <marker id="arrow5" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="arrowRed2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+</svg>
