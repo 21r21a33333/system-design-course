@@ -1,0 +1,52 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">All participants connect to one shared thread; a moderator picks the next speaker</text>
+
+  <!-- Shared thread hub (center) -->
+  <circle cx="380" cy="160" r="55" fill="#334155"/>
+  <text x="380" y="155" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Shared</text>
+  <text x="380" y="171" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Thread</text>
+
+  <!-- Moderator badge -->
+  <rect x="335" y="225" width="90" height="30" rx="6" fill="#b45309"/>
+  <text x="380" y="245" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Moderator</text>
+
+  <!-- Agent 1 (top-left) -->
+  <rect x="40" y="40" width="120" height="50" rx="8" fill="#0f766e"/>
+  <text x="100" y="62" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Agent 1</text>
+  <text x="100" y="78" font-size="9" fill="#ccfbf1" text-anchor="middle">maker</text>
+
+  <!-- Agent 2 (top-right) -->
+  <rect x="600" y="40" width="120" height="50" rx="8" fill="#0f766e"/>
+  <text x="660" y="62" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Agent 2</text>
+  <text x="660" y="78" font-size="9" fill="#ccfbf1" text-anchor="middle">checker</text>
+
+  <!-- Human (bottom-left) -->
+  <rect x="40" y="230" width="120" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="100" y="252" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Human</text>
+  <text x="100" y="268" font-size="9" fill="#dbeafe" text-anchor="middle">optional participant</text>
+
+  <!-- Agent 3 (bottom-right) -->
+  <rect x="600" y="230" width="120" height="50" rx="8" fill="#0f766e"/>
+  <text x="660" y="252" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Agent 3</text>
+  <text x="660" y="268" font-size="9" fill="#ccfbf1" text-anchor="middle">specialist</text>
+
+  <!-- All participants connect to the hub, two-way -->
+  <line x1="160" y1="70" x2="330" y2="140" stroke="#334155" stroke-width="1.8" marker-end="url(#gcArrow)" marker-start="url(#gcArrow)"/>
+  <line x1="600" y1="70" x2="430" y2="140" stroke="#334155" stroke-width="1.8" marker-end="url(#gcArrow)" marker-start="url(#gcArrow)"/>
+  <line x1="160" y1="255" x2="330" y2="185" stroke="#334155" stroke-width="1.8" marker-end="url(#gcArrow)" marker-start="url(#gcArrow)"/>
+  <line x1="600" y1="255" x2="430" y2="185" stroke="#334155" stroke-width="1.8" marker-end="url(#gcArrow)" marker-start="url(#gcArrow)"/>
+
+  <text x="245" y="95" font-size="9" fill="#334155" text-anchor="middle">read + write</text>
+  <text x="515" y="95" font-size="9" fill="#334155" text-anchor="middle">read + write</text>
+
+  <rect x="20" y="270" width="700" height="35" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="370" y="292" font-size="9" fill="#334155" text-anchor="middle">every participant sees the full history; a bounded turn count or done-signal stops the loop</text>
+
+  <defs>
+    <marker id="gcArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

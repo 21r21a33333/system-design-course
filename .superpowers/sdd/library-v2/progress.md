@@ -79,3 +79,45 @@ Primary-Replica vs. Sharding, Federation vs. Federated Identity) verified
 correct and quotably explicit — Federation/Federated-Identity confusion
 resolved with an explicit "Not to be confused with" callout. Zero
 disallowed citations, all Rust compiles, build clean, no dead links.
+
+### Phase 1 Task C — API-edge gaps + concept promotions (5 pages) — COMPLETE
+Commit `147a77a`, fix round `36605a2`. API Versioning, Service Discovery
+(new); Load Balancing, Reverse Proxy (api-edge), CDN (building-blocks)
+promoted from old concept-prose pages to full v3 pattern pages — old
+concept pages kept in place as background links. Manifest bumped
+101->106. Review: 2 Important findings, both fixed directly — (1) 6
+existing sibling pages (api-gateway, static-content-hosting, blob-store,
+health-check, blue-green-deployment, horizontal-scaling) still linked to
+the old concept pages instead of the newly-promoted pattern pages,
+repointed all 6; (2) load-balancing.md's L4/L7 example echoed the old
+concept page's video/billing framing too closely, reworded to a
+multi-tenant SaaS routing example. Originality vs. old concept pages
+verified clean via sentence-overlap check — new pages use different
+structure/framing, not paraphrase. All 4 sibling differentiations
+(Service Discovery vs Mesh/Sidecar, Load Balancing vs Rate Limiter,
+Reverse Proxy vs API Gateway, CDN vs Static Content Hosting) verified
+correct and explicit.
+
+## PHASE 1 COMPLETE — 15 pages added, manifest at 106 (was 91).
+
+## Phase 2 — starting next (AI Agent Orchestration + Antipatterns)
+
+### Phase 2 Task A — AI Agent Orchestration group (5 pages, new group) — COMPLETE
+New pattern group at position 13 (`ai-agent-orchestration/_category_.json`):
+Sequential, Concurrent, Group Chat (with maker-checker sub-case), Handoff,
+Magentic orchestration — distinct from the existing `ai-infra` group, which
+covers ML/LLM infrastructure, not multi-agent coordination. Each page's
+"Technical architecture & implementation" section explicitly differentiates
+its control-flow shape from the other 4 (fixed linear chain vs. fixed
+parallel roster vs. dynamic shared-thread turn-taking vs. reactive one-at-
+a-time control transfer vs. persistent central re-planning orchestrator).
+5 original SVG diagrams, one distinct control-flow shape each (straight
+chain / fan-out-fan-in / shared hub / baton-pass / central orchestrator
+with dashed dynamic delegation lines). All 5 Rust snippets compile clean
+via rustc. Zero disallowed citations — only en.wikipedia.org and
+learn.microsoft.com used, all verified live via curl. Sentence- and
+n-gram-overlap check across all 5 files found zero duplicated
+explanatory prose — shared 6/8-grams are limited to the required
+"Related patterns" link boilerplate and Further Reading URLs. Manifest
+bumped 106->111, ingest run confirmed 111 design-patterns entries.
+Typecheck and build both clean, zero broken links.

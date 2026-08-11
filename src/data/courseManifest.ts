@@ -268,6 +268,41 @@ export const courseManifest: ManifestEntry[] = [
     "source": "primer"
   },
   {
+    "id": "patterns/ai-agent-orchestration/concurrent-orchestration",
+    "title": "Concurrent Orchestration",
+    "path": "/docs/patterns/ai-agent-orchestration/concurrent-orchestration",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-agent-orchestration/group-chat-orchestration",
+    "title": "Group Chat Orchestration",
+    "path": "/docs/patterns/ai-agent-orchestration/group-chat-orchestration",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-agent-orchestration/handoff-orchestration",
+    "title": "Handoff Orchestration",
+    "path": "/docs/patterns/ai-agent-orchestration/handoff-orchestration",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-agent-orchestration/magentic-orchestration",
+    "title": "Magentic Orchestration",
+    "path": "/docs/patterns/ai-agent-orchestration/magentic-orchestration",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/ai-agent-orchestration/sequential-orchestration",
+    "title": "Sequential Orchestration",
+    "path": "/docs/patterns/ai-agent-orchestration/sequential-orchestration",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/ai-infra/feature-store",
     "title": "Feature Store",
     "path": "/docs/patterns/ai-infra/feature-store",

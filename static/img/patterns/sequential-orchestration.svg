@@ -1,0 +1,50 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="320" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Fixed linear chain — each agent consumes only the previous agent's output</text>
+
+  <!-- Client -->
+  <rect x="20" y="130" width="100" height="55" rx="8" fill="#1d4ed8"/>
+  <text x="70" y="154" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Client</text>
+  <text x="70" y="171" font-size="9" fill="#dbeafe" text-anchor="middle">task input</text>
+
+  <!-- Stage 1 -->
+  <rect x="170" y="130" width="130" height="55" rx="8" fill="#0f766e"/>
+  <text x="235" y="154" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Research</text>
+  <text x="235" y="171" font-size="9" fill="#ccfbf1" text-anchor="middle">stage 1</text>
+
+  <!-- Stage 2 -->
+  <rect x="350" y="130" width="130" height="55" rx="8" fill="#0f766e"/>
+  <text x="415" y="154" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Draft</text>
+  <text x="415" y="171" font-size="9" fill="#ccfbf1" text-anchor="middle">stage 2</text>
+
+  <!-- Stage 3 -->
+  <rect x="530" y="130" width="130" height="55" rx="8" fill="#0f766e"/>
+  <text x="595" y="154" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Edit</text>
+  <text x="595" y="171" font-size="9" fill="#ccfbf1" text-anchor="middle">stage 3</text>
+
+  <!-- Arrows: strictly one direction -->
+  <line x1="120" y1="157" x2="168" y2="157" stroke="#334155" stroke-width="2.5" marker-end="url(#seqArrow)"/>
+  <line x1="300" y1="157" x2="348" y2="157" stroke="#334155" stroke-width="2.5" marker-end="url(#seqArrow)"/>
+  <line x1="480" y1="157" x2="528" y2="157" stroke="#334155" stroke-width="2.5" marker-end="url(#seqArrow)"/>
+
+  <text x="144" y="145" font-size="9" fill="#334155" text-anchor="middle">output</text>
+  <text x="324" y="145" font-size="9" fill="#334155" text-anchor="middle">output</text>
+  <text x="504" y="145" font-size="9" fill="#334155" text-anchor="middle">output</text>
+
+  <!-- No-backward marker -->
+  <path d="M 235 195 C 300 240, 480 240, 595 195" stroke="#b45309" stroke-width="1.5" stroke-dasharray="3,3" fill="none" marker-end="url(#seqArrowRedX)"/>
+  <text x="415" y="260" font-size="9" fill="#b45309" text-anchor="middle">no path back to an earlier stage — a bad output here silently corrupts every later stage</text>
+
+  <rect x="20" y="270" width="700" height="35" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="370" y="292" font-size="9" fill="#334155" text-anchor="middle">each stage sees only its immediate predecessor's output, never the original input or earlier reasoning</text>
+
+  <defs>
+    <marker id="seqArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+    <marker id="seqArrowRedX" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>
