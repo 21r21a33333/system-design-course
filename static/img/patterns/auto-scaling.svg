@@ -1,0 +1,41 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <text x="360" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Capacity tracks load automatically: scale out fast, scale in cautiously</text>
+
+  <!-- axes -->
+  <line x1="60" y1="60" x2="60" y2="250" stroke="#334155" stroke-width="1.5"/>
+  <line x1="60" y1="250" x2="680" y2="250" stroke="#334155" stroke-width="1.5"/>
+  <text x="24" y="155" font-size="10" fill="#334155" text-anchor="middle" transform="rotate(-90 24 155)">load / capacity</text>
+  <text x="370" y="272" font-size="10" fill="#334155" text-anchor="middle">time →</text>
+
+  <!-- max bound -->
+  <line x1="60" y1="80" x2="680" y2="80" stroke="#dc2626" stroke-width="1.3" stroke-dasharray="5,4"/>
+  <text x="668" y="75" font-size="9" fill="#dc2626" text-anchor="end">max bound</text>
+
+  <!-- min bound -->
+  <line x1="60" y1="222" x2="680" y2="222" stroke="#64748b" stroke-width="1.3" stroke-dasharray="5,4"/>
+  <text x="668" y="236" font-size="9" fill="#64748b" text-anchor="end">min bound</text>
+
+  <!-- Load curve (amber): calm, spike, decay -->
+  <polyline points="60,214 150,210 200,206 210,110 320,100 360,96 420,120 500,150 560,180 620,206 680,212"
+    fill="none" stroke="#b45309" stroke-width="2.5"/>
+  <text x="330" y="86" font-size="10" fill="#b45309" font-weight="600">demand</text>
+
+  <!-- Capacity staircase (teal): fast up, gradual down -->
+  <polyline points="60,220 205,220 205,104 360,104 360,104 420,104 420,128 490,128 490,152 560,152 560,176 630,176 630,214 680,214"
+    fill="none" stroke="#0f766e" stroke-width="2.5"/>
+  <text x="150" y="200" font-size="10" fill="#0f766e" font-weight="600">capacity</text>
+
+  <!-- scale-out marker -->
+  <circle cx="205" cy="104" r="4" fill="#15803d"/>
+  <text x="215" y="100" font-size="9" fill="#15803d">scale out (fast jump)</text>
+
+  <!-- scale-in region -->
+  <text x="560" y="200" font-size="9" fill="#334155" text-anchor="middle">gradual scale-in</text>
+
+  <!-- cooldown note -->
+  <rect x="60" y="286" width="620" height="40" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="370" y="303" font-size="9" fill="#334155" text-anchor="middle">Cooldown after each change + asymmetric scale-in damp flapping; capacity stays just above demand</text>
+  <text x="370" y="318" font-size="9" fill="#334155" text-anchor="middle">Reactive (metric) · Scheduled (known peaks) · Predictive (forecast ahead of the spike)</text>
+</svg>

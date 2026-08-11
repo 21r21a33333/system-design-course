@@ -1,0 +1,51 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <text x="360" y="26" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Scale UP: same one machine, resized to a bigger tier — until the ceiling</text>
+
+  <!-- Clients -->
+  <rect x="24" y="150" width="104" height="52" rx="8" fill="#1d4ed8"/>
+  <text x="76" y="174" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Clients</text>
+  <text x="76" y="191" font-size="9" fill="#dbeafe" text-anchor="middle">all traffic</text>
+
+  <!-- small box -->
+  <rect x="176" y="200" width="90" height="56" rx="8" fill="#0f766e"/>
+  <text x="221" y="224" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">small</text>
+  <text x="221" y="240" font-size="8.5" fill="#ccfbf1" text-anchor="middle">2 vCPU</text>
+
+  <!-- medium box -->
+  <rect x="300" y="168" width="104" height="88" rx="8" fill="#0f766e"/>
+  <text x="352" y="196" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">large</text>
+  <text x="352" y="214" font-size="8.5" fill="#ccfbf1" text-anchor="middle">8 vCPU</text>
+  <text x="352" y="230" font-size="8.5" fill="#ccfbf1" text-anchor="middle">resize +</text>
+  <text x="352" y="244" font-size="8.5" fill="#ccfbf1" text-anchor="middle">restart</text>
+
+  <!-- big box (amber, approaching ceiling) -->
+  <rect x="436" y="120" width="132" height="136" rx="8" fill="#b45309"/>
+  <text x="502" y="152" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">2xlarge</text>
+  <text x="502" y="172" font-size="8.5" fill="#fde68a" text-anchor="middle">64 vCPU</text>
+  <text x="502" y="190" font-size="8.5" fill="#fde68a" text-anchor="middle">super-linear $</text>
+  <text x="502" y="206" font-size="8.5" fill="#fde68a" text-anchor="middle">still one box =</text>
+  <text x="502" y="220" font-size="8.5" fill="#fde68a" text-anchor="middle">single point of</text>
+  <text x="502" y="234" font-size="8.5" fill="#fde68a" text-anchor="middle">failure</text>
+
+  <!-- growth arrows -->
+  <line x1="266" y1="222" x2="298" y2="212" stroke="#334155" stroke-width="2" marker-end="url(#vsArrow)"/>
+  <line x1="404" y1="200" x2="434" y2="188" stroke="#334155" stroke-width="2" marker-end="url(#vsArrow)"/>
+  <line x1="128" y1="200" x2="174" y2="220" stroke="#334155" stroke-width="2" marker-end="url(#vsArrow)"/>
+
+  <!-- ceiling -->
+  <line x1="600" y1="96" x2="700" y2="96" stroke="#dc2626" stroke-width="3"/>
+  <text x="650" y="88" font-size="10" fill="#dc2626" text-anchor="middle" font-weight="600">CEILING</text>
+  <text x="650" y="118" font-size="8.5" fill="#dc2626" text-anchor="middle">largest tier</text>
+  <text x="650" y="132" font-size="8.5" fill="#dc2626" text-anchor="middle">available</text>
+  <line x1="568" y1="120" x2="600" y2="99" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#vsArrowR)"/>
+
+  <rect x="24" y="296" width="672" height="30" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="360" y="315" font-size="9" fill="#334155" text-anchor="middle">Simplest first move — no app changes — but a hard ceiling, resize downtime, and no redundancy</text>
+
+  <defs>
+    <marker id="vsArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/></marker>
+    <marker id="vsArrowR" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#dc2626"/></marker>
+  </defs>
+</svg>
