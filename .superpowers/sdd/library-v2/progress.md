@@ -1214,3 +1214,108 @@ on `library-v2-expansion`.
 Remaining deep-dive rewrite scope (not part of this entry, tracked
 separately): Data Infrastructure/ChatGPT/LLM Support Bot/Code
 Assistant — 4 more case studies still on the old template.
+
+### Deep-dive rewrite D — Data Infrastructure/ChatGPT/LLM Support Bot/Code Assistant — COMPLETE
+Commit `6add2cf` on `library-v2-expansion`. Rewrote Step 3/Step 4/Additional
+talking points + added Source(s) sections for all 4 files; Step 1/2
+confirmed byte-identical via diff (untouched — first changed diff hunk
+in every file starts exactly at the line after Step 2's closing
+paragraph). Per-file Core spec shape and named gotcha, each with real,
+verified-correct code (not prose-only):
+- **Data Infrastructure**: Lambda vs. Kappa architecture named
+  explicitly, both described structurally (Lambda's batch+speed-layer
+  split vs. Kappa's single-stream-plus-replay). The gotcha is Lambda's
+  well-known batch/stream codebase divergence risk (a fix landing in
+  one path but not the other, silently producing different numbers for
+  the same data) — this design defaults to Kappa specifically to
+  remove that structural risk. Real `KappaStreamProcessor` +
+  `WindowedAggregate` with a genuine `reprocess()` replay-from-offset
+  capability sharing the identical `process_one`/`transform_fn` code
+  path as `run_live()`. Hand-tested: live consumption and a full
+  replay-from-offset-0 run produce byte-identical windowed aggregates
+  after a filtering transform, proving the single-codepath claim isn't
+  just asserted in prose.
+- **ChatGPT**: continuous (iteration-level) batching and
+  PagedAttention/KV-cache block management both given full named
+  treatment as two distinct, complementary mechanisms (compute-slot
+  utilization vs. memory utilization), plus TTFT-vs-inter-token-latency
+  established as two genuinely different metrics with different causes
+  (prefill vs. decode) threaded through Step 3 and Step 4, not just
+  defined once. Real `ContinuousBatchingScheduler`/`GenerationRequest`
+  (admits a waiting request into a freed slot the step immediately
+  after eviction, not after the whole batch drains) and
+  `KVCacheBlockManager` (on-demand fixed-size block allocation +
+  immediate release on completion, modeled on OS paging). Hand-tested:
+  a 3-then-4-request scheduler trace confirms continuous admission
+  timing (the new request is admitted the step right after a slot
+  frees, not at batch-fill time), and the block manager correctly
+  grows/releases block tables.
+- **LLM Support Bot**: fixed-length vs. semantic chunking given its own
+  explicit Core spec treatment, separate from the retrieval algorithm,
+  with a real trade-off (uniform/predictable/boundary-splitting vs.
+  structure-respecting/variable-length/preprocessing-heavy) and
+  fixed-length-with-overlap given as the practical middle ground with
+  real, working code. Real `retrieve_top_n`/`rerank_top_k` two-stage
+  pipeline (rerank stamps a `rerank_score` onto each surviving chunk)
+  feeding a real `should_escalate` with 4 named branches (no grounding,
+  low confidence, explicit human request via `requests_human`, repeated
+  question via `is_repeated_question`/`_word_overlap_ratio`) — both
+  `requests_human` and the repetition detector are fully implemented,
+  not stubs. Hand-tested: chunking overlap verified exactly 150 chars
+  between consecutive windows via position tracking; retrieval+rerank
+  surfaces the correct grounding chunk for a password-reset query;
+  all 5 escalation branches (no-chunks, low-score, high-confidence
+  pass-through, explicit-human-request, repeated-question) verified
+  independently.
+- **Code Assistant**: three named retrieval architectures (index-first/
+  persistent embeddings, agentic/on-demand search, hybrid graph+vector)
+  compared explicitly in a table with strengths/weaknesses, not
+  silently picked — this design uses hybrid for general questions and
+  agentic on-demand for multi-step changes, both named as deliberate
+  per-use-case choices. Separately, a real working agent loop
+  (`AgentLoop`: read/act/observe/repeat) with a genuine hard
+  human-approval gate — `run_until_done_or_blocked` returns immediately
+  on encountering a mutating tool call, before executing it, and only
+  `approve_pending()` (a separate, explicit call) can resume execution
+  through to `SandboxedExecutor.execute`; `reject_pending()` discards
+  the call, never executed. The gotcha names the specific risk a
+  UI-only confirmation dialog has (bypassable via race/config-flag/
+  retry path) that a control-flow-level gate doesn't. Hand-tested:
+  full trace confirms a mutating `apply_edit` call blocks before
+  touching the file, only mutates after `approve_pending()`, and a
+  separate rejection trace confirms `reject_pending()` never executes
+  the file write; the two code blocks (`AgentLoop` +
+  `SandboxedExecutor`) run concatenated exactly as they appear in the
+  doc.
+
+Verification: all 8 Python code blocks parsed via `ast.parse` (0
+failures); every function called by name in any block cross-checked
+against a matching `def` in the same file via AST call/def-set diff
+(unresolved names individually reviewed — all either Python
+builtins/stdlib methods or explicitly-commented injected dependencies
+like `self.model.decode_step`, `self.policy.next_action`,
+`self.executor.execute`, `embed_fn`/`rerank_score_fn` parameters —
+zero unimplemented-stub gotcha functions found). Beyond the AST check,
+every code block was executed end-to-end by hand (concatenating
+split blocks exactly as they appear in the doc where a Core spec spans
+two fences) to confirm the logic is genuinely correct, not just
+syntactically valid: Kappa live-vs-replay equality, continuous-batching
+admission timing, KV-cache block grow/release, chunking-overlap byte
+math, retrieval+rerank+escalation composition, and the full agent-loop
+approve/reject paths. 12 unique external links curl-verified live
+(200): Lambda architecture (Wikipedia), Kappa Architecture (Milinda
+Pathirage), Apache Kafka durability semantics, vLLM docs, TensorRT-LLM
+paper (arXiv), Orca/USENIX OSDI '22 (continuous batching origin paper),
+Retrieval-augmented generation (Wikipedia), Pinecone chunking
+strategies, LangChain text splitters, tree-sitter, Anthropic
+writing-tools-for-agents, GitHub Copilot docs. `npm run typecheck` and
+`npm run build` both pass clean with zero broken links. Step 1/2
+diffed byte-identical against pre-edit versions for all 4 files.
+Committed as a single `feat(case-studies):` commit (`6add2cf`) on
+`library-v2-expansion`.
+
+**This completes the full case-study deep-dive rewrite series — all 16
+case studies (Uber/WhatsApp/Instagram/YouTube, Google Maps/Yelp/
+Newsfeed/TinyURL, Typeahead/Google Docs/Payment System/Deployment
+System, Data Infrastructure/ChatGPT/LLM Support Bot/Code Assistant)
+are now on the deep technical template established by tinyurl.md.**
