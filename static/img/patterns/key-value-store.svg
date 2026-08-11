@@ -1,0 +1,56 @@
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="360" fill="#ffffff"/>
+
+  <text x="380" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">A key hashes to a point on the ring; the next node clockwise owns it</text>
+
+  <!-- Client -->
+  <rect x="24" y="150" width="120" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="84" y="176" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Client</text>
+  <text x="84" y="194" font-size="9" fill="#dbeafe" text-anchor="middle">get / put / delete</text>
+
+  <!-- routing arrow -->
+  <line x1="144" y1="180" x2="300" y2="180" stroke="#1d4ed8" stroke-width="2.5" marker-end="url(#kvBlue)"/>
+  <text x="222" y="170" font-size="9" fill="#1d4ed8" text-anchor="middle">hash("cart:42")</text>
+
+  <!-- Ring -->
+  <circle cx="470" cy="185" r="115" fill="none" stroke="#64748b" stroke-width="2"/>
+  <text x="470" y="188" font-size="9" fill="#64748b" text-anchor="middle">hash ring</text>
+  <text x="470" y="202" font-size="8" fill="#94a3b8" text-anchor="middle">0 … 2⁶⁴−1</text>
+
+  <!-- Node A (owner, teal) -->
+  <circle cx="470" cy="70" r="16" fill="#0f766e"/>
+  <text x="470" y="74" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">A</text>
+  <!-- Node B -->
+  <circle cx="573" cy="240" r="16" fill="#334155"/>
+  <text x="573" y="244" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">B</text>
+  <!-- Node C -->
+  <circle cx="367" cy="240" r="16" fill="#334155"/>
+  <text x="367" y="244" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">C</text>
+
+  <!-- vnodes (small green replicas of positions) -->
+  <circle cx="540" cy="105" r="6" fill="#15803d"/>
+  <circle cx="415" cy="98" r="6" fill="#15803d"/>
+  <circle cx="560" cy="150" r="6" fill="#15803d"/>
+  <circle cx="392" cy="145" r="6" fill="#15803d"/>
+  <circle cx="500" cy="290" r="6" fill="#15803d"/>
+  <circle cx="435" cy="290" r="6" fill="#15803d"/>
+  <text x="640" y="110" font-size="8" fill="#15803d" text-anchor="start">virtual nodes</text>
+  <text x="640" y="122" font-size="8" fill="#15803d" text-anchor="start">even spread</text>
+
+  <!-- key position marker -->
+  <circle cx="530" cy="82" r="5" fill="#b45309"/>
+  <text x="548" y="70" font-size="9" fill="#b45309" text-anchor="start">key pos</text>
+  <!-- clockwise walk to node A -->
+  <path d="M 530 82 A 60 60 0 0 0 486 70" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#kvAmber)"/>
+
+  <!-- client -> ring entry -->
+  <line x1="300" y1="180" x2="356" y2="200" stroke="#1d4ed8" stroke-width="2" marker-end="url(#kvBlue)"/>
+
+  <rect x="24" y="316" width="712" height="32" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="380" y="336" font-size="9" fill="#334155" text-anchor="middle">Adding or removing a node remaps only the keys between it and its predecessor — not the whole keyspace</text>
+
+  <defs>
+    <marker id="kvBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/></marker>
+    <marker id="kvAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/></marker>
+  </defs>
+</svg>
