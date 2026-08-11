@@ -243,6 +243,24 @@ constant 50/s regardless of how bursty upstream demand is, smoothing the
 outbound stream so the provider never returns its own `429` — trading a
 little queuing latency for a downstream that stays happy.
 
+## Production libraries & getting started
+
+Reach for a per-language limiter for in-process quotas; back it with Redis (or enforce at the gateway) when the limit must be shared across many instances.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| express-rate-limit / rate-limiter-flexible | JS/TS | Middleware token-bucket/window limiters; `rate-limiter-flexible` adds Redis/Mongo backends and GCRA | [express-rate-limit](https://www.npmjs.com/package/express-rate-limit) (browser-live) · [rate-limiter-flexible](https://www.npmjs.com/package/rate-limiter-flexible) (browser-live) |
+| governor | Rust | GCRA-based limiter, keyed and in-memory or distributed | [governor docs](https://docs.rs/governor/latest/governor/) |
+| `golang.org/x/time/rate` / uber-go/ratelimit | Go | Standard token-bucket limiter; uber's leaky-bucket limiter | [x/time/rate](https://pkg.go.dev/golang.org/x/time/rate) · [uber-go/ratelimit](https://github.com/uber-go/ratelimit) |
+| SlowAPI / limits | Python | ASGI/Starlette-friendly limiter; `limits` provides storage-backed strategies | [SlowAPI](https://slowapi.readthedocs.io/en/latest/) · [limits](https://limits.readthedocs.io/en/stable/) |
+| redis-cell | Any (Redis) | GCRA rate limiting as a native Redis module (`CL.THROTTLE`) | [redis-cell](https://github.com/brandur/redis-cell) |
+
+For a shared or edge-enforced limit, apply it at the proxy/gateway layer:
+
+| System | What it gives you | Getting started |
+| --- | --- | --- |
+| Envoy global rate limiting | Centralized rate limits across a fleet via the rate-limit service | [Envoy global rate limiting](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/other_features/global_rate_limiting) |
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — the gateway is

@@ -194,6 +194,22 @@ means a few queries recompute rather than serve stale numbers. Cache-aside
 population plus early recomputation keeps p99 latency low without ever
 serving a wrong answer.
 
+## Production libraries & getting started
+
+Distributed caching is usually a Redis-compatible server (Redis, Valkey, Dragonfly) or Memcached fronted by a per-language client.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| ioredis | JS/TS | Full-featured Redis client (cluster, sentinel) | [ioredis](https://github.com/redis/ioredis) |
+| node-redis | JS/TS | Official Node Redis client | [node-redis](https://github.com/redis/node-redis) |
+| redis-rs | Rust | Sync/async Redis client | [docs.rs/redis](https://docs.rs/redis/latest/redis/) |
+| go-redis | Go | Idiomatic Redis client | [go-redis](https://github.com/redis/go-redis) |
+| redis-py | Python | Official Redis client | [redis-py client docs](https://redis.io/docs/latest/develop/clients/redis-py/) |
+| Memcached | Server | Simple in-memory key cache | [memcached.org](https://memcached.org/) |
+| Valkey | Server | Open-source Redis-compatible fork | [Installation](https://valkey.io/topics/installation/) |
+| Dragonfly | Server | Redis/Memcached-compatible, multi-threaded | [Getting started](https://www.dragonflydb.io/docs/getting-started) |
+| Hazelcast | Server (Java) | Distributed in-memory data grid | [Get started](https://docs.hazelcast.com/hazelcast/latest/getting-started/get-started-binary) |
+
 ## Related patterns
 
 - [Cache](/docs/concepts/cache) — the primer's treatment of caching

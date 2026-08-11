@@ -240,6 +240,25 @@ and replayable, a newly deployed service can bootstrap its state by replaying
 history from offset zero — turning the queue into both a transport and a
 short-term source of truth.
 
+## Production libraries & getting started
+
+The two dominant brokers are Kafka (partitioned log) and RabbitMQ (AMQP broker); each has clients across languages, plus lighter options like NATS.
+
+| Library / Tool | Language / Role | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Apache Kafka | Server | Partitioned durable commit log | [Quickstart](https://kafka.apache.org/quickstart) |
+| kafkajs | JS/TS (Kafka) | Pure-JS Kafka client | [Getting started](https://kafka.js.org/docs/getting-started) |
+| rdkafka | Rust (Kafka) | librdkafka-based client | [docs.rs/rdkafka](https://docs.rs/rdkafka/latest/rdkafka/) |
+| franz-go | Go (Kafka) | Full-featured pure-Go Kafka client | [franz-go](https://github.com/twmb/franz-go) |
+| confluent-kafka-python | Python (Kafka) | librdkafka-based client | [confluent-kafka-python](https://github.com/confluentinc/confluent-kafka-python) |
+| RabbitMQ | Server | AMQP broker with flexible routing | [Tutorials](https://www.rabbitmq.com/tutorials) |
+| amqplib | JS/TS (AMQP) | RabbitMQ/AMQP 0-9-1 client | [amqplib](https://github.com/amqp-node/amqplib) |
+| lapin | Rust (AMQP) | Async AMQP client | [docs.rs/lapin](https://docs.rs/lapin/latest/lapin/) |
+| amqp091-go | Go (AMQP) | Maintained AMQP 0-9-1 client | [amqp091-go](https://pkg.go.dev/github.com/rabbitmq/amqp091-go) |
+| pika | Python (AMQP) | Pure-Python AMQP client | [pika docs](https://pika.readthedocs.io/en/stable/) |
+| NATS | Server | Lightweight pub/sub and JetStream | [What is NATS](https://docs.nats.io/nats-concepts/what-is-nats) |
+| Redpanda | Server | Kafka-API-compatible broker | [Quick start](https://docs.redpanda.com/current/get-started/quick-start/) |
+
 ## Related patterns
 
 - [Partitioned Consumption](/docs/patterns/batch-streaming/partitioned-consumption) — the consumer-group-per-partition scaling model of the log design.
@@ -249,6 +268,10 @@ short-term source of truth.
 - [Dead-Letter Queue](/docs/patterns/reliability/dead-letter-queue) — where poison messages go after exhausting redelivery, so they don't block the stream.
 - [Backpressure](/docs/patterns/batch-streaming/backpressure) and [Queue-Based Load Leveling](/docs/patterns/batch-streaming/queue-based-load-leveling) — how a queue absorbs bursts and lets consumers pull at a sustainable rate.
 - [Idempotency](/docs/patterns/reliability/idempotency) — the consumer-side property that makes at-least-once delivery safe.
+
+## Visual references
+
+- [Diagram of a topic split into partitions with per-partition offsets — Apache Kafka documentation](https://kafka.apache.org/documentation/#intro_topics) — © Apache Kafka
 
 ## Further reading
 

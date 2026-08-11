@@ -211,6 +211,24 @@ completely different pipelines, and swapping the sort step for a
 different sort order requires touching nothing about the extraction or
 filtering steps.
 
+## Production libraries & getting started
+
+Most languages ship a native streaming/pipeline primitive; heavier integration and stream-processing frameworks cover the multi-stage, backpressured cases.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Node.js `stream` (pipeline/Transform) | JS/TS | Built-in composable readable/transform/writable stages with backpressure via `pipeline()` | [Stream API docs](https://nodejs.org/api/stream.html) |
+| `tokio-stream` + `futures` | Rust | Async `Stream` combinators (`map`, `filter`, `then`) to chain filter stages | [tokio-stream docs](https://docs.rs/tokio-stream/latest/tokio_stream/) |
+| Go channels pipeline | Go | Idiomatic goroutine + channel stages with fan-out/fan-in and cancellation | [Go blog: Pipelines](https://go.dev/blog/pipelines) |
+| Faust | Python | Kafka-based stream processing with agent/stage composition | [Faust introduction](https://faust-streaming.github.io/faust/introduction.html) |
+| Bytewax | Python | Dataflow stream processing (Rust core, Python API) | [Bytewax repo & docs](https://github.com/bytewax/bytewax) |
+
+For heavier enterprise integration pipelines (routing, transformation, connectors across systems):
+
+| Tool | What it gives you | Getting started |
+| --- | --- | --- |
+| Apache Camel | Enterprise integration routes built from pipe/filter components | [Camel getting started](https://camel.apache.org/manual/getting-started.html) |
+
 ## Related patterns
 
 - [Choreography](/docs/patterns/consistency/choreography) — the

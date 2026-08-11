@@ -236,12 +236,30 @@ real file/line locations. High client traffic makes sampling and
 error-deduplication essential so one popular page's error doesn't drown the
 ingestion pipeline.
 
+## Production libraries & getting started
+
+The common stack is Prometheus scraping per-service client-library metrics, visualized in Grafana; OpenTelemetry provides a vendor-neutral metrics SDK.
+
+| Library / Tool | Language / Role | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Prometheus | Server | Pull-based metrics store and alerting | [Getting started](https://prometheus.io/docs/prometheus/latest/getting_started/) |
+| Grafana | Server | Dashboards over metrics/logs/traces | [Getting started](https://grafana.com/docs/grafana/latest/getting-started/) |
+| prom-client | JS/TS | Prometheus metrics instrumentation | [prom-client](https://github.com/siimon/prom-client) |
+| prometheus (crate) | Rust | Prometheus metrics instrumentation | [docs.rs/prometheus](https://docs.rs/prometheus/latest/prometheus/) |
+| client_golang | Go | Official Prometheus Go client | [Go application guide](https://prometheus.io/docs/guides/go-application/) |
+| prometheus-client | Python | Official Prometheus Python client | [client_python](https://prometheus.github.io/client_python/) |
+| OpenTelemetry Metrics | JS/Rust/Go/Python | Vendor-neutral metrics SDKs and exporters | [OTel JS docs](https://opentelemetry.io/docs/languages/js/) · [Metrics spec](https://opentelemetry.io/docs/specs/otel/metrics/) |
+
 ## Related patterns
 
 - [Distributed Logging](/docs/patterns/building-blocks/distributed-logging) — the per-event detail pillar; a metric alert points at a service, logs explain its errors.
 - [Distributed Tracing](/docs/patterns/observability/distributed-tracing) — the third pillar: one request's path and timing across services, for locating *where* latency accrues.
 - [Health Check](/docs/patterns/observability/health-check) — the per-instance liveness/readiness probe monitoring aggregates into fleet health and up/down signals.
 - [Auto-Scaling](/docs/patterns/scaling/auto-scaling) — consumes monitoring metrics (utilization, queue depth) as the control signal for scaling decisions.
+
+## Visual references
+
+- [Prometheus architecture diagram showing scrape targets, TSDB, alerting, and Grafana — Prometheus documentation](https://prometheus.io/docs/introduction/overview/) — © Prometheus Authors
 
 ## Further reading
 

@@ -210,6 +210,19 @@ periodic refresh makes new articles searchable, and faceting by product
 area and version narrows results. The search cluster returns page IDs
 that the app resolves against its content store for rendering.
 
+## Production libraries & getting started
+
+Distributed search is served by index engines (Elasticsearch/OpenSearch, Meilisearch, Typesense) with official clients, plus embeddable libraries for building your own.
+
+| Library / Tool | Language / Role | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Elasticsearch | Server + clients | Sharded inverted-index search and analytics | [JS client getting started](https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/getting-started-js.html) |
+| OpenSearch | Server + clients | Apache-2.0 fork with clients for all four languages | [OpenSearch clients](https://opensearch.org/docs/latest/clients/) |
+| Meilisearch | Server | Fast typo-tolerant search with SDKs | [Quick start](https://www.meilisearch.com/docs/learn/getting_started/quick_start) |
+| Typesense | Server | Typo-tolerant search engine with SDKs | [Install Typesense](https://typesense.org/docs/guide/install-typesense.html) |
+| Tantivy | Rust library | Embeddable full-text search (Lucene-like) | [Tantivy](https://github.com/quickwit-oss/tantivy) |
+| Bleve | Go library | Embeddable full-text indexing/search | [Bleve](https://github.com/blevesearch/bleve) |
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — distributed search

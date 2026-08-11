@@ -233,6 +233,20 @@ triggers each scheduled DAG run. After a controller outage, missed-run handling
 backfills skipped occurrences deliberately rather than replaying every missed
 tick at once and stampeding the warehouse.
 
+## Production libraries & getting started
+
+Options range from durable-workflow engines (Temporal) to queue-backed job runners (BullMQ, Celery, asynq, apalis) and DAG/cron schedulers (Airflow, Quartz).
+
+| Library / Tool | Language / Role | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Temporal | JS/Go/Python/Rust | Durable workflows with retries and timers | [Develop docs](https://docs.temporal.io/develop) · [TS quickstart](https://docs.temporal.io/develop/typescript/core-application) |
+| BullMQ | JS/TS (Redis) | Redis-backed queues, delayed and repeatable jobs | [BullMQ docs](https://docs.bullmq.io/) |
+| apalis | Rust (Redis/SQL) | Background job processing framework | [docs.rs/apalis](https://docs.rs/apalis/latest/apalis/) |
+| asynq | Go (Redis) | Distributed task queue with scheduling | [asynq](https://github.com/hibiken/asynq) |
+| Celery | Python | Distributed task queue with beat scheduler | [Introduction](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) |
+| Apache Airflow | Python (DAGs) | Scheduled workflow orchestration | [Getting started](https://airflow.apache.org/docs/apache-airflow/stable/start.html) |
+| Quartz | Java | Cron/interval job scheduling | [Quartz docs](https://www.quartz-scheduler.org/documentation/) |
+
 ## Related patterns
 
 - [Leader Election](/docs/patterns/consistency/leader-election) — the coordination primitive that guarantees a single scheduler dispatches each run, avoiding duplicate execution.

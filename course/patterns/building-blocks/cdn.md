@@ -241,6 +241,18 @@ edge location rather than once per reader, at the cost of a
 short window where a late correction to the article takes a few
 minutes to propagate everywhere.
 
+## Production libraries & getting started
+
+A CDN is a managed edge network you configure, not a library you import; for self-hosting you run a caching reverse proxy at the origin/edge.
+
+| Library / Tool | Type | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Cloudflare | Managed CDN | Global edge cache, Workers, tiered cache | [Cache docs](https://developers.cloudflare.com/cache/) · [Workers guide](https://developers.cloudflare.com/workers/get-started/guide/) |
+| Fastly | Managed CDN | Edge cache with VCL/Compute at the edge | [Learning docs](https://developer.fastly.com/learning/) |
+| AWS CloudFront | Managed CDN | Edge cache integrated with S3/origins | [Getting started](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/GettingStarted.html) |
+| Varnish | Self-host | HTTP caching reverse proxy (VCL) | [Varnish docs](https://varnish-cache.org/docs/) |
+| Nginx | Self-host | Content caching in a reverse proxy | [Content caching guide](https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/) |
+
 ## Related patterns
 
 - [Static Content Hosting](/docs/patterns/building-blocks/static-content-hosting) —
@@ -259,6 +271,10 @@ minutes to propagate everywhere.
 - [CDN — concept overview](/docs/concepts/cdn) — this site's earlier
   primer-derived treatment of content delivery networks, for further
   background.
+
+## Visual references
+
+- [Diagram contrasting a single-origin topology with a distributed CDN edge network — Wikipedia](https://en.wikipedia.org/wiki/Content_delivery_network) — © Wikipedia
 
 ## Further reading
 

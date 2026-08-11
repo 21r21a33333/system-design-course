@@ -259,6 +259,19 @@ touched only once per few thousand events — amortizing its cost while
 avoiding a per-event round trip, accepting the allocator as a startup
 dependency and tolerating skipped ranges when a node dies mid-block.
 
+## Production libraries & getting started
+
+Before writing your own allocator, reach for a proven ID scheme — Snowflake-style (time + worker + sequence, roughly time-ordered) or ULID/UUIDv7 (lexicographically sortable, no coordinator).
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| ulid / nanoid | JS/TS | Sortable 128-bit ULIDs; compact URL-safe random IDs | [ulid/javascript](https://github.com/ulid/javascript) · [nanoid](https://github.com/ai/nanoid) |
+| ulid / uuid crates | Rust | ULID and full UUID (incl. v7 time-ordered) generation | [ulid crate](https://docs.rs/ulid/latest/ulid/) · [uuid crate](https://docs.rs/uuid/latest/uuid/) |
+| sonyflake / bwmarrin/snowflake | Go | Distributed Snowflake-style 64-bit IDs (Sony's variant; a compact Snowflake impl) | [sony/sonyflake](https://github.com/sony/sonyflake) · [bwmarrin/snowflake](https://github.com/bwmarrin/snowflake) |
+| python-ulid / `uuid` | Python | ULID library; stdlib UUID (v1/v4, and v6–v8 on 3.14+) | [python-ulid](https://pypi.org/project/python-ulid/) · [uuid stdlib](https://docs.python.org/3/library/uuid.html) |
+
+The canonical reference schemes are **Twitter Snowflake** (the original 41-bit-time / 10-bit-worker / 12-bit-sequence layout) and **Instagram's** sharded ID scheme (timestamp + shard ID + per-shard auto-increment) — see Further reading.
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — sharded systems are the

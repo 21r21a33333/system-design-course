@@ -232,6 +232,18 @@ estimate cardinality within a percent or two, using kilobytes rather
 than storing every distinct ID, and the same fan-in-and-merge shape as a
 sum but answering "how many distinct" instead of "how many total."
 
+## Production libraries & getting started
+
+Sharded counters are a technique you build on top of a store's atomic-increment primitives rather than a library you install — these are the systems that provide those primitives.
+
+| System | What it gives you | Getting started |
+| --- | --- | --- |
+| Redis / Valkey | Atomic `INCR`/`INCRBY` per shard key (sum N shards on read); `PFADD`/`PFCOUNT` (HyperLogLog) for approximate distinct counts | [INCR command](https://redis.io/docs/latest/commands/incr/) · [HyperLogLog](https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/) |
+| Amazon DynamoDB | Atomic counter updates via `UpdateItem` `ADD`; shard the partition key to avoid a hot partition | [DynamoDB atomic counters](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.AtomicCounters) |
+| Cassandra / ScyllaDB | Native distributed `counter` column type | [CQL counters](https://docs.datastax.com/en/cql-oss/3.3/cql/cql_using/useCountersConcept.html) |
+
+**Reference:** the canonical write-up of the pattern is Google's [distributed (sharded) counters guide for Firestore](https://cloud.google.com/firestore/docs/solutions/counters), which walks through choosing `N` and summing shards on read.
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — sharded counters apply

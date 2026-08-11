@@ -210,6 +210,25 @@ keyspace makes per-device range scans a contiguous read rather than a
 scatter — a workload a B-tree's update-in-place writes would struggle
 to keep up with.
 
+## Production libraries & getting started
+
+You rarely build a key-value store from scratch — you reach for a battle-tested one, embedded (in-process) or networked/distributed, and drive it with an official client.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Redis / Valkey | JS/TS, Rust, Go, Python | In-memory KV with rich data types, TTLs, replication; Valkey is the open-source fork | [Redis quickstart](https://redis.io/docs/latest/develop/get-started/) · [Valkey quickstart](https://valkey.io/topics/quickstart/) |
+| etcd | Go, Python | Strongly-consistent (Raft) KV for config/coordination; `clientv3` (Go), `etcd3` (Python) | [etcd quickstart](https://etcd.io/docs/latest/quickstart/) |
+| RocksDB | Rust, Go, Python (bindings) | Embedded LSM-tree KV engine for high write throughput | [RocksDB basics](https://github.com/facebook/rocksdb/wiki/RocksDB-Basics) |
+| sled | Rust | Pure-Rust embedded transactional KV store | [sled docs](https://docs.rs/sled/latest/sled/) |
+| TiKV | Rust, Go | Distributed transactional KV (Raft + Placement Driver), CNCF-graduated | [TiKV overview](https://tikv.org/docs/latest/concepts/overview/) |
+
+For a fully managed distributed KV, use a cloud service and its SDK:
+
+| System | What it gives you | Getting started |
+| --- | --- | --- |
+| Amazon DynamoDB | Serverless, single-digit-ms KV/document store | [DynamoDB getting started](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.html) |
+| FoundationDB | Distributed, ordered, ACID KV foundation | [FoundationDB getting started](https://apple.github.io/foundationdb/getting-started-mac.html) |
+
 ## Related patterns
 
 - [Consistent Hashing](/docs/patterns/storage/consistent-hashing) — the

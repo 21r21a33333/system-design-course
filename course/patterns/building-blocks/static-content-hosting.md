@@ -232,6 +232,27 @@ streams the file — while access control is enforced by the signature and
 expiry the storage layer checks, the same narrow-token idea as the
 [Valet Key](/docs/patterns/api-edge/valet-key) pattern.
 
+## Production libraries & getting started
+
+You either self-host a static web server or, more commonly, hand assets to a managed platform (object store + CDN, or a Jamstack host) that does the serving, caching, and TLS for you.
+
+Self-hosted web servers:
+
+| Tool | What it gives you | Getting started |
+| --- | --- | --- |
+| Nginx | High-performance static file serving and reverse proxy | [Nginx beginner's guide](https://nginx.org/en/docs/beginners_guide.html) |
+| Caddy | Static file server with automatic HTTPS | [Caddy: serve static files](https://caddyserver.com/docs/quick-starts/static-files) |
+
+Managed hosting platforms:
+
+| Platform | What it gives you | Getting started |
+| --- | --- | --- |
+| Amazon S3 + CloudFront | Object-store hosting fronted by a global CDN | [S3 static website hosting](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html) |
+| Netlify | Git-driven build + deploy for static/Jamstack sites | [Netlify get started](https://docs.netlify.com/get-started/) |
+| Vercel | Static + frontend framework hosting with edge network | [Vercel getting started](https://vercel.com/docs/getting-started-with-vercel) |
+| Cloudflare Pages | Static hosting on Cloudflare's edge | [Cloudflare Pages get started](https://developers.cloudflare.com/pages/get-started/) |
+| GitHub Pages | Free static hosting straight from a repo | [GitHub Pages getting started](https://docs.github.com/en/pages/getting-started-with-github-pages) |
+
 ## Related patterns
 
 - [Blob Store](/docs/patterns/building-blocks/blob-store) — the

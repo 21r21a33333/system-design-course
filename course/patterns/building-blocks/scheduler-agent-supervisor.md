@@ -281,6 +281,18 @@ Agent Supervisor names the concrete moving parts (durable state store,
 Supervisor process, per-service Agents) that make that saga survive
 crashes and duplicate remediation.
 
+## Production libraries & getting started
+
+This is an orchestration pattern, not a single library — in practice you adopt a durable-execution / workflow engine that provides the Scheduler (state machine), Agent (activities), and Supervisor (timeouts, retries, recovery) for you, so crashes resume exactly where they left off.
+
+| System | Languages / SDKs | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Temporal | Go, Java, TS, Python, .NET | Durable workflows with automatic retries, timeouts, and crash recovery | [Temporal getting started](https://docs.temporal.io/getting-started) |
+| Cadence | Go, Java | The engine Temporal forked from; long-running fault-tolerant orchestration | [Cadence get started](https://cadenceworkflow.io/docs/get-started) |
+| Azure Durable Functions | C#, JS/TS, Python | Serverless orchestrations (function chaining, fan-out/fan-in, monitors) | [Durable Functions overview](https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview) |
+| AWS Step Functions | Any (Amazon States Language) | Managed state machines with built-in retry/catch and long waits | [Step Functions getting started](https://docs.aws.amazon.com/step-functions/latest/dg/getting-started-with-sfn.html) |
+| Netflix Conductor (OSS) | Any (JSON DSL + workers) | Microservice workflow orchestration with a supervising server | [Conductor OSS](https://github.com/conductor-oss/conductor) |
+
 ## Related patterns
 
 - [Saga](/docs/patterns/consistency/saga) — the orchestrated variant of

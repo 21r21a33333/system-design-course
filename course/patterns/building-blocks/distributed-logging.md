@@ -225,6 +225,24 @@ client ids) stay in the message body rather than indexed columns. Engineers
 keep enough signal to debug and measure while the index — and the bill — stay
 bounded.
 
+## Production libraries & getting started
+
+A logging pipeline combines a structured logger in each service, a shipper/collector, and a searchable store.
+
+| Library / Tool | Language / Role | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| pino | JS/TS logger | Fast JSON structured logging | [getpino.io](https://getpino.io/#/) |
+| winston | JS/TS logger | Flexible transports and formats | [winston](https://github.com/winstonjs/winston) |
+| tracing | Rust logger | Structured, span-aware logging | [docs.rs/tracing](https://docs.rs/tracing/latest/tracing/) |
+| zap | Go logger | High-performance structured logging | [zap](https://pkg.go.dev/go.uber.org/zap) |
+| zerolog | Go logger | Zero-allocation JSON logging | [zerolog](https://github.com/rs/zerolog) |
+| structlog | Python logger | Structured, processor-based logging | [Getting started](https://www.structlog.org/en/stable/getting-started.html) |
+| Fluent Bit | Shipper/collector | Lightweight log forwarding and processing | [Getting started](https://docs.fluentbit.io/manual/installation/getting-started-with-fluent-bit) |
+| Vector | Shipper/collector | High-throughput observability pipeline | [Quickstart](https://vector.dev/docs/setup/quickstart/) |
+| OpenTelemetry Collector | Collector | Vendor-neutral telemetry pipeline | [Quick start](https://opentelemetry.io/docs/collector/quick-start/) |
+| Grafana Loki | Store | Label-indexed log aggregation | [Get started](https://grafana.com/docs/loki/latest/get-started/) |
+| OpenSearch | Store | Full-text indexed log search | [Getting started](https://opensearch.org/docs/latest/getting-started/) |
+
 ## Related patterns
 
 - [Distributed Monitoring](/docs/patterns/building-blocks/distributed-monitoring) — logs are one of the three telemetry pillars monitoring aggregates, alongside metrics and traces.

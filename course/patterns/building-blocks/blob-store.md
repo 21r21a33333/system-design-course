@@ -205,6 +205,22 @@ checksums to catch bit rot. Restore is a keyed fetch-and-reassemble, and
 because each backup is a distinct immutable version, restoring to any
 prior point is just choosing the right key.
 
+## Production libraries & getting started
+
+Blob storage is served by managed object stores and self-hostable servers rather than a single drop-in library; you talk to them through vendor SDKs (most speak the S3 API).
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| MinIO | Self-host (Go) | S3-compatible object store you run yourself | [MinIO docs](https://min.io/docs/minio/linux/index.html) |
+| Ceph | Self-host (C++) | Distributed object/block/file storage with erasure coding | [Ceph getting started](https://docs.ceph.com/en/latest/start/) |
+| AWS SDK for JavaScript v3 (S3) | JS/TS | S3 client for Node/browser | [Getting started](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-started.html) |
+| AWS SDK for Rust (S3) | Rust | Async S3 client | [Getting started](https://docs.aws.amazon.com/sdk-for-rust/latest/dg/getting-started.html) |
+| AWS SDK for Go v2 (S3) | Go | S3 client for Go services | [aws-sdk-go-v2](https://github.com/aws/aws-sdk-go-v2) |
+| Boto3 (S3) | Python | Idiomatic S3 client | [Quickstart](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html) |
+| Google Cloud Storage / Azure Blob | JS/Rust/Go/Python | Managed object stores with per-language SDKs | [GCS libraries](https://cloud.google.com/storage/docs/reference/libraries) · [Azure Blob quickstart](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-nodejs) |
+
+**Example / reference:** [aws-sdk-js-notes-app](https://github.com/aws-samples/aws-sdk-js-notes-app) — an official AWS sample using S3 from a JS app.
+
 ## Related patterns
 
 - [CDN](/docs/patterns/building-blocks/cdn) — the edge-caching pattern

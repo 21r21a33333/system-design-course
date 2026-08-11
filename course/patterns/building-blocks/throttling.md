@@ -234,6 +234,26 @@ dependency into collapse. Paired with a
 hard-failure case, this graduated slowdown keeps a strained dependency
 usable instead of tipping it over.
 
+## Production libraries & getting started
+
+Throttling usually comes bundled in a resilience library (alongside bulkhead, retry, and circuit-breaker) or is enforced at the API gateway; where a plain quota is enough, reuse the [rate-limiter](/docs/patterns/building-blocks/rate-limiter) libraries.
+
+Resilience libraries (rate-limiter + bulkhead modules):
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| resilience4j | Java | Canonical resilience toolkit: RateLimiter, Bulkhead, TimeLimiter, CircuitBreaker | [resilience4j getting started](https://resilience4j.readme.io/docs/getting-started) |
+| Polly | .NET | Rate-limit, bulkhead-isolation, timeout, and circuit-breaker strategies | [Polly docs](https://www.pollydocs.org/) |
+| Failsafe | Java | Composable rate limiter, bulkhead, and other resilience policies | [Failsafe](https://failsafe.dev/) |
+
+Gateway / infrastructure-level throttling:
+
+| System | What it gives you | Getting started |
+| --- | --- | --- |
+| Kong | Rate-limiting/throttling plugin at the API gateway | [Kong rate limiting](https://docs.konghq.com/hub/kong-inc/rate-limiting/) |
+| Envoy | Global rate limiting across a service fleet | [Envoy global rate limiting](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/other_features/global_rate_limiting) |
+| AWS API Gateway | Usage plans with request throttling and burst limits | [API Gateway request throttling](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html) |
+
 ## Related patterns
 
 - [Rate Limiter](/docs/patterns/building-blocks/rate-limiter) — the
