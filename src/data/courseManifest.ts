@@ -562,6 +562,41 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/caching/cache-aside",
+    "title": "Cache-Aside",
+    "path": "/docs/patterns/caching/cache-aside",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/caching/cache-stampede-prevention",
+    "title": "Cache Stampede Prevention",
+    "path": "/docs/patterns/caching/cache-stampede-prevention",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/caching/read-through",
+    "title": "Read-Through",
+    "path": "/docs/patterns/caching/read-through",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/caching/write-behind",
+    "title": "Write-Behind",
+    "path": "/docs/patterns/caching/write-behind",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/caching/write-through",
+    "title": "Write-Through",
+    "path": "/docs/patterns/caching/write-through",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/communication/asynchronous-request-reply",
     "title": "Asynchronous Request-Reply",
     "path": "/docs/patterns/communication/asynchronous-request-reply",
