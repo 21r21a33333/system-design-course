@@ -517,3 +517,10 @@ re-curled all 121 new URLs (119 200, 2 npmjs 403 browser-live/real),
 verified every library real + correctly language-attributed (governor=Rust,
 etc.), tables valid GFM, visual-refs are attributed external links (not
 embeds), diffs additive (+N/-0). Zero fixes. Build/typecheck clean.
+
+### Libs+visuals — Communication (9 pages) — COMPLETE
+Commit: 220743c. Production-libraries on all 9 + websockets Visual-refs
+(Ably). Independent review re-curled all 66 new URLs (66/66 200), all
+libraries real + correctly attributed (socket.io/ws JS, tonic/tokio-
+tungstenite/rumqtt Rust, gorilla-websocket/grpc-go/asynq Go, grpcio/
+celery/sse-starlette Python), tables valid GFM, additive. Zero fixes.
