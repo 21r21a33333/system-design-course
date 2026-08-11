@@ -207,4 +207,5 @@ orchestrate the miss path, the caching layer does.
 ## Further reading
 
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
+- [Caching strategies — Amazon ElastiCache Developer Guide](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Strategies.html)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))

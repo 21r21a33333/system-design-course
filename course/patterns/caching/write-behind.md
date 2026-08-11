@@ -217,4 +217,5 @@ has no meaningful downstream impact.
 ## Further reading
 
 - [Caching best practices — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/caching)
+- [Cache (computing): writing policies — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing)#Writing_policies)
 - [Cache (computing) — Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))

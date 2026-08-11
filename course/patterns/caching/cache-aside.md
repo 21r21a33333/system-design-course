@@ -89,6 +89,26 @@ code (portable, but duplicated across every caller), while read-through
 centralizes it in the cache (consistent, but couples the cache to the
 store's schema and access pattern).
 
+## Caching strategies compared
+
+Cache-aside is one of five strategies in this group, and the fastest way
+to place it is against the others on the axes that actually differ — who
+populates the cache, how reads and writes flow, the consistency it
+offers, and what happens when a component fails.
+
+| Strategy | Who populates the cache | Read path | Write path | Consistency | Failure mode if cache is down |
+|---|---|---|---|---|---|
+| [Cache-aside](/docs/patterns/caching/cache-aside) | Application, lazily on a miss | App checks cache, on miss queries store and fills cache | App writes store, then invalidates the entry | Eventual; a narrow invalidate-race can leave a stale entry until TTL/next write | Degrades to store-only reads — slower, not broken |
+| [Read-through](/docs/patterns/caching/read-through) | Cache's loader, lazily on a miss | App calls cache only; cache invokes its loader on a miss | Not defined by the pattern (pair with a write strategy) | Same as cache-aside on reads, but miss-handling is uniform across callers | Cache is a mandatory hop — reads can fail unless an explicit bypass exists |
+| [Write-through](/docs/patterns/caching/write-through) | Cache, synchronously on every write | Warm cache read; pair with a lazy loader for keys that predate the cache | App writes cache, cache writes store synchronously before returning | Strong for written keys — cache never leads the store | Writes fail or must bypass; written keys can't be served stale |
+| [Write-behind](/docs/patterns/caching/write-behind) | Cache, on write; store updated asynchronously | Warm cache read; pair with a lazy loader | App writes cache, returns immediately; background flush drains to store | Eventual; bounded window where an acknowledged write exists only in cache | Queued writes not yet flushed are lost if the process dies |
+
+Read-through and write-through/write-behind are complementary rather than
+mutually exclusive: the read column and write column are chosen
+independently, which is why write-through and write-behind are so often
+paired with a lazy read strategy (cache-aside or read-through) to cover
+keys that predate the current cache instance.
+
 ## Code example
 
 ```rust

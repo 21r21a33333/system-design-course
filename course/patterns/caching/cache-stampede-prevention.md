@@ -108,6 +108,23 @@ stampede it exists to avoid, since a low probability may still let a
 significant fraction of near-simultaneous requests fall through
 together.
 
+## Mitigations compared
+
+The techniques above are not interchangeable — each attacks a different
+part of the stampede and pays a different price. Locking coordinates the
+*loaders*; early refresh de-synchronizes the *expiry*; stale-while-
+revalidate changes what the *waiters* see. They also compose: jittered
+TTLs pair naturally with any of them, and single-flight is often layered
+under stale-while-revalidate so the one background refresh is itself
+coalesced.
+
+| Technique | What it coordinates | Serves stale data? | Added read latency on a miss | Main cost / risk |
+|---|---|---|---|---|
+| Locking / single-flight (request coalescing) | Collapses N concurrent loaders into one | No | Waiters block on the single in-flight load | A lock not released on loader crash/timeout can stall all waiters — needs its own timeout |
+| Early / probabilistic recompute | De-synchronizes expiry by refreshing before TTL | No | None — refresh happens ahead of expiry in the background | Tuned too high wastes store load on needless refreshes; too low still lets a herd through |
+| Stale-while-revalidate | Decouples waiters from the refresh | Yes (briefly, just-expired value) | None — waiters get the stale value immediately | Unacceptable where staleness itself is the problem (e.g. balances) |
+| Jittered TTL | Spreads expiry instants across keys | No | None | A mitigant, not a standalone fix — reduces synchronization but a single hot key can still stampede |
+
 ## Code example
 
 ```rust
