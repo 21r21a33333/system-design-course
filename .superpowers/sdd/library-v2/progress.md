@@ -1319,3 +1319,27 @@ case studies (Uber/WhatsApp/Instagram/YouTube, Google Maps/Yelp/
 Newsfeed/TinyURL, Typeahead/Google Docs/Payment System/Deployment
 System, Data Infrastructure/ChatGPT/LLM Support Bot/Code Assistant)
 are now on the deep technical template established by tinyurl.md.**
+
+### Deep-dive rewrite D review — Data Infra/ChatGPT/Support Bot/Code Assistant — COMPLETE, no fixes
+Independent review of commit `6add2cf`: every falsifiable claim
+independently re-executed, not just parsed — Kappa live/reprocess
+convergence confirmed bit-identical on out-of-order and partial-replay
+test data, continuous batching's mid-batch backfill proven via
+instrumented execution, KV-cache block grow/release traced at exact
+16-token boundaries, chunking overlap math verified exact, 4-branch
+escalation logic independently triggered, and the agent loop's
+human-approval gate proven structurally enforced (mutating tool calls
+never reach the executor without explicit `approve_pending()`, and
+`reject_pending()` leaves the file store untouched). AST cross-check
+found zero orphaned function calls across all 4 files. No false
+proprietary-architecture claims. All 12 links live, Step 1/2 untouched,
+build/typecheck clean. Whole-series sanity check: all 16 deep-dive case
+studies confirmed to have the closing Source(s) section; the 8
+primer-derived case studies correctly remain on their own template
+(out of scope by design, not a gap).
+
+## CASE-STUDY DEEP-DIVE REWRITE SERIES COMPLETE — 16/16 case studies,
+## 4 tasks, every task independently reviewed clean (2 fix rounds along
+## the way: yelp.md's geohash_neighbors implementation gap, caught and
+## fixed). All 24 case studies (16 deep-dive + 8 primer) verified
+## present, build/typecheck clean throughout.
