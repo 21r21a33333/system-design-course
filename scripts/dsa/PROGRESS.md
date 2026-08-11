@@ -45,7 +45,12 @@ via the yt-notes pipeline. Branch: `dsa-course-notes` in `system-design-course`.
       Y-fast trie, fusion tree) + S04 start (bipartite matching/König, general matching/
       blossom, flows/Ford-Fulkerson). All C++ verified vs brute force (no code bugs);
       fixes were link titles + one table-cell `|`-in-math build break (now a spec rule).
-- [ ] Batch 6 — L51–L60 (flows, number theory, crypto, FFT, approximation)
+- [x] **Batch 6 — L51–L60** — DONE (C++), build green, adversarial-reviewed. S04 advanced:
+      Dinic, Hopcroft-Karp/push-relabel, Hungarian, min-cost flows, global min cut
+      (Stoer-Wagner/Karger), linear programming (simplex+duality), number theory,
+      basic cryptography (RSA/DH), FFT, approximation algorithms. Review fixes: LP
+      max-flow conservation constraint (Major), Hungarian negative-cost precondition,
+      frame swaps, CSES link corrections.
 - [ ] Batch 7 — L61 (parallel algorithms) + DSA manifest wiring + final polish
 
 ## Bundles already ingested (reusable)
