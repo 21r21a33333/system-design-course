@@ -224,6 +224,75 @@ compensating-transaction.md's existing "Relationship to saga.md" notes
 their content, and the reverse-order-compensation / two-sequencing-
 options framing is identical across all three pages.
 
+### Phase 4.1 — Case studies: Uber, WhatsApp, Instagram, YouTube — COMPLETE
+Added 4 brand-new, original full system-design case studies to
+`course/case-studies/system-design/`, continuing sidebar numbering after
+the 8 existing primer-derived pages: uber.md (9), whatsapp.md (10),
+instagram.md (11), youtube.md (12). Each follows the pastebin.md/
+twitter.md template shape (Step 1-4 + Additional talking points) but is
+100% original prose against systems the primer never covered — no
+donnemartin/imgur references anywhere, confirmed via grep. Two original
+SVG diagrams per case study (8 total) at `static/img/case-studies/`,
+matching the site's established pattern-diagram style (viewBox ~820x400
+landscape, Helvetica, teal/blue/slate/amber/green color coding), created
+fresh since this directory didn't exist before this task.
+
+Back-of-envelope math computed fresh per system, not reused from any
+canonical source, and verified arithmetically consistent (e.g. Uber:
+2M drivers / 4s ping interval = 500K location writes/sec; WhatsApp:
+300M DAU x 40 msg/day / 86400 = ~140K msg/sec average; Instagram: 150M
+DAU x 6 opens/day / 86400 = ~10.4K reads/sec against 150M x 0.2 posts/
+day = 30M posts/day, yielding the 30:1 read:write ratio the design
+leans on; YouTube: 50M/2000 = 25K uploads/day = ~0.3/sec average against
+50M x 5 views/day / 86400 = ~2.9K plays/sec, with bandwidth not request
+count flagged as the real scaling driver). Caught and fixed one garbled
+arithmetic line in youtube.md's storage-multiplier bullet during
+self-review before verification.
+
+Deliberately differentiated Instagram's and YouTube's fan-out/feed
+problems rather than letting them collapse into the same generic
+"fan-out at scale" discussion, since both genuinely touch it: Instagram
+is framed as a true fan-out/write-amplification problem (push-on-write
+below a follower-count threshold, pull-and-merge above it, CQRS-shaped,
+because the content itself — a post_id reference — is already cheap and
+servable); YouTube is framed as a pre-fan-out pipeline problem (a video
+is not servable at all until an async, compute-bound, parallelizable
+transcoding pipeline finishes with it — Pipes and Filters + Competing
+Consumers over a task queue — and once ready, delivery is dominated by
+raw CDN bandwidth economics, not by fan-out-to-followers). Both pages
+cross-reference the other's framing explicitly rather than silently
+diverging. WhatsApp's group-chat fan-out (small, per-recipient,
+N-independent-deliveries) is also explicitly distinguished from both as
+a third, smaller-scale case. Confirmed via 8-gram overlap check across
+all 4 files that the only shared phrasing is template boilerplate
+("Step 1: Outline use cases...") and shared internal-link anchor text
+— zero copy-pasted substantive prose between any pair.
+
+Internal links point exclusively to this site's own `/docs/patterns/...`
+pages (sharding, consistent-hashing, quorum-adjacent leader-election,
+distributed-message-queue, cdn, blob-store, sharded-counters, cqrs,
+cursor-pagination, write-ahead-log, competing-consumers, pipes-and-
+filters, auto-scaling, primary-replica-replication, event-driven-
+architecture, queue-based-load-leveling, websockets, server-sent-events,
+key-value-store, geode, idempotency, exactly-once-semantics, timeout,
+circuit-breaker, deployment-stamps, cache-aside, distributed-search,
+backpressure, load-balancing) — all confirmed to exist on disk before
+linking and confirmed resolvable by the zero-broken-link production
+build. Zero disallowed vendor/domain names (grep clean for Kafka,
+Redis, Cassandra, DynamoDB, S3, CDN vendor names, etc. — all
+infrastructure described generically per the site's vendor-neutral
+convention; only the 4 real companies being designed are named, which
+is the expected/allowed exception).
+
+Manifest: bumped `expectedSupplementaryCaseStudyCount` from 0 to 4 in
+`scripts/ingest/run.ts`, ran `npm run ingest -- /tmp/system-design-
+primer-src`, got "All counts match expected inventory." All 4 new
+pages confirmed present in `src/data/courseManifest.ts` under
+`system-design-case-studies` / `supplementary`. `npm run typecheck` and
+`npm run build` both clean (zero broken links/anchors, onBrokenLinks/
+onBrokenAnchors both set to `throw`). Committed as a single
+`feat(case-studies):` commit.
+
 Concurrency claims were made in three pages (quorum, two-phase-commit)
 and empirically verified, not just read — a prior phase's bug (sequential
 `.await` masquerading as concurrent) was the specific failure mode this

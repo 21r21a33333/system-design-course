@@ -1115,6 +1115,34 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "case-studies/system-design/instagram",
+    "title": "Design Instagram (or a Photo-Sharing Feed)",
+    "path": "/docs/case-studies/system-design/instagram",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/uber",
+    "title": "Design Uber (or a Ride-Sharing Dispatch System)",
+    "path": "/docs/case-studies/system-design/uber",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/whatsapp",
+    "title": "Design WhatsApp (or a Real-Time Messaging System)",
+    "path": "/docs/case-studies/system-design/whatsapp",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
+    "id": "case-studies/system-design/youtube",
+    "title": "Design YouTube (or a Video-Sharing Platform)",
+    "path": "/docs/case-studies/system-design/youtube",
+    "category": "system-design-case-studies",
+    "source": "supplementary"
+  },
+  {
     "id": "intro",
     "title": "Motivation",
     "path": "/docs/intro",

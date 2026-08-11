@@ -1,0 +1,85 @@
+<svg viewBox="0 0 860 430" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="860" height="430" fill="#ffffff"/>
+
+  <text x="430" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">WhatsApp: scaled design</text>
+
+  <!-- clients -->
+  <rect x="20" y="160" width="110" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="75" y="181" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Clients</text>
+  <text x="75" y="197" font-size="8" fill="#dbeafe" text-anchor="middle">~100M concurrent</text>
+
+  <!-- connection-aware LB -->
+  <rect x="165" y="160" width="120" height="50" rx="8" fill="#1d4ed8"/>
+  <text x="225" y="181" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Conn-Aware LB</text>
+  <text x="225" y="197" font-size="8" fill="#dbeafe" text-anchor="middle">routes by capacity</text>
+
+  <line x1="130" y1="185" x2="163" y2="185" stroke="#1d4ed8" stroke-width="2" marker-end="url(#wsArrowBlue)"/>
+
+  <!-- gateway fleet -->
+  <rect x="320" y="90" width="130" height="45" rx="8" fill="#15803d"/>
+  <text x="385" y="112" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Gateway Node 1</text>
+
+  <rect x="320" y="145" width="130" height="45" rx="8" fill="#15803d"/>
+  <text x="385" y="167" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Gateway Node 2</text>
+
+  <rect x="320" y="200" width="130" height="45" rx="8" fill="#15803d"/>
+  <text x="385" y="222" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Gateway Node N</text>
+
+  <line x1="285" y1="175" x2="318" y2="112" stroke="#15803d" stroke-width="2" marker-end="url(#wsArrowGreen)"/>
+  <line x1="285" y1="183" x2="318" y2="167" stroke="#15803d" stroke-width="2" marker-end="url(#wsArrowGreen)"/>
+  <line x1="285" y1="195" x2="318" y2="222" stroke="#15803d" stroke-width="2" marker-end="url(#wsArrowGreen)"/>
+
+  <!-- Durable write queue -->
+  <rect x="500" y="145" width="140" height="45" rx="8" fill="#15803d"/>
+  <text x="570" y="164" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Durable Send</text>
+  <text x="570" y="178" font-size="8" fill="#dcfce7" text-anchor="middle">queue, absorbs bursts</text>
+
+  <line x1="450" y1="112" x2="498" y2="155" stroke="#0f766e" stroke-width="2" marker-end="url(#wsArrowTeal)"/>
+  <line x1="450" y1="167" x2="498" y2="167" stroke="#0f766e" stroke-width="2" marker-end="url(#wsArrowTeal)"/>
+  <line x1="450" y1="222" x2="498" y2="180" stroke="#0f766e" stroke-width="2" marker-end="url(#wsArrowTeal)"/>
+
+  <!-- Delivery workers -->
+  <rect x="500" y="60" width="140" height="45" rx="8" fill="#0f766e"/>
+  <text x="570" y="79" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Delivery Workers</text>
+  <text x="570" y="93" font-size="8" fill="#ccfbf1" text-anchor="middle">route or enqueue</text>
+
+  <line x1="570" y1="145" x2="570" y2="107" stroke="#15803d" stroke-width="2" marker-end="url(#wsArrowGreen)"/>
+
+  <!-- presence directory -->
+  <rect x="500" y="220" width="140" height="45" rx="8" fill="#b45309"/>
+  <text x="570" y="239" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Presence Dir.</text>
+  <text x="570" y="253" font-size="8" fill="#fde68a" text-anchor="middle">in-memory, TTL</text>
+
+  <line x1="570" y1="105" x2="570" y2="220" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- Pending shards -->
+  <rect x="680" y="140" width="150" height="45" rx="8" fill="#334155"/>
+  <text x="755" y="159" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Pending Shard 1..N</text>
+  <text x="755" y="173" font-size="8" fill="#cbd5e1" text-anchor="middle">by recipient_id</text>
+
+  <line x1="640" y1="167" x2="678" y2="163" stroke="#0f766e" stroke-width="2" marker-end="url(#wsArrowTeal)"/>
+
+  <!-- History shards -->
+  <rect x="680" y="220" width="150" height="45" rx="8" fill="#334155"/>
+  <text x="755" y="239" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">History Shard 1..N</text>
+  <text x="755" y="253" font-size="8" fill="#cbd5e1" text-anchor="middle">by user_id, tiered by age</text>
+
+  <line x1="640" y1="82" x2="755" y2="218" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <rect x="20" y="320" width="810" height="70" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="425" y="340" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Green = scaled/redundant additions</text>
+  <text x="425" y="357" font-size="9" fill="#334155" text-anchor="middle">Durable queue absorbs peak send bursts before routing; pending-delivery shards by recipient so a</text>
+  <text x="425" y="373" font-size="9" fill="#334155" text-anchor="middle">reconnect never scatters across shards; history shards separately for bulk sequential sync reads</text>
+
+  <defs>
+    <marker id="wsArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="wsArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="wsArrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/>
+    </marker>
+  </defs>
+</svg>
