@@ -702,3 +702,86 @@ line-rewrap artifacts from paragraph insertion, not content removal —
 headings, or citations removed or weakened. `npm run typecheck` and
 `npm run build` both clean, zero broken links. Committed as a single
 `feat(patterns):` commit.
+
+## Phase 5.2: Policy retrofit + cross-links — API-edge gaps + AI Agent Orchestration (10 pages)
+
+Retrofitted 10 already-published pages under the relaxed real-vendor-
+naming policy: `course/patterns/api-edge/{api-versioning,
+service-discovery,load-balancing,reverse-proxy}.md`,
+`course/patterns/building-blocks/cdn.md`,
+`course/patterns/ai-agent-orchestration/{sequential-orchestration,
+concurrent-orchestration,group-chat-orchestration,handoff-
+orchestration,magentic-orchestration}.md`.
+
+Real-tech grounding added (additive only, all claims verified live
+before inclusion): api-versioning — X's (Twitter's) `/2/tweets`
+URI-path versioning as the canonical path example, plus Stripe's
+`Stripe-Version` and GitHub's `X-GitHub-Api-Version` dated-string
+headers as the header-based approach (corrected from the task's
+starting idea, which mischaracterized Stripe as URL-path — verified via
+curl against Stripe's and GitHub's own docs that both are actually
+header-delivered date-string versions, not path- or Accept-header-
+based, and wrote the accurate mechanism instead); service-discovery —
+HashiCorp Consul and etcd as concrete registry implementations, plus
+Kubernetes Service DNS as the "platform already provides it" example;
+load-balancing — HAProxy and NGINX as dual-mode L4/L7 software load
+balancers, plus AWS NLB vs. ALB as the managed-product illustration of
+the same split; reverse-proxy — NGINX (originally built as an HTTP
+server/reverse proxy, grew LB/caching on top) and Envoy (Istio's
+sidecar data-plane proxy) as concrete implementations; cdn — Cloudflare
+(anycast-routed) and Amazon CloudFront (DNS-routed) as concrete
+examples of the two request-routing approaches described in the page;
+the 5 AI Agent Orchestration pages — Microsoft's AutoGen and Semantic
+Kernel frameworks, which ship named orchestration patterns matching
+all 5 pattern names in this group almost exactly ("Sequential",
+"Concurrent", "Group Chat", "Handoff" agent orchestration in Semantic
+Kernel; "Group Chat" and "Handoffs" design patterns in AutoGen), plus
+Microsoft's Magentic-One multi-agent system as the specific, publicly
+documented origin of the "Magentic" name and its Orchestrator-plans-
+delegates-replans structure — all verified via curl against Microsoft
+Learn/AutoGen docs/Microsoft Research before inclusion, high-confidence
+match since these are the same team's frameworks the Azure AI agent
+design patterns page (already linked on all 5 pages pre-retrofit) was
+sourced from. No false or invented capabilities stated about any named
+product.
+
+Cross-reference links added to each page's Further reading, all URLs
+curl-verified live (200) both when first found and again in a final
+recheck pass before finishing: api-versioning — DesignGurus "API
+Versioning" (The Entry Point module, text-only) + roadmap.sh (confirmed
+"API Versioning" appears as a named node via direct curl grep against
+the live page); service-discovery — roadmap.sh only (confirmed "Service
+Discovery" is a named node via curl grep; no DesignGurus lesson covers
+service discovery, per the task's own note, not forced); load-balancing
+— DesignGurus "Load Balancing" (Growing Under Load module) +
+roadmap.sh (confirmed "Load Balancing"/"Load Balancers" both appear as
+named nodes); reverse-proxy — DesignGurus "Reverse Proxy" (The Entry
+Point module) + roadmap.sh (confirmed "Reverse Proxy" as a named node);
+cdn — DesignGurus "CDN" (The Entry Point module) + roadmap.sh (confirmed
+"CDN" as a named node); the 5 AI Agent Orchestration pages — no
+DesignGurus or roadmap.sh links added (neither source covers multi-
+agent orchestration, per the task's own note, not forced), instead each
+got 1-2 additional Further-reading links to the specific Semantic
+Kernel/AutoGen/Magentic-One pages that are the real-tech grounding
+source for that page (all 5 already had the Azure AI agent design
+patterns link pre-existing from an earlier phase — checked first,
+not duplicated).
+
+Verified roadmap.sh/system-design node names by curling the live page
+and grepping for each candidate topic string directly (not guessing
+from prior research) before citing any of them. Re-read all 10 files in
+full after editing: fixed one placement issue found on this pass (the
+NGINX/Envoy insertion in reverse-proxy.md originally ran the vendor
+sentence directly into the existing "From the client's perspective..."
+sentence with no paragraph break — split into its own paragraph after
+the core termination/forwarding explanation). Confirmed via `git diff`
+that all 10 files' diffs are purely additive (94 insertions, 10
+deletions — the 10 deletions are line-rewrap artifacts from a single
+sentence reflow in service-discovery.md's "When not to use it" bullet,
+same claim restated with a concrete Kubernetes example, not weakened or
+removed) — no existing prose, code examples, headings, or citations
+removed. Grepped all touched files for "designgurus" (case-insensitive)
+and confirmed all 4 occurrences are plain-text bullets, never inside
+markdown link syntax. `npm run typecheck` and `npm run build` both
+clean, zero broken links. Committed as a single `feat(patterns):`
+commit (a875cb5).
