@@ -527,6 +527,13 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/building-blocks/scheduler-agent-supervisor",
+    "title": "Scheduler Agent Supervisor",
+    "path": "/docs/patterns/building-blocks/scheduler-agent-supervisor",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/building-blocks/sequencer",
     "title": "Sequencer",
     "path": "/docs/patterns/building-blocks/sequencer",
@@ -537,6 +544,20 @@ export const courseManifest: ManifestEntry[] = [
     "id": "patterns/building-blocks/sharded-counters",
     "title": "Sharded Counters",
     "path": "/docs/patterns/building-blocks/sharded-counters",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/static-content-hosting",
+    "title": "Static Content Hosting",
+    "path": "/docs/patterns/building-blocks/static-content-hosting",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/building-blocks/throttling",
+    "title": "Throttling",
+    "path": "/docs/patterns/building-blocks/throttling",
     "category": "design-patterns",
     "source": "supplementary"
   },
@@ -709,6 +730,13 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/observability/deployment-stamps",
+    "title": "Deployment Stamps",
+    "path": "/docs/patterns/observability/deployment-stamps",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/observability/distributed-tracing",
     "title": "Distributed Tracing",
     "path": "/docs/patterns/observability/distributed-tracing",
@@ -716,9 +744,23 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/observability/external-configuration-store",
+    "title": "External Configuration Store",
+    "path": "/docs/patterns/observability/external-configuration-store",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/observability/feature-flags",
     "title": "Feature Flags",
     "path": "/docs/patterns/observability/feature-flags",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/observability/geode",
+    "title": "Geode",
+    "path": "/docs/patterns/observability/geode",
     "category": "design-patterns",
     "source": "supplementary"
   },
