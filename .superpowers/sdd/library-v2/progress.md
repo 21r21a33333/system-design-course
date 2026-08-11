@@ -538,3 +538,21 @@ Commits: 0a2001d + review-fix. Production-libraries on all 11 (streaming
 engines + clients). Review re-curled 73 URLs (70 200, 2 acceptable bot-
 block, Bytewax real behind sandbox DNS filter); fixed dead Confluent link
 + Sequin language (Go->Elixir). Additive. Build clean.
+
+### Libs+visuals — remaining 10 groups (77 pages) — COMPLETE (parallel sweep)
+Commits: 4fb0396 (all 77) + review-fix. Dispatched all 15 remaining
+implementer batches at once (storage, observability, scaling, api-edge,
+consistency, integration, caching, ai-infra, ai-agent-orchestration,
+antipatterns[Libraries-&-tools-that-prevent-this framing]). One earlier
+storage dispatch had been interrupted mid-write; a resumed agent detected
+the 3 already-written pages + finished the 2 remaining. Two parallel
+reviewers re-curled 452 URLs (all healthy; npm/mysql/milvus browser-live
+403s noted inline), verified every library real+correctly-attributed incl
+high-risk recent ai-infra/agent-orchestration tools; paxos honest (no fake
+pkg), raft libs real, vector-clocks honestly weak, federation not-Apollo.
+2 URL-canonicalization fixes. Additive; build/typecheck clean; manifest 121.
+
+## LIBRARIES + VISUAL-REFS PASS COMPLETE — all 121 pages now carry a
+## production-library getting-started section (antipatterns: corrective-
+## tools framing) + external Visual-references links where a clearly-better
+## diagram existed. ~570 curl-verified library/getting-started URLs added.
