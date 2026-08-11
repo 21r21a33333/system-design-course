@@ -320,3 +320,22 @@ every run, ~224ms wall, genuinely multi-threaded). Re-verified DLQ (dead-
 letters at exactly max_attempts=3) and idempotency (total_charged stays
 2500 on replay) behaviorally. 16 external URLs curl-checked all 200.
 Originality verbatim-search clean. Build/typecheck clean, manifest 121.
+
+### Phase 3 (relaunched) — Group: Batch & Streaming (11 pages) — COMPLETE
+Commits: 7bf6b0b (all 11), 1b65d77 (review fix). 7 bare built out
+(stream-processing, backpressure, exactly-once-semantics, partitioned-
+consumption, change-data-capture, mapreduce, lambda-kappa-architecture)
++ 4 depth-ups (competing-consumers, priority-queue, queue-based-load-
+leveling, sequential-convoy). 7 new SVGs. Comparison tables (delivery
+guarantees, CDC capture methods, lambda-vs-kappa, window types).
+Mechanism-only snippets (new rule enforced from the start — zero test
+attrs). Genuine real-thread timing demos: mapreduce parallel-map 55ms
+vs 200ms, competing-consumers 4-worker 232ms/~3.4x, sequential-convoy
+per-key lanes 70ms, backpressure sync_channel 319ms/3-blocked.
+
+Independent review: re-ran all 5 concurrency claims (all genuinely
+multi-threaded, none sequential-in-disguise), verified logic of all 7
+lib mechanisms by reading, 26 internal links resolve, SVGs valid+on-
+palette, originality verbatim-search clean, curled 19 external URLs —
+1 dead (LinkedIn "The Log" engineering.linkedin.com 404 -> migrated
+linkedin.com/blog canonical), fixed. Build/typecheck clean, manifest 121.
