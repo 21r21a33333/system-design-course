@@ -524,3 +524,11 @@ Commit: 220743c. Production-libraries on all 9 + websockets Visual-refs
 libraries real + correctly attributed (socket.io/ws JS, tonic/tokio-
 tungstenite/rumqtt Rust, gorilla-websocket/grpc-go/asynq Go, grpcio/
 celery/sse-starlette Python), tables valid GFM, additive. Zero fixes.
+
+### Libs+visuals — Reliability (8 pages) — COMPLETE
+Commit: 5c4c3a5. Production-libraries on all 8 (incl failover exemplar).
+Batch caught+dropped a hallucinated Rust lib (actix-idempotency) mid-run,
+replaced w/ verified axum-idempotent. Independent review re-curled all 61
+URLs (56 200, 5 acceptable bot-block), registry-confirmed every library
+real incl axum-idempotent (crates.io v0.2.7) + express-idempotency (npm
+v2.1.0). Zero fixes. Build clean.
