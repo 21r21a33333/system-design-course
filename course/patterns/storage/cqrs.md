@@ -315,6 +315,21 @@ expensive fan-out is done once on the read side and cached in the exact
 shape the timeline UI renders, so a feed load is a single lookup rather
 than a cross-entity join at request time.
 
+## Production libraries & getting started
+
+Most teams get CQRS from a framework's command/query dispatch and projection machinery rather than wiring buses by hand — these span the write-side command handling and the read-model projection plumbing.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Axon Framework | Java / JVM | Command/query/event buses, aggregates, and projections — a full CQRS + event-sourcing stack | [docs.axoniq.io](https://docs.axoniq.io/home/) |
+| NestJS CQRS module | JS / TS | Command/query handlers, events, and sagas as first-class NestJS building blocks | [docs.nestjs.com](https://docs.nestjs.com/recipes/cqrs) |
+| MediatR | .NET | In-process command/query dispatch (mediator) that cleanly separates read and write handlers | [github.com/jbogard/MediatR](https://github.com/jbogard/MediatR) |
+| Wolverine + Marten | .NET | Message/command handling (Wolverine) over a Postgres event store + projections (Marten) | [wolverinefx.net](https://wolverinefx.net/guide/durability/marten/event-sourcing.html) |
+| Eventuous | .NET | Command service + subscriptions that project events into read models | [eventuous.dev](https://eventuous.dev/) |
+| cqrs-es | Rust | Aggregates, command handling, and query/view projections with pluggable persistence | [doc.rust-cqrs.org](https://doc.rust-cqrs.org/) |
+
+**Example / reference:** [serverlesstechnology/cqrs (cqrs-es framework + views)](https://github.com/serverlesstechnology/cqrs)
+
 ## Related patterns
 
 - [Event Sourcing](/docs/patterns/storage/event-sourcing) — the most

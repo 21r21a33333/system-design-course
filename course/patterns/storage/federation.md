@@ -235,6 +235,21 @@ access patterns that keeping them in one schema on one engine would
 mean tuning that engine for a compromise that serves neither pattern
 well.
 
+## Production libraries & getting started
+
+Federation in this data-tier sense (functional partitioning / database-per-service) is an architectural decision rather than a drop-in library — so this is the design guidance plus the managed database engines that make running an independent, per-domain store cheap enough to be worth it. (Note: this is *not* GraphQL "Apollo Federation," which composes an API graph, not the data tier.)
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Database per service (guidance) | Architecture pattern | The canonical rationale and tradeoffs for giving each domain/service its own store | [microservices.io](https://microservices.io/patterns/data/database-per-service.html) |
+| Decompose by business capability | Architecture pattern | How to draw the functional/domain boundaries the federates split along | [microservices.io](https://microservices.io/patterns/decomposition/decompose-by-business-capability.html) |
+| Microservice data considerations | Architecture guidance | Per-service data ownership, polyglot persistence, and cross-service query tradeoffs | [learn.microsoft.com](https://learn.microsoft.com/en-us/azure/architecture/microservices/design/data-considerations) |
+| Amazon RDS | Managed (multi-engine) | Managed per-service relational databases so each federate runs its own store cheaply | [docs.aws.amazon.com](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html) |
+| Google Cloud SQL | Managed (multi-engine) | Managed MySQL/Postgres/SQL Server instances for independent per-domain stores | [cloud.google.com](https://cloud.google.com/sql/docs) |
+| MongoDB | Document DB | A per-domain document store when a federate's shape suits documents over relations (polyglot persistence) | [mongodb.com/docs](https://www.mongodb.com/docs/manual/) |
+
+**Example / reference:** [Data sovereignty per microservice — .NET microservices guide](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/architect-microservice-container-applications/data-sovereignty-per-microservice)
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — splits rows within one

@@ -235,6 +235,21 @@ only needs the new articles chunked and embedded into the index — the
 underlying LLM never needs retraining to reflect a UI change that
 happened last week.
 
+## Production libraries & getting started
+
+Most teams assemble a RAG pipeline from an orchestration framework that
+wires together chunking, embedding, retrieval, and the LLM call, rather
+than gluing each stage by hand.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| LangChain | Python / JS | Composable chains for retrieval + generation, with many retriever and vector-store integrations | [RAG tutorial](https://python.langchain.com/docs/tutorials/rag/) |
+| LlamaIndex | Python / TS | Data framework focused on indexing and retrieval over your documents | [Starter example](https://docs.llamaindex.ai/en/stable/getting_started/starter_example/) |
+| Haystack | Python | Production-oriented pipelines for retrieval, RAG, and agents | [Quick start](https://haystack.deepset.ai/overview/quick-start) |
+| txtai | Python | Embeddings database with built-in RAG and semantic search | [Documentation](https://neuml.github.io/txtai/) |
+
+**Example / reference:** [LangChain RAG tutorial](https://python.langchain.com/docs/tutorials/rag/)
+
 ## Related patterns
 
 - [Vector Database Sharding](/docs/patterns/ai-infra/vector-database-sharding) —

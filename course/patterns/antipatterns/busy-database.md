@@ -207,6 +207,22 @@ bottleneck regardless of what runs on it, the operational simplicity of
 one stored procedure over a separate deployed service can be the right
 tradeoff.
 
+## Libraries & tools that prevent this
+
+These tools help move work off the database engine — offloading connection handling and read scaling to a proxy, shifting logic to the application tier, and surfacing which queries or procedures are actually CPU-bound so they can be pulled out.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| PgBouncer | PostgreSQL / any | Lightweight connection pooler that lets the app tier hold many cheap connections without each one consuming a heavy Postgres backend, so scaling logic outward doesn't overwhelm the DB. | [pgbouncer.org](https://www.pgbouncer.org/) |
+| ProxySQL | MySQL / any | High-performance proxy for read/write splitting and query routing, letting reads fan out to replicas so the primary isn't the single CPU doing everything. | [proxysql.com docs](https://www.proxysql.com/documentation/) |
+| pg_stat_statements | PostgreSQL | Aggregates execution stats per normalized query so you can see exactly which statements (including procedure-heavy ones) dominate CPU time and belong in the app tier. | [postgresql.org docs](https://www.postgresql.org/docs/current/pgstatstatements.html) |
+| EXPLAIN | PostgreSQL | Shows the query plan so CPU-bound per-row functions, recursive CTEs, and trigger cascades are visible rather than hidden behind a slow endpoint. | [postgresql.org docs](https://www.postgresql.org/docs/current/sql-explain.html) |
+| SQLAlchemy | Python | Application-tier ORM that keeps business logic in versioned, unit-testable Python instead of accreting stored procedures and triggers in the schema. | [sqlalchemy.org docs](https://docs.sqlalchemy.org/en/20/) |
+| Prisma | JS / TS | Type-safe data-access layer that encourages expressing logic in the app instead of pushing it into database-side procedures. | [prisma.io docs](https://www.prisma.io/docs) |
+| Debezium | JVM / any | Change-data-capture that streams row-level changes out to the app tier, replacing trigger-driven side effects (audit, notify, cascade) that would otherwise run inside the database. | [debezium.io docs](https://debezium.io/documentation/) |
+
+**Example / reference:** [Busy Database antipattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/busy-database/)
+
 ## Related patterns
 
 - [CQRS](/docs/patterns/storage/cqrs) — separates the write model from

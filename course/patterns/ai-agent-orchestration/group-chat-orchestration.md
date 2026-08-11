@@ -238,6 +238,19 @@ others raise rather than working in isolation; the moderator ends the
 session once several consecutive turns pass without any participant
 raising a new concern, signaling the discussion has converged.
 
+## Production libraries & getting started
+
+These frameworks put multiple agents into one shared conversation thread and let a moderator pick the next speaker turn by turn.
+
+| Framework / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| **Microsoft AutoGen** | Python, .NET | The canonical group-chat implementation: a team of agents shares a message thread and a `GroupChatManager` selects the next speaker each turn. | [Group chat pattern docs](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/design-patterns/group-chat.html) |
+| **Microsoft Agent Framework** | Python, .NET | The successor to AutoGen and Semantic Kernel, with group-chat orchestration among its built-in multi-agent patterns. | [Agent Framework overview](https://learn.microsoft.com/en-us/agent-framework/overview/agent-framework-overview) |
+| **CrewAI** | Python | Collaborating agents that delegate to and question each other within a crew, approximating a moderated shared discussion. | [Collaboration docs](https://docs.crewai.com/en/concepts/collaboration) |
+| **LangGraph** | Python, JS/TS | A multi-agent graph where a supervisor node routes each turn to the next agent over shared conversational state. | [Multi-agent concepts](https://langchain-ai.github.io/langgraph/concepts/multi_agent/) |
+
+**Example / reference:** [Semantic Kernel group-chat orchestration](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/group-chat)
+
 ## Related patterns
 
 - [Sequential Orchestration](/docs/patterns/ai-agent-orchestration/sequential-orchestration) —

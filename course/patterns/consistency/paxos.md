@@ -310,6 +310,20 @@ agreed by a majority before it takes effect, so a stale or partitioned
 node can never hand a client an out-of-date view that contradicts what
 the rest of the cluster has already committed.
 
+## Production libraries & getting started
+
+Paxos is almost never consumed as a drop-in library — it is an algorithm embedded inside larger systems, and most teams that want "consensus as a dependency" reach for Raft instead. The honest landscape is a handful of research/academic implementations plus the production systems that famously run Paxos (or a Paxos variant) internally.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| libpaxos | C | Reference implementation of Basic/Multi-Paxos from the academic literature; useful for learning and experiments, not a supported product | [Repository](https://bitbucket.org/sciascid/libpaxos) |
+| Google Chubby | (system, internal) | Lock service whose replicated database is kept consistent by Multi-Paxos — the canonical "Paxos in production" case study | [Chubby paper (OSDI 2006)](https://research.google/pubs/the-chubby-lock-service-for-loosely-coupled-distributed-systems/) |
+| Google Spanner | (managed system) | Globally distributed database that replicates each shard with a Paxos state machine per group | [Spanner docs](https://cloud.google.com/spanner/docs) |
+| Apache ZooKeeper (ZAB) | Java | Coordination service using Zab, a Paxos-family atomic broadcast protocol; the widely deployed way to get Paxos-grade agreement without writing it yourself | [ZooKeeper docs](https://zookeeper.apache.org/doc/current/recipes.html) |
+| etcd / Raft | Go | The pragmatic default: if you want consensus as a library, teams pick Raft over Paxos — see the [Raft page](/docs/patterns/consistency/raft) | [etcd docs](https://etcd.io/docs/latest/) |
+
+**Example / reference:** [Spanner: Google's Globally-Distributed Database (OSDI 2012)](https://research.google/pubs/spanner-googles-globally-distributed-database-2/)
+
 ## Related patterns
 
 - [Raft](/docs/patterns/consistency/raft) — designed specifically as an

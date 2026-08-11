@@ -198,6 +198,20 @@ guarantee that any read quorum overlaps any prior write quorum,
 ensuring a flag flip is visible to every subsequent read once the write
 that made it has been acknowledged.
 
+## Production libraries & getting started
+
+Quorums are exposed as tunable consistency levels in the datastores that implement them: you pick R and W (or a named level) per operation and the system enforces the overlap. These are the mainstream systems that let you dial the quorum.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Apache Cassandra | Java (client: any) | Per-query consistency levels (`QUORUM`, `LOCAL_QUORUM`, `EACH_QUORUM`) over a Dynamo-style replicated ring | [Tunable consistency docs](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html#tunable-consistency) |
+| ScyllaDB | C++ (client: any) | Cassandra-compatible consistency levels with the same QUORUM semantics | [Consistency levels docs](https://docs.scylladb.com/stable/cql/consistency.html) |
+| Amazon DynamoDB | Managed (SDKs) | Eventually vs. strongly consistent reads, plus quorum-replicated durable writes | [Read consistency docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html) |
+| MongoDB | Multi-language drivers | `writeConcern` and `readConcern` to tune how many replicas must acknowledge before a write is durable/visible | [Write concern docs](https://www.mongodb.com/docs/manual/reference/write-concern/) |
+| etcd | Go | Linearizable (quorum) vs. serializable reads over a Raft-replicated majority | [API guarantees docs](https://etcd.io/docs/latest/learning/api_guarantees/) |
+
+**Example / reference:** [MongoDB read concern reference](https://www.mongodb.com/docs/manual/reference/read-concern/)
+
 ## Related patterns
 
 - [Vector Clocks](/docs/patterns/consistency/vector-clocks) — used

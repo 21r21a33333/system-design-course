@@ -291,6 +291,30 @@ user — federation and
 [gateway offloading](/docs/patterns/api-edge/gateway-offloading)
 working together.
 
+## Production libraries & getting started
+
+Federated identity is adopted at two layers: an identity provider (IdP)
+that authenticates users and issues tokens, and a client-side OIDC/OAuth2
+library that runs the flow and — critically — verifies tokens correctly.
+Both are listed below; the client libraries are what implement the
+signature, issuer, audience, and expiry checks the pattern hinges on.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Keycloak | Java (self-hosted IdP) | Open-source OIDC/SAML IdP with SSO, federation, and user management | [Getting started](https://www.keycloak.org/getting-started/getting-started-docker) |
+| Auth0 | Managed service | Hosted IdP with social login, enterprise SSO, and rules | [Getting started](https://auth0.com/docs/get-started) |
+| Okta | Managed service | Enterprise IdP for workforce and customer SSO | [Getting started](https://developer.okta.com/docs/guides/) |
+| AWS Cognito | Managed service | AWS-native user pools and identity federation | [Getting started](https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html) |
+| Ory (Hydra / Kratos) | Go (self-hosted) | Composable OAuth2/OIDC server (Hydra) and identity management (Kratos) | [Getting started](https://www.ory.sh/docs/welcome) |
+| Authentik | Python (self-hosted IdP) | Open-source IdP supporting OIDC, SAML, and SCIM | [Getting started](https://docs.goauthentik.io/docs/) |
+| passport.js | JS/TS | Pluggable auth middleware with OIDC/OAuth2 strategies | [Getting started](https://www.passportjs.org/) |
+| openid-client | JS/TS | Certified OIDC relying-party client with correct token validation | [Getting started](https://github.com/panva/openid-client) |
+| golang.org/x/oauth2 | Go | Standard OAuth2 client for Go token flows | [Getting started](https://pkg.go.dev/golang.org/x/oauth2) |
+| Authlib | Python | OAuth2/OIDC client and provider building blocks | [Getting started](https://docs.authlib.org/en/latest/) |
+| openidconnect | Rust | Strongly-typed OIDC relying-party library with JWKS verification | [Getting started](https://docs.rs/openidconnect/latest/openidconnect/) |
+
+**Example / reference:** [OpenID Connect Core 1.0 — OpenID Foundation](https://openid.net/specs/openid-connect-core-1_0.html)
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — a common place

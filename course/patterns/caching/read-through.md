@@ -191,6 +191,18 @@ is read-through at the infrastructure level rather than the
 application-code level, but the same principle: the caller doesn't
 orchestrate the miss path, the caching layer does.
 
+## Production libraries & getting started
+
+Read-through is a mode of the cache provider itself: you register a loader and the caching layer runs the miss path. These are the systems that expose a genuine read-through/loader configuration.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Caffeine `LoadingCache` | Java | In-process cache built from a `CacheLoader` so `get` transparently loads and caches misses | [Population docs](https://github.com/ben-manes/caffeine/wiki/Population#loading) |
+| Ehcache (cache-through) | Java | Configure a `CacheLoaderWriter` so the cache reads through to the system of record on a miss | [Caching patterns](https://www.ehcache.org/documentation/3.10/caching-patterns.html#read-through) |
+| Hazelcast MapLoader | Java / JVM | Distributed `IMap` backed by a `MapLoader` that loads missing entries from an external store | [MapLoader docs](https://docs.hazelcast.com/hazelcast/latest/mapstore/configuring-a-generic-maploader) |
+| NCache read-through | .NET | Read-through provider that fetches from the data source on a cache miss | [Read-through docs](https://www.alachisoft.com/resources/docs/ncache/prog-guide/read-through-caching.html) |
+| Amazon DynamoDB DAX | Any (AWS) | Managed in-memory cache that transparently reads through to DynamoDB on a miss | [DAX docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.html) |
+
 ## Related patterns
 
 - [Cache-Aside](/docs/patterns/caching/cache-aside) — the same

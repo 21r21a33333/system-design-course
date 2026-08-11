@@ -262,6 +262,20 @@ can't monopolize a host. Pairing CPU-heavy transforms with memory-heavy
 aggregations on the same host fills capacity better than stacking like
 with like, and the pool scales down when the queue drains.
 
+## Production libraries & getting started
+
+Consolidation in practice is a bin-packing scheduler plus per-workload limits, optionally hardened with lightweight-VM isolation where a shared kernel isn't a strong enough boundary. These are the production schedulers and isolation runtimes that pack many workloads onto shared hosts.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| -------------- | -------- | ----------------- | --------------- |
+| Kubernetes scheduler | Go / YAML | Bin-packs pods onto nodes by CPU/memory `requests`, respecting affinity, taints, and quotas | [kube-scheduler](https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/) |
+| Kubernetes Cluster Autoscaler | Go | Adds/removes nodes so packed pods fit and idle nodes are reclaimed | [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) |
+| HashiCorp Nomad | HCL / Go | Bin-packing scheduler that consolidates diverse tasks (containers, binaries, batch) onto a shared client pool | [Nomad schedulers](https://developer.hashicorp.com/nomad/docs/schedulers) |
+| Firecracker | Rust | MicroVMs giving hardware-level isolation at container-like density for multi-tenant packing | [Firecracker](https://firecracker-microvm.github.io/) |
+| gVisor | Go | User-space kernel that adds a strong sandbox boundary around co-located workloads | [gVisor docs](https://gvisor.dev/docs/) |
+
+**Example / reference:** [Kubernetes resource requests & limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+
 ## Related patterns
 
 - [Noisy Neighbor](/docs/patterns/antipatterns/noisy-neighbor) — the core

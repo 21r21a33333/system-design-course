@@ -296,6 +296,24 @@ through the broker. A new stage — say, subtitle generation — is added by
 subscribing a new worker to an existing event, with no change to the
 workers already in the chain.
 
+## Production libraries & getting started
+
+Choreography isn't a library you install — it's a coordination style
+built on top of a message broker plus a framework that makes services
+publish, subscribe, and react idempotently. The real production choices
+are the broker that carries the events and the event-driven framework
+that wires handlers to topics.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Apache Kafka | Java/Scala broker; clients in most languages | Durable, partitioned event log — the usual substrate for choreographed workflows where each service consumes and emits events | [Kafka documentation](https://kafka.apache.org/documentation/) |
+| NATS / JetStream | Go broker; clients in most languages | Lightweight pub-sub with JetStream persistence for at-least-once event choreography | [NATS JetStream](https://docs.nats.io/nats-concepts/jetstream) |
+| MassTransit | .NET / C# | Message framework whose event consumers make choreographed, event-reacting services (and choreographed sagas) straightforward | [MassTransit saga](https://masstransit.io/documentation/patterns/saga) |
+| Watermill | Go | Library for building event-driven apps: publishers, subscribers, and middleware over Kafka/NATS/etc. for choreographed flows | [Watermill getting started](https://watermill.io/docs/getting-started/) |
+| Eventuate | Java (Spring) | Event-driven microservices platform providing transactional event publishing that choreographed and orchestrated sagas build on | [Eventuate](https://eventuate.io/) |
+
+**Example / reference:** [ThreeDotsLabs/watermill](https://github.com/ThreeDotsLabs/watermill) — event-driven message-handling library with runnable pub-sub examples.
+
 ## Related patterns
 
 - [Saga](/docs/patterns/consistency/saga) — uses choreography (alongside

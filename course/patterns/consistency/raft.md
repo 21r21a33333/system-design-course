@@ -353,6 +353,21 @@ uses to ensure exactly one scheduler is dispatching work, and what a
 [Sequencer](/docs/patterns/building-blocks/sequencer) uses to hand out a
 single monotonic stream of ids from one agreed authority.
 
+## Production libraries & getting started
+
+Unlike Paxos, Raft is designed to be implemented, and there are mature, battle-tested libraries in every major systems language. Pick one that matches your runtime and let it own leader election, log replication, and membership changes.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| etcd/raft | Go | The reference production Raft, extracted from etcd; you supply storage and transport, it drives the state machine | [Package docs](https://github.com/etcd-io/raft) |
+| hashicorp/raft | Go | Standalone Raft powering Consul, Nomad, and Vault; pluggable log store, snapshots, and transport | [Repository](https://github.com/hashicorp/raft) |
+| dragonboat | Go | High-throughput multi-group Raft supporting many concurrent Raft clusters in one process | [Repository](https://github.com/lni/dragonboat) |
+| tikv/raft-rs | Rust | The Raft core used by TiKV; a from-scratch port of etcd/raft with the same driver model | [Repository](https://github.com/tikv/raft-rs) |
+| openraft | Rust | Async, modern Raft with membership changes and generic state machines | [Repository](https://github.com/databendlabs/openraft) |
+| MicroRaft | Java | Feature-complete Raft library with a clean API, linearizable reads, and dynamic membership | [microraft.io](https://microraft.io/) |
+
+**Example / reference:** [etcd — a distributed reliable key-value store built on etcd/raft](https://github.com/etcd-io/etcd)
+
 ## Related patterns
 
 - [Paxos](/docs/patterns/consistency/paxos) — the earlier consensus

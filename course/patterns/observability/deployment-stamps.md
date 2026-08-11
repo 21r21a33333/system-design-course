@@ -297,6 +297,20 @@ deployment boundary rather than an application-level access-control rule
 that a bug could bypass. Upgrades roll stamp-by-stamp, letting a change
 be validated on a low-risk stamp before reaching regulated ones.
 
+## Production libraries & getting started
+
+A stamp is infrastructure, not a library: you build one by templating a full stack (compute, data, networking) as a repeatable unit and cutting each stamp along a Kubernetes or account boundary. The tooling below is what teams use to define, replicate, and route across stamps, plus the cloud guidance that formalizes the cell-based version of the pattern.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Terraform modules | HCL | Package a whole stamp as a reusable, parameterized module and instantiate it N times | [developer.hashicorp.com/terraform/tutorials/modules](https://developer.hashicorp.com/terraform/tutorials/modules/module) |
+| Azure Bicep modules | Bicep | Same repeatable-unit approach for Azure resource groups, one deployment per stamp | [learn.microsoft.com/azure/bicep/modules](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/modules) |
+| Kubernetes | YAML / Go | A cluster (or namespace) per stamp as the isolation boundary for compute and data | [kubernetes.io/docs/setup](https://kubernetes.io/docs/setup/) |
+| AWS cell-based architecture | Guidance (any IaC) | Well-Architected guidance on sizing cells, routing, and bounding blast radius | [docs.aws.amazon.com — cell-based architecture](https://docs.aws.amazon.com/wellarchitected/latest/reducing-scope-of-impact-with-cell-based-architecture/reducing-scope-of-impact-with-cell-based-architecture.html) |
+| Azure landing zones | Guidance (Bicep/Terraform) | Reference architecture for repeatable, governed subscription/stamp scaffolding | [learn.microsoft.com — landing zones](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/) |
+
+**Example / reference:** [Deployment Stamps pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/deployment-stamp)
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — partitions *data* across

@@ -222,6 +222,23 @@ connection stays open, and the routing layer discovers the correct
 worker per command at call time rather than assuming any static
 device-to-worker assignment.
 
+## Production libraries & getting started
+
+Service discovery keeps a live registry of where instances are so callers
+can find them without hard-coded addresses. These are the registries and
+DNS-based systems that back real deployments:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| HashiCorp Consul | Go | Service registry with health checks, DNS/HTTP lookup, and a KV store | [Consul docs](https://developer.hashicorp.com/consul/docs) |
+| etcd | Go | Strongly consistent key-value store used as a discovery/coordination backend | [etcd docs](https://etcd.io/docs/) |
+| Kubernetes Services + DNS | Managed (Kubernetes) | Built-in cluster discovery: stable virtual IPs and DNS names for pods | [Kubernetes Services docs](https://kubernetes.io/docs/concepts/services-networking/service/) |
+| CoreDNS | Go | Pluggable DNS server that powers Kubernetes service-name resolution | [CoreDNS docs](https://coredns.io/manual/toc/) |
+| Netflix Eureka | Java | Client-side discovery registry for JVM/Spring Cloud microservices | [Netflix Eureka wiki](https://github.com/Netflix/eureka/wiki) |
+| Apache ZooKeeper | Java | Coordination service used for registration, leader election, and discovery | [Apache ZooKeeper docs](https://zookeeper.apache.org/doc/current/) |
+
+**Example / reference:** [Consul docs](https://developer.hashicorp.com/consul/docs)
+
 ## Related patterns
 
 - [Service Mesh](/docs/patterns/api-edge/service-mesh) — a broader

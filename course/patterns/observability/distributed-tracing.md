@@ -306,6 +306,23 @@ context into the message, so consumers started orphan traces. Adding
 context propagation to the queue metadata reconnects the pipeline into
 one end-to-end trace spanning the synchronous and asynchronous halves.
 
+## Production libraries & getting started
+
+In practice you instrument with an OpenTelemetry SDK for your language and export spans to a tracing backend; the vendor-neutral OTel wire format lets you switch backends without re-instrumenting.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| OpenTelemetry JS | JS/TS | Auto- and manual span instrumentation, context propagation, OTLP export | [opentelemetry.io/docs/languages/js](https://opentelemetry.io/docs/languages/js/) |
+| OpenTelemetry Rust | Rust | Tracing API/SDK with `tracing` integration and OTLP export | [opentelemetry.io/docs/languages/rust](https://opentelemetry.io/docs/languages/rust/) |
+| OpenTelemetry Go | Go | Idiomatic tracer, propagators, and OTLP exporters | [opentelemetry.io/docs/languages/go](https://opentelemetry.io/docs/languages/go/getting-started/) |
+| OpenTelemetry Python | Python | Auto-instrumentation for common frameworks plus manual spans | [opentelemetry.io/docs/languages/python](https://opentelemetry.io/docs/languages/python/getting-started/) |
+| Jaeger | Backend (any lang) | Open-source collector, storage, and trace-waterfall UI | [jaegertracing.io/docs/getting-started](https://www.jaegertracing.io/docs/latest/getting-started/) |
+| Zipkin | Backend (any lang) | The original OSS tracing backend with a lightweight footprint | [zipkin.io/quickstart](https://zipkin.io/pages/quickstart.html) |
+| Grafana Tempo | Backend (any lang) | Object-storage-backed, high-scale trace store integrated with Grafana | [grafana.com/docs/tempo](https://grafana.com/docs/tempo/latest/getting-started/) |
+| Honeycomb | SaaS (any lang) | High-cardinality trace analytics and querying over OTLP data | [docs.honeycomb.io](https://docs.honeycomb.io/get-started/start-building/) |
+
+**Example / reference:** [opentelemetry-rust](https://github.com/open-telemetry/opentelemetry-rust)
+
 ## Related patterns
 
 - [Distributed Monitoring](/docs/patterns/building-blocks/distributed-monitoring) — the metrics pillar; aggregate numbers tell you a service is slow, a trace tells you which hop.

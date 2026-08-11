@@ -202,6 +202,24 @@ in step — without it, the nightly-retrained model's understanding of
 "genre affinity" would silently disagree with what the online store
 returns for the same user during the following day's live requests.
 
+## Production libraries & getting started
+
+In practice teams reach for a purpose-built feature store rather than
+wiring an offline warehouse and an online key-value store together by
+hand — these handle the shared transformation registry, dual writes, and
+point-in-time joins for you.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Feast | Python | Open-source feature store: registry, offline/online store abstraction, point-in-time retrieval | [Quickstart](https://docs.feast.dev/getting-started/quickstart) |
+| Tecton | Python / SaaS | Managed feature platform with streaming ingestion and time-travel joins | [Quick start tutorial](https://docs.tecton.ai/docs/beta/tutorials/tecton-quick-start) |
+| Hopsworks | Python / Java | Feature store with online (RonDB) and offline stores plus feature versioning | [Documentation](https://docs.hopsworks.ai/latest/) |
+| Featureform | Python | Open-source "virtual" feature store layered over your existing infra | [Getting started](https://docs.featureform.com/getting-started/overview) |
+| Databricks Feature Store | Python / SaaS | Feature tables integrated with the lakehouse and model serving | [Feature engineering docs](https://docs.databricks.com/aws/en/machine-learning/feature-store/) |
+| Vertex AI Feature Store | Managed (GCP) | Google Cloud managed online/offline feature serving | [Overview](https://cloud.google.com/vertex-ai/docs/featurestore/latest/overview) |
+
+**Example / reference:** [Feast quickstart](https://docs.feast.dev/getting-started/quickstart)
+
 ## Related patterns
 
 - [Model Serving](/docs/patterns/ai-infra/model-serving) — the online

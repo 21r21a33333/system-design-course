@@ -242,6 +242,22 @@ avoid the hotspot that time-range (range) sharding would create on
 cross-series rollups fan out and merge, accepting scatter-gather latency
 for a workload that is overwhelmingly per-series writes.
 
+## Production libraries & getting started
+
+In practice you rarely hand-roll a router; you either adopt a database that
+shards natively or put a sharding middleware in front of an existing engine.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Vitess | Go (for MySQL) | Horizontal sharding, routing, and resharding for MySQL — the system that shards YouTube | [Get started](https://vitess.io/docs/get-started/) |
+| Citus | C extension (for PostgreSQL) | Distributes Postgres tables across nodes by a shard key; parallel query | [Multi-tenant tutorial](https://docs.citusdata.com/en/stable/get_started/tutorial_multi_tenant.html) |
+| Apache ShardingSphere | Java | Sharding/proxy layer for MySQL, Postgres, and others; range/hash/directory rules | [Quick start](https://shardingsphere.apache.org/document/current/en/quick-start/) |
+| MongoDB sharding | Multi-language driver | Built-in range/hash sharding with a config-server directory and balancer | [Sharding docs](https://www.mongodb.com/docs/manual/sharding/) |
+| CockroachDB | Go | Automatically range-shards and rebalances; distributed SQL, no manual shard key | [FAQ / architecture](https://www.cockroachlabs.com/docs/stable/frequently-asked-questions) |
+| YugabyteDB | C++ / Go | Auto-sharding (hash or range) with tablet splitting; Postgres-compatible | [Sharding data](https://docs.yugabyte.com/preview/explore/linear-scalability/sharding-data/) |
+
+**Example / reference:** [Rails multiple databases guide](https://guides.rubyonrails.org/active_record_multiple_databases.html) shows app-level horizontal sharding via `connects_to`/`connected_to`.
+
 ## Related patterns
 
 - [Consistent Hashing](/docs/patterns/storage/consistent-hashing) — the

@@ -276,6 +276,23 @@ means a consumer reads further along it. Durability, ordering, and replay
 for late or replaying consumers all fall directly out of the log being the
 primary structure rather than a recovery aid beneath one.
 
+## Production libraries & getting started
+
+You almost never write a WAL by hand — you inherit one from the storage engine
+you build on, whether a full SQL database, an embedded key-value store, or an
+LSM engine you link into your own process.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| PostgreSQL WAL | System (SQL) | Physical write-ahead log driving crash recovery, checkpoints, streaming replication, and logical decoding | [WAL introduction](https://www.postgresql.org/docs/current/wal-intro.html) |
+| SQLite (WAL mode) | System (embedded) | Opt-in WAL journal mode giving concurrent readers with a single writer and faster commits | [WAL mode docs](https://www.sqlite.org/wal.html) |
+| RocksDB | C++ (embeddable) | LSM engine whose WAL replays the memtable on restart; group commit batches fsyncs | [Write-Ahead Log format](https://github.com/facebook/rocksdb/wiki/Write-Ahead-Log-File-Format) |
+| MySQL InnoDB redo log | System (SQL) | InnoDB's redo (WAL) log for crash recovery, with configurable durability and group commit | [InnoDB redo log](https://dev.mysql.com/doc/refman/8.0/en/innodb-redo-log.html) |
+| `sled` | Rust | Embedded key-value store with a lock-free log-structured design and internal WAL | [docs.rs](https://docs.rs/sled/latest/sled/) |
+| `redb` | Rust | Embedded copy-on-write B-tree KV store; durable commits without a separate replay log | [docs.rs](https://docs.rs/redb/latest/redb/) |
+
+**Example / reference:** [PostgreSQL WAL internals](https://www.postgresql.org/docs/current/wal-internals.html) documents the on-disk record and segment format of a production write-ahead log.
+
 ## Related patterns
 
 - [Primary-Replica Replication](/docs/patterns/storage/primary-replica-replication) —

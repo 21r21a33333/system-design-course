@@ -239,6 +239,22 @@ cluster), while a catch-all rule sends the bare marketing domain to the
 static site. Adding a tenant is a route-table entry, not a new
 public-facing address.
 
+## Production libraries & getting started
+
+Routing is a configuration exercise on top of a proxy — every tool below
+expresses "match this request, send it to that backend" as declarative
+rules you can version and reload:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Envoy | C++ | Rich L7 route matching (path, header, weight) with hot-reloadable route config | [Envoy routing docs](https://www.envoyproxy.io/docs/envoy/latest/) |
+| Kong Gateway | Lua / C (on NGINX/OpenResty) | Declarative routes and services with path/host/method matching and plugins | [Kong routes docs](https://docs.konghq.com/gateway/latest/) |
+| Traefik | Go | Dynamic routing with label/CRD-driven rules and automatic service discovery | [Traefik docs](https://doc.traefik.io/traefik/) |
+| NGINX | C | `location` / `upstream` blocks for path- and host-based request routing | [NGINX docs](https://nginx.org/en/docs/) |
+| Spring Cloud Gateway | Java | Predicate-and-filter route definitions for Spring/JVM services | [Spring Cloud Gateway docs](https://docs.spring.io/spring-cloud-gateway/reference/) |
+
+**Example / reference:** [Envoy routing docs](https://www.envoyproxy.io/docs/envoy/latest/)
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — the umbrella

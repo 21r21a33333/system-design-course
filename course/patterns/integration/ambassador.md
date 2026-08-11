@@ -255,6 +255,26 @@ handles connection pooling, the TLS handshake, credential rotation, and
 metrics on connection health — so the app's data-access code stays
 provider-agnostic.
 
+## Production libraries & getting started
+
+The ambassador is an architectural pattern realized by sidecar runtimes and
+proxies: a co-located process that fronts the client's outbound calls. These
+are the real systems that implement it. Note the naming: the API gateway
+formerly branded "Ambassador" is now **Emissary-ingress**, and it is an
+*inbound* gateway — a different role from this outbound-proxy pattern,
+included here to disambiguate.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Dapr | Go (sidecar; polyglot SDKs) | Sidecar runtime that fronts outbound calls with retries, mTLS, and observability via building-block APIs — the ambassador as a portable runtime | [docs.dapr.io](https://docs.dapr.io/) |
+| Envoy | C++ (config) | The proxy most often deployed as an ambassador/sidecar, adding retries, timeouts, circuit breaking, and mTLS to outbound traffic | [envoyproxy.io/docs](https://www.envoyproxy.io/docs/envoy/latest/) |
+| Kubernetes sidecar containers | YAML / runtime | Native sidecar-container support to run an ambassador proxy in the same pod, sharing the client's lifecycle and network namespace | [kubernetes.io/docs — sidecar containers](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/) |
+| Istio | Go / config | Service mesh that injects an Envoy sidecar per workload — the ambassador idea generalized fleet-wide with a central control plane | [istio.io/latest/docs](https://istio.io/latest/docs/) |
+| Linkerd | Rust / Go | Lightweight service mesh whose per-pod micro-proxy handles outbound mTLS, retries, and metrics | [linkerd.io](https://linkerd.io/2/overview/) |
+| Emissary-ingress (formerly Ambassador) | Go / config | Envoy-based *inbound* API gateway — named "Ambassador" historically but an ingress role, not this outbound pattern | [getambassador.io/docs/emissary](https://www.getambassador.io/docs/emissary) |
+
+**Example / reference:** [The Distributed System ToolKit: Patterns for Composite Containers — Kubernetes blog](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/)
+
 ## Related patterns
 
 - [Sidecar](/docs/patterns/api-edge/sidecar) — the deployment mechanism

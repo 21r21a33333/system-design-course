@@ -237,6 +237,24 @@ customer's list a second late is fine, and reads fall back to the
 authoritative orders table for anything the index reference can't
 confirm.
 
+## Production libraries & getting started
+
+You rarely build an index table by hand in a relational world — you declare a
+secondary index and the engine maintains it. The pattern surfaces explicitly
+in key-value and wide-column stores, where you either create a global secondary
+index or maintain the lookup table yourself.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| PostgreSQL | System (SQL) | `CREATE INDEX` builds B-tree/GIN/GiST/BRIN secondary indexes, including partial and expression indexes | [CREATE INDEX docs](https://www.postgresql.org/docs/current/sql-createindex.html) |
+| MySQL | System (SQL) | Secondary and covering indexes over InnoDB tables; optimizer-driven lookup | [How MySQL uses indexes](https://dev.mysql.com/doc/refman/8.0/en/mysql-indexes.html) |
+| MongoDB | System (document) | Single-field, compound, and partial secondary indexes maintained on write | [Indexes docs](https://www.mongodb.com/docs/manual/indexes/) |
+| DynamoDB GSI / LSI | System (KV) | Global and local secondary indexes: query by non-key attributes, projected into a separate index table | [Secondary indexes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SecondaryIndexes.html) |
+| Elasticsearch | System (search) | Inverted-index engine acting as an external index table over a primary store | [Reference docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html) |
+| OpenSearch | System (search) | Apache-2.0 Elasticsearch fork providing the same external secondary-index role | [Documentation](https://opensearch.org/docs/latest/) |
+
+**Example / reference:** [Use The Index, Luke!](https://use-the-index-luke.com/) is a practical, engine-agnostic guide to how secondary indexes are built and used by the query optimizer.
+
 ## Related patterns
 
 - [Key-Value Store](/docs/patterns/building-blocks/key-value-store) — the

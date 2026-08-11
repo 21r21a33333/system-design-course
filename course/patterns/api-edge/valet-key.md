@@ -293,6 +293,22 @@ fetch is a direct, read-only, expiring pull of exactly that one object —
 so an intercepted message grants a bounded, single-object read rather
 than broad storage access.
 
+## Production libraries & getting started
+
+You almost never implement valet-key signing yourself — the major
+object stores provide presigned/SAS URL generation directly in their
+SDKs, and you call one method to mint a scoped, expiring URL. These are
+the canonical implementations across the three big clouds.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| AWS S3 presigned URLs | Multi-language (SDKs) | Time-limited signed URLs for direct `GET`/`PUT` on one object | [Getting started](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html) |
+| AWS SDK for Python (boto3) | Python | `generate_presigned_url` to mint scoped S3 URLs in Python | [Getting started](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html) |
+| Google Cloud Storage signed URLs | Multi-language (SDKs) | V4 signed URLs granting direct, expiring access to a GCS object | [Getting started](https://cloud.google.com/storage/docs/access-control/signed-urls) |
+| Azure Storage SAS tokens | Multi-language (SDKs) | Shared Access Signatures scoping operation, resource, and expiry | [Getting started](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview) |
+
+**Example / reference:** [Generate a V4 signed URL — Google Cloud Storage sample](https://cloud.google.com/storage/docs/samples/storage-generate-signed-url-v4)
+
 ## Related patterns
 
 - [Blob Store](/docs/patterns/building-blocks/blob-store) — the

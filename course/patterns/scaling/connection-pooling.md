@@ -325,6 +325,23 @@ as database pooling applied at the HTTP layer, and the concrete fix for the
 per-call-client [Improper Instantiation](/docs/patterns/antipatterns/improper-instantiation)
 antipattern.
 
+## Production libraries & getting started
+
+Almost no one hand-rolls a pool in production: every language ecosystem ships a mature one, and a separate proxy pooler (PgBouncer, ProxySQL, RDS Proxy) concentrates many instances' pools onto a bounded backend connection count. These are the real production choices across languages and the proxy tier.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| -------------- | -------- | ----------------- | --------------- |
+| PgBouncer | C / proxy | Lightweight PostgreSQL connection pooler; transaction/session pooling multiplexes many clients onto few backends | [PgBouncer config](https://www.pgbouncer.org/config.html) |
+| ProxySQL | C++ / proxy | High-performance MySQL proxy with connection pooling, multiplexing, and query routing | [ProxySQL docs](https://proxysql.com/documentation/) |
+| Amazon RDS Proxy | Managed / AWS | Managed pooler that caps and shares connections for RDS/Aurora, ideal under serverless fan-out | [RDS Proxy](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html) |
+| HikariCP | Java | The de-facto fast, correct JDBC connection pool with sane defaults and leak detection | [HikariCP](https://github.com/brettwooldridge/HikariCP) |
+| pgxpool | Go | Concurrency-safe PostgreSQL connection pool built into the pgx driver | [pgxpool](https://pkg.go.dev/github.com/jackc/pgx/v5/pgxpool) |
+| deadpool / bb8 / r2d2 | Rust | Async (deadpool, bb8) and sync (r2d2) generic connection pools for databases and other resources | [deadpool](https://docs.rs/deadpool/latest/deadpool/) · [bb8](https://docs.rs/bb8/latest/bb8/) · [r2d2](https://docs.rs/r2d2/latest/r2d2/) |
+| SQLAlchemy pool / asyncpg | Python | SQLAlchemy's `QueuePool` with overflow/recycle, and asyncpg's built-in async pool | [SQLAlchemy pooling](https://docs.sqlalchemy.org/en/20/core/pooling.html) · [asyncpg](https://magicstack.github.io/asyncpg/current/) |
+| node-postgres pool / generic-pool | JS / TS | `pg.Pool` for Postgres, and `generic-pool` for pooling any expensive-to-create resource | [pg Pool](https://node-postgres.com/apis/pool) · [generic-pool](https://github.com/coopernurse/node-pool) |
+
+**Example / reference:** [HikariCP — About Pool Sizing](https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing)
+
 ## Related patterns
 
 - [Improper Instantiation](/docs/patterns/antipatterns/improper-instantiation) —

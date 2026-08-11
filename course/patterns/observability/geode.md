@@ -246,6 +246,21 @@ on the remaining regions, and once the failed region is restored and its
 replica has caught up, it rejoins the candidate set and resumes serving
 its nearby clients.
 
+## Production libraries & getting started
+
+A geode deployment is assembled from cloud infrastructure, not a single library: a global routing layer that steers each client to the nearest region, plus a multi-region database that replicates authoritative data so any region can answer locally. The building blocks below cover both halves.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| AWS Global Accelerator | Managed (anycast) | Anycast global routing to the nearest healthy region with fast failover | [docs.aws.amazon.com — Global Accelerator](https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html) |
+| Azure Front Door | Managed (edge) | Global HTTP(S) entry point with latency-based routing and health probing | [learn.microsoft.com — Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview) |
+| Cloudflare | Managed (anycast edge) | Global anycast network for geo-routing, load balancing, and edge termination | [developers.cloudflare.com](https://developers.cloudflare.com/fundamentals/) |
+| CockroachDB | Go (server); SQL | Geo-distributed SQL with per-region data placement and survivability goals | [cockroachlabs.com/docs — multi-region](https://www.cockroachlabs.com/docs/stable/multiregion-overview) |
+| YugabyteDB | C++ / Go (server); SQL | Distributed SQL with multi-region deployment topologies and tunable consistency | [docs.yugabyte.com — multi-region](https://docs.yugabyte.com/preview/explore/multi-region-deployments/) |
+| Azure Cosmos DB | Managed (any language SDK) | Turnkey global distribution with multi-region writes and tunable consistency | [learn.microsoft.com — Cosmos DB global distribution](https://learn.microsoft.com/en-us/azure/cosmos-db/distribute-data-globally) |
+
+**Example / reference:** [Geode pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes)
+
 ## Related patterns
 
 - [Deployment Stamps](/docs/patterns/observability/deployment-stamps) —

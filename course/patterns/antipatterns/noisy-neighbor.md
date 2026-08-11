@@ -172,6 +172,21 @@ resource allocation by design, not an accidental noisy-neighbor effect,
 as long as it's an explicit, provisioned allocation rather than an
 unbounded free-for-all.
 
+## Libraries & tools that prevent this
+
+Preventing a noisy neighbor is about enforcing a per-tenant bound on each shared resource — rate limits on requests, bulkheads on connection/thread pools, and cgroup/Kubernetes limits on CPU and memory — so no single tenant can consume the whole pool; these production tools supply that enforcement instead of leaving fairness to chance.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| Resilience4j RateLimiter | Java | Per-caller request-rate limiting to cap how much of a shared service one tenant can drive | [resilience4j.readme.io/docs/ratelimiter](https://resilience4j.readme.io/docs/ratelimiter) |
+| Resilience4j Bulkhead | Java | Bounds concurrent calls per dependency so one tenant's saturation can't exhaust the shared pool | [resilience4j.readme.io/docs/bulkhead](https://resilience4j.readme.io/docs/bulkhead) |
+| Envoy rate limit service | Any (via proxy) | Global, per-descriptor (per-tenant) rate limiting enforced at the proxy in front of shared backends | [github.com/envoyproxy/ratelimit](https://github.com/envoyproxy/ratelimit) |
+| governor | Rust | GCRA-based rate limiter keyed per tenant to bound one tenant's request rate | [docs.rs/governor](https://docs.rs/governor/latest/governor/) |
+| Kubernetes resource limits | Any (containers) | Per-container CPU/memory requests and limits that stop a co-located tenant from starving neighbors on the same node | [kubernetes.io manage resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+| Linux cgroups v2 | Any (OS-level) | Kernel-level CPU/IO/memory quotas underpinning per-tenant isolation on a shared host | [kernel.org cgroup-v2](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html) |
+
+**Example / reference:** [Using load shedding to avoid overload — Amazon Builders' Library](https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/)
+
 ## Related patterns
 
 - [Rate Limiter](/docs/patterns/building-blocks/rate-limiter) — enforces

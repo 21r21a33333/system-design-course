@@ -245,6 +245,25 @@ uses feature flags so the routing decision can be flipped per user
 group (piloting expenses with one department before rolling it out
 company-wide) without redeploying the proxy.
 
+## Production libraries & getting started
+
+The strangler facade is not a library you install — it is a routing proxy
+or API gateway configured to send old-vs-new traffic to different backends,
+plus a feature-flag system to flip cutovers at runtime. These are the real
+systems teams build strangler facades on:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| NGINX | C (config) | Reverse proxy whose `location`/`upstream` blocks are the classic strangler facade — route paths to legacy or new backends | [nginx.org/en/docs](https://nginx.org/en/docs/) |
+| Envoy | C++ (config) | L7 proxy with weighted route clusters and header/path matching, enabling per-capability and canary cutovers at the facade | [envoyproxy.io/docs](https://www.envoyproxy.io/docs/envoy/latest/) |
+| Kong Gateway | Lua / config | API gateway with route-level upstream targets, so migrating a capability is a route reconfiguration, not a redeploy | [docs.konghq.com](https://docs.konghq.com/) |
+| Amazon API Gateway | Managed (AWS) | Managed facade that routes per-resource to legacy (HTTP integration) or new (Lambda/service) backends during migration | [docs.aws.amazon.com/apigateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) |
+| Unleash | Multi-language SDKs | Open-source feature-flag server to drive the routing decision per user/segment at runtime without redeploying the facade | [docs.getunleash.io](https://docs.getunleash.io/) |
+| LaunchDarkly | Multi-language SDKs | Hosted feature-flag platform for gradual, targeted cutovers and instant rollback of a migrated capability | [docs.launchdarkly.com](https://docs.launchdarkly.com/home) |
+| AWS Migration Hub | Managed (AWS) | Tracks application-migration progress across tools — the ledger view of which capabilities have been strangled | [docs.aws.amazon.com/migrationhub](https://docs.aws.amazon.com/migrationhub/latest/ug/whatishomeregion.html) |
+
+**Example / reference:** [Strangler Fig pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/strangler-fig)
+
 ## Related patterns
 
 - [Anti-Corruption Layer](/docs/patterns/integration/anti-corruption-layer) —

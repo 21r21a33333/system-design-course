@@ -200,6 +200,20 @@ are picked up by surviving workers within one lease TTL, without a
 central scheduler having to detect the failure and manually reassign
 work.
 
+## Production libraries & getting started
+
+You rarely implement leader election from scratch — you lean on a consensus-backed store that offers a lease or session primitive, and let one contender hold the lease at a time. These are the standard building blocks.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| etcd concurrency (election) | Go | Campaign/resign leader election over etcd leases; the canonical strongly-consistent primitive | [Election API docs](https://etcd.io/docs/latest/dev-guide/api_concurrency_reference_v3/) |
+| client-go leaderelection | Go | Kubernetes' Lease-based election used by controllers to run exactly one active instance | [Package docs](https://pkg.go.dev/k8s.io/client-go/tools/leaderelection) |
+| Consul sessions | Any (HTTP API) | Session + lock semantics for application leader election backed by Consul's Raft store | [Leader election tutorial](https://developer.hashicorp.com/consul/tutorials/developer-configuration/application-leader-elections) |
+| Apache ZooKeeper / Curator | Java | Ephemeral-znode recipes and the Curator `LeaderLatch`/`LeaderSelector` helpers | [Curator recipes](https://curator.apache.org/docs/recipes/) |
+| Redis Redlock | Multi-language | Redis-based distributed lock; usable for election but with well-known safety caveats under GC pauses and clock skew — do not use where correctness depends on mutual exclusion | [Distributed locks docs](https://redis.io/docs/latest/develop/use/patterns/distributed-locks/) |
+
+**Example / reference:** [ZooKeeper recipes — leader election and locks](https://zookeeper.apache.org/doc/current/recipes.html)
+
 ## Related patterns
 
 - [Raft](/docs/patterns/consistency/raft) — a specific consensus

@@ -218,6 +218,22 @@ serving cached copies of frequently requested pages — demonstrating
 that reverse-proxy value doesn't require more than one backend to be
 worthwhile.
 
+## Production libraries & getting started
+
+A reverse proxy sits in front of your services and forwards requests on
+their behalf. These are the battle-tested proxies teams reach for, from
+config-file classics to auto-TLS and service-discovery-native options:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| NGINX | C | The default high-performance reverse proxy: TLS, caching, buffering, config-driven | [NGINX docs](https://nginx.org/en/docs/) |
+| HAProxy | C | Reverse proxy and load balancer known for L4/L7 performance and health checks | [HAProxy docs](https://www.haproxy.org/#docs) |
+| Traefik | Go | Dynamic reverse proxy with automatic service discovery and Let's Encrypt TLS | [Traefik docs](https://doc.traefik.io/traefik/) |
+| Caddy | Go | Reverse proxy with automatic HTTPS and a small, readable config | [Caddy docs](https://caddyserver.com/docs/) |
+| Envoy | C++ | Programmable L7 proxy with dynamic config, observability, and rich routing | [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/) |
+
+**Example / reference:** [NGINX docs](https://nginx.org/en/docs/)
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — a reverse proxy

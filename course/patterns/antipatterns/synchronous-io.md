@@ -210,6 +210,21 @@ not scattered across callback or future continuations), which is a
 real, legitimate reason to prefer it whenever the concurrency ceiling
 it implies is comfortably above any load the system will actually see.
 
+## Libraries & tools that prevent this
+
+The fix is a non-blocking or async runtime that lets one thread serve many in-flight I/O operations instead of parking a whole thread per blocked call; these production runtimes and libraries provide that concurrency model across languages.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| Tokio | Rust | Async runtime that multiplexes thousands of in-flight I/O tasks over a small thread pool via `async`/`await` | [tokio.rs tutorial](https://tokio.rs/tokio/tutorial) |
+| asyncio | Python | Standard-library event loop and coroutines for non-blocking I/O without a thread per request | [docs.python.org asyncio](https://docs.python.org/3/library/asyncio.html) |
+| Node.js async I/O (libuv) | JavaScript / C | Event-loop, non-blocking-by-default runtime; libuv is the underlying async I/O engine | [nodejs.org async flow](https://nodejs.org/en/learn/asynchronous-work/asynchronous-flow-control) |
+| Goroutines | Go | Lightweight, runtime-scheduled concurrency so blocking-style code scales without OS-thread-per-request cost | [go.dev concurrency tour](https://go.dev/tour/concurrency/1) |
+| Netty | Java | Non-blocking, event-driven network framework for high-concurrency I/O on the JVM | [netty.io user guide](https://netty.io/wiki/user-guide-for-4.x.html) |
+| Project Reactor | Java | Reactive Streams library for composing non-blocking async pipelines on the JVM | [projectreactor.io reference](https://projectreactor.io/docs/core/release/reference/) |
+
+**Example / reference:** [The C10K problem — Dan Kegel](https://www.kegel.com/c10k.html)
+
 ## Related patterns
 
 - [Asynchronous Request-Reply](/docs/patterns/communication/asynchronous-request-reply) —

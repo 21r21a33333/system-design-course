@@ -217,6 +217,20 @@ which is a well-established fit for this case because both resources
 are typically colocated in the same data center and the transaction
 completes quickly, keeping the blocking window short.
 
+## Production libraries & getting started
+
+Two-phase commit reaches production through XA/JTA transaction managers that coordinate multiple XA-compliant resources, plus the databases that expose an explicit prepared-transaction step. These are the real coordinators and resource managers.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Narayana | Java | Mature JTA/XA transaction manager (the coordinator in WildFly/JBoss) with recovery for in-doubt transactions | [Documentation](https://www.narayana.io/documentation/index.html) |
+| Atomikos | Java | Standalone JTA/XA transaction manager for Spring/Java SE apps coordinating multiple XA resources | [Documentation](https://www.atomikos.com/Documentation/WebHome) |
+| Jakarta Transactions (JTA) | Java | The standard API (formerly JTA) that transaction managers implement for distributed 2PC | [Specification](https://jakarta.ee/specifications/transactions/) |
+| PostgreSQL `PREPARE TRANSACTION` | SQL | The 2PC "prepared transaction" primitive an external coordinator drives via PREPARE/COMMIT PREPARED | [SQL docs](https://www.postgresql.org/docs/current/sql-prepare-transaction.html) |
+| MySQL XA | SQL | `XA START`/`PREPARE`/`COMMIT` statements making MySQL an XA resource manager in a global transaction (docs 403 to curl, browser-live) | [XA transactions docs](https://dev.mysql.com/doc/refman/8.0/en/xa.html) |
+
+**Example / reference:** [Narayana project site](https://www.narayana.io/)
+
 ## Related patterns
 
 - [Saga](/docs/patterns/consistency/saga) — the usual alternative for

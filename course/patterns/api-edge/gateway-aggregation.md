@@ -214,6 +214,21 @@ slow enrichment service from holding up results the user could already
 see; if enrichment times out, results render without the price badge
 rather than not at all.
 
+## Production libraries & getting started
+
+Aggregation means one inbound request fans out to several backends and
+their responses are composed into a single reply — these tools give you
+that fan-out and composition without hand-rolling it:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| KrakenD | Go | Declarative endpoint aggregation: merge multiple backend calls into one response | [KrakenD aggregation docs](https://www.krakend.io/docs/) |
+| Apollo Server | JavaScript / TypeScript | GraphQL composition layer that resolves one query across many services | [Apollo Server docs](https://www.apollographql.com/docs/apollo-server/) |
+| Spring Cloud Gateway | Java | Build a BFF/aggregation layer that fans out and combines JVM service calls | [Spring Cloud Gateway docs](https://docs.spring.io/spring-cloud-gateway/reference/) |
+| Netflix Zuul | Java | JVM edge service with filters for composing and enriching backend responses | [Netflix Zuul wiki](https://github.com/Netflix/zuul/wiki) |
+
+**Example / reference:** [KrakenD aggregation docs](https://www.krakend.io/docs/)
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — the umbrella

@@ -310,6 +310,25 @@ signing credentials from a secret store. Even a full compromise of the
 admin-facing host cannot sign privileged actions, because the material
 needed to do so was deliberately never placed there.
 
+## Production libraries & getting started
+
+A gatekeeper is realized by an external validation/authorization tier at the
+edge: a policy engine that decides whether a request is legitimate, an API
+gateway's external-authorization hook that consults it, and a WAF that
+strips malformed or malicious input before it reaches business logic. These
+are the real systems teams build gatekeepers from:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Open Policy Agent (OPA) | Go / Rego | General-purpose policy engine to express and enforce allow-list request validation at the boundary | [openpolicyagent.org/docs](https://www.openpolicyagent.org/docs/latest/) |
+| OPA Gatekeeper | Go / Rego | Kubernetes admission controller (the literal "Gatekeeper") that validates every incoming API-server request against policy | [open-policy-agent.github.io/gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/docs/) |
+| Envoy `ext_authz` | C++ / config | External-authorization filter that calls out to a policy service before a request reaches the backend — the gatekeeper hook | [envoyproxy.io/docs — ext_authz](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_authz_filter) |
+| Kong OPA plugin | Lua / config | API-gateway plugin that gates each request through an OPA policy decision at the edge | [docs.konghq.com/hub — OPA](https://docs.konghq.com/hub/kong-inc/opa/) |
+| ModSecurity + OWASP CRS | C / rules | Open-source WAF engine plus the Core Rule Set to reject malformed and malicious payloads before they reach the app | [coreruleset.org/docs](https://coreruleset.org/docs/) |
+| AWS WAF | Managed (AWS) | Managed web application firewall that validates and filters requests at the edge in front of protected services | [docs.aws.amazon.com/waf](https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html) |
+
+**Example / reference:** [Gatekeeper pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/gatekeeper)
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — often deployed

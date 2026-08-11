@@ -219,6 +219,20 @@ comment-drafting agent (turns the style review into individual, postable
 PR comments) — a fixed three-stage chain where each stage's entire job
 is transforming the previous stage's output into a more actionable form.
 
+## Production libraries & getting started
+
+These frameworks provide first-class support for chaining agents into a fixed, ordered pipeline where each stage's output becomes the next stage's input.
+
+| Framework / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| **LangGraph** | Python, JS/TS | A graph runtime where a linear edge chain models a sequential pipeline; typed shared state threads output from one node to the next. | [LangGraph docs](https://langchain-ai.github.io/langgraph/) |
+| **Semantic Kernel** | C#, Python, Java | A built-in `SequentialOrchestration` primitive that runs agents in a fixed order, each consuming the prior agent's result. | [Sequential orchestration docs](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/sequential) |
+| **CrewAI** | Python | A `Process.sequential` mode that executes crew tasks one after another, passing each task's output forward as context. | [Sequential process docs](https://docs.crewai.com/en/learn/sequential-process) |
+| **OpenAI Agents SDK** | Python, JS/TS | Lightweight agents composable into a deterministic chain by feeding one agent's final output into the next `Runner.run` call. | [Agents SDK docs](https://openai.github.io/openai-agents-python/) |
+| **Haystack** | Python | A pipeline framework whose Agent components slot into a directed pipeline, ideal for research-then-draft-then-refine stages. | [Haystack Agents docs](https://docs.haystack.deepset.ai/docs/agents) |
+
+**Example / reference:** [CrewAI sequential process](https://docs.crewai.com/en/learn/sequential-process)
+
 ## Related patterns
 
 - [Concurrent Orchestration](/docs/patterns/ai-agent-orchestration/concurrent-orchestration) —

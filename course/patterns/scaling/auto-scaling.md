@@ -284,6 +284,21 @@ needed capacity minutes ahead, with a reactive policy layered on top to
 absorb whatever the forecast missed — capacity ready *before* the wave,
 not chasing it.
 
+## Production libraries & getting started
+
+Every major platform ships an auto-scaling controller that runs the observe-compare-adjust loop for you, with min/max clamps, cooldowns, and metric targets. These are the production controllers that grow and shrink a fleet in response to load.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| -------------- | -------- | ----------------- | --------------- |
+| Kubernetes Horizontal Pod Autoscaler (HPA) | YAML | Scales pod replicas to hold a target metric (CPU, custom, external) with a stabilization window | [Horizontal Pod Autoscale](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) |
+| KEDA | Go / YAML | Event-driven autoscaling on queue depth, stream lag, and dozens of external scalers — including scale-to-zero | [KEDA scaling deployments](https://keda.sh/docs/latest/concepts/scaling-deployments/) |
+| AWS EC2 Auto Scaling | Config / AWS | Target-tracking, step, scheduled, and predictive policies over a group of instances | [EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html) |
+| Google Compute Engine autoscaler | Config / GCP | Adds/removes instances in a managed instance group by CPU, load-balancing, or custom metrics | [GCE autoscaler](https://cloud.google.com/compute/docs/autoscaler) |
+| Azure VM Scale Sets autoscale | Config / Azure | Rule-based and scheduled autoscale over a scale set via Azure Monitor | [VMSS autoscale](https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-autoscale-overview) |
+| Karpenter | Go / YAML | Node-level autoscaler that provisions right-sized cloud capacity just-in-time for pending pods | [Karpenter docs](https://karpenter.sh/docs/) |
+
+**Example / reference:** [AWS target-tracking scaling policies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-target-tracking.html)
+
 ## Related patterns
 
 - [Horizontal Scaling](/docs/patterns/scaling/horizontal-scaling) — the

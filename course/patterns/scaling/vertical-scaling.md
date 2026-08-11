@@ -214,6 +214,20 @@ monolith's host up one tier to survive the interim, treating vertical
 scaling as a deliberate stopgap that keeps the lights on while the real,
 horizontal-friendly architecture is built alongside it.
 
+## Production libraries & getting started
+
+Scaling up is usually a control-plane operation on a managed service — resize an instance type, or let a controller right-size a workload's resource requests. These are the production tools that grow a single machine or pod rather than adding more of them.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| -------------- | -------- | ----------------- | --------------- |
+| Amazon RDS instance resize | Config / AWS | Change a managed database to a larger instance class (more CPU/RAM) as a maintenance operation | [Modifying a DB instance](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html) |
+| Google Compute Engine machine-type change | Config / GCP | Stop an instance and move it to a machine type with more cores or memory | [Change machine type](https://cloud.google.com/compute/docs/instances/changing-machine-type-of-stopped-instance) |
+| Azure VM resize | Config / Azure | Resize a virtual machine to a different size (more vCPUs, memory, bandwidth) | [Resize a VM](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm) |
+| Kubernetes Vertical Pod Autoscaler (VPA) | Go / YAML | Recommends and applies right-sized CPU/memory `requests` for a pod based on observed usage | [Vertical Pod Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) |
+| Kubernetes resource requests & limits | YAML | Sets the per-container CPU/memory envelope that vertical right-sizing tunes | [Managing resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+
+**Example / reference:** [Amazon RDS DB instance classes](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.html)
+
 ## Related patterns
 
 - [Horizontal Scaling](/docs/patterns/scaling/horizontal-scaling) — the

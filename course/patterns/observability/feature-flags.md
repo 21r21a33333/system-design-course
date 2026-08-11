@@ -234,6 +234,22 @@ dependency degrades, on-call disables the feature instantly, shedding the
 expensive path and keeping the core product responsive — a runtime lever that
 would otherwise require an emergency deploy.
 
+## Production libraries & getting started
+
+You rarely build a flag evaluator by hand; the ecosystem offers a vendor-neutral standard (OpenFeature) plus open-source and hosted flag-management services, each shipping SDKs that do local, fail-safe evaluation across languages.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| OpenFeature | JS, Rust, Go, Python, Java, .NET | Vendor-neutral flag-evaluation API + provider model; swap backends without rewriting call sites | [openfeature.dev/docs](https://openfeature.dev/docs/reference/intro) |
+| Unleash | Go (server); JS, Rust, Go, Python, Java SDKs | Open-source flag service with targeting, gradual rollout, and local SDK evaluation | [docs.getunleash.io](https://docs.getunleash.io/) |
+| Flagsmith | Python (server); JS, Go, Python, Rust, Java SDKs | Open-source flags + remote config with segmentation; self-host or hosted | [docs.flagsmith.com](https://docs.flagsmith.com/) |
+| Flipt | Go | Self-hosted, GitOps-friendly flag engine with local evaluation and no external calls | [flipt.io/docs](https://www.flipt.io/docs/introduction) |
+| GrowthBook | JS, Go, Python, Ruby, PHP, Java | Open-source feature flags + A/B experimentation with warehouse-native analysis | [docs.growthbook.io](https://docs.growthbook.io/) |
+| ConfigCat | JS, Go, Python, .NET, Java, and more | Hosted flag service with a generous free tier and simple SDKs | [configcat.com/docs](https://configcat.com/docs/) |
+| LaunchDarkly | JS, Go, Python, Java, .NET, and more | Enterprise SaaS flag platform with targeting, experimentation, and streaming SDKs | [docs.launchdarkly.com](https://docs.launchdarkly.com/home/getting-started) |
+
+**Example / reference:** [Unleash server (open source)](https://github.com/Unleash/unleash)
+
 ## Related patterns
 
 - [Canary Deployment](/docs/patterns/observability/canary-deployment) —

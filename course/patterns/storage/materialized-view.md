@@ -239,6 +239,19 @@ is served by a
 itself a specialized materialized view — sitting alongside the flat-row
 view.
 
+## Production libraries & getting started
+
+Materialized views are usually a native database feature rather than a library — the choice is mostly which engine's refresh model (full, incremental, or continuous streaming) fits your freshness-vs-cost dial.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| PostgreSQL materialized views | SQL (Postgres) | Built-in `MATERIALIZED VIEW` with full and `CONCURRENTLY` refresh | [postgresql.org/docs](https://www.postgresql.org/docs/current/rules-materializedviews.html) |
+| ClickHouse materialized views | SQL (ClickHouse) | Incremental, insert-time materialized views for real-time aggregation at scale | [clickhouse.com/docs](https://clickhouse.com/docs/materialized-view) |
+| Oracle materialized views | SQL (Oracle) | Mature MVs with query rewrite and fast (incremental) refresh via materialized view logs | [docs.oracle.com](https://docs.oracle.com/en/database/oracle/oracle-database/19/dwhsg/basic-materialized-views.html) |
+| Materialize | SQL (streaming) | Streaming database that keeps views incrementally, always up-to-date over changing inputs | [materialize.com/docs](https://materialize.com/docs/) |
+| dbt incremental models | SQL / Jinja | Transformation-layer "materialized views": incremental table builds in your warehouse | [docs.getdbt.com](https://docs.getdbt.com/docs/build/incremental-models) |
+| Snowflake dynamic tables | SQL (Snowflake) | Declarative, automatically-refreshed derived tables with a target freshness lag | [docs.snowflake.com](https://docs.snowflake.com/en/user-guide/dynamic-tables-about) |
+
 ## Related patterns
 
 - [CQRS](/docs/patterns/storage/cqrs) — the broader pattern of splitting

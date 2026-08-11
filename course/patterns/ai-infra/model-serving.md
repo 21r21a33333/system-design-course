@@ -225,6 +225,26 @@ all tenants cost-effectively, with the version registry allowing a
 model update to be validated on internal traffic before being promoted
 to serve every tenant's requests.
 
+## Production libraries & getting started
+
+Production inference runs on a dedicated serving runtime that handles
+batching, GPU scheduling, and model loading — a general-purpose engine
+like Triton or vLLM, wrapped by a Kubernetes-native controller such as
+KServe or Seldon when you need autoscaling and rollout.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| KServe | Kubernetes | Serverless model serving with autoscaling, canary rollout, and multi-framework runtimes | [First InferenceService](https://kserve.github.io/website/latest/get_started/first_isvc/) |
+| NVIDIA Triton | C++ / Python | High-throughput inference server with dynamic batching across frameworks | [Quickstart](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/getting_started/quickstart.html) |
+| Ray Serve | Python | Scalable serving with request batching and model composition | [Getting started](https://docs.ray.io/en/latest/serve/getting_started.html) |
+| vLLM | Python | High-throughput LLM inference engine with PagedAttention and continuous batching | [Quickstart](https://docs.vllm.ai/en/latest/getting_started/quickstart.html) |
+| Hugging Face TGI | Rust / Python | Production LLM text-generation server with token streaming | [Quick tour](https://huggingface.co/docs/text-generation-inference/en/quicktour) |
+| BentoML | Python | Packages models into serving APIs with adaptive batching | [Hello world](https://docs.bentoml.com/en/latest/get-started/hello-world.html) |
+| TorchServe | Java / Python | PyTorch-native model server with batching and versioning | [Getting started](https://docs.pytorch.org/serve/getting_started.html) |
+| Seldon Core | Kubernetes | Model deployment and MLOps orchestration on Kubernetes | [Seldon Core 2 docs](https://docs.seldon.ai/seldon-core-2) |
+
+**Example / reference:** [KServe — first InferenceService](https://kserve.github.io/website/latest/get_started/first_isvc/)
+
 ## Related patterns
 
 - [Feature Store](/docs/patterns/ai-infra/feature-store) — typically

@@ -259,6 +259,23 @@ consistent hashing so that adding or draining a backend re-pins only the
 clients on the affected arc, rather than reshuffling every session and
 invalidating in-memory state cluster-wide.
 
+## Production libraries & getting started
+
+Consistent hashing is an algorithm, so it ships either as a small ring
+library you drop into your own router or baked into a distributed store's
+partitioner.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| `hashring` (npm) | JS/TS | Consistent-hash ring with virtual nodes for client-side routing | [npm package](https://www.npmjs.com/package/hashring) (browser-live; registry returns 403 to bare curl) |
+| `hashring` crate | Rust | Ring with weighted virtual nodes and pluggable hashers | [docs.rs](https://docs.rs/hashring/latest/hashring/) |
+| `serialx/hashring` | Go | Simple, widely-used consistent-hash ring | [GitHub / README](https://github.com/serialx/hashring) |
+| `uhashring` | Python | Full ring implementation (the classic `ketama` layout, weights, vnodes) | [PyPI](https://pypi.org/project/uhashring/) |
+| Apache Cassandra | Java (system) | Token-ring partitioner with vnodes; Dynamo-style replica placement | [Dynamo architecture](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html) |
+| ScyllaDB | C++ (system) | Cassandra-compatible ring architecture; token ownership by node | [Ring architecture](https://opensource.docs.scylladb.com/stable/architecture/ringarchitecture/) |
+
+**Example / reference:** the [Dynamo paper](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf) (already in Further reading) is the canonical systems use of a consistent-hash ring with virtual nodes and a preference list.
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — the broader partitioning

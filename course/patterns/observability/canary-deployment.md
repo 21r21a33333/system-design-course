@@ -224,6 +224,20 @@ against the incumbent on live traffic. If click-through and dwell time hold or
 improve, the model ramps to 100%; if they drop, it rolls back — a decision
 made on real user behavior no offline evaluation could fully predict.
 
+## Production libraries & getting started
+
+Canary is almost always run by a controller that owns the weighted traffic split and the metric-gated ramp; you supply the traffic router (a mesh or ingress) and the analysis queries, and the tool automates promotion or rollback.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Flagger | Platform (Kubernetes) | Progressive traffic shifting with automated canary analysis and rollback | [docs.flagger.app — Istio progressive delivery](https://docs.flagger.app/tutorials/istio-progressive-delivery) |
+| Argo Rollouts | Platform (Kubernetes) | A `Rollout` with weighted canary steps, analysis templates, and pause/promote | [argoproj.github.io — getting started](https://argoproj.github.io/argo-rollouts/getting-started/) |
+| Istio | Platform (service mesh) | Percentage-based traffic shifting via `VirtualService` weights | [istio.io — traffic shifting](https://istio.io/latest/docs/tasks/traffic-management/traffic-shifting/) |
+| AWS CodeDeploy | Platform (AWS) | Predefined canary/linear traffic-shifting configs for Lambda and ECS | [docs.aws.amazon.com — deployment configurations](https://docs.aws.amazon.com/codedeploy/latest/userguide/deployment-configurations.html) |
+| Spinnaker + Kayenta | Platform (multi-cloud) | Automated canary analysis judging a canary against a baseline | [spinnaker.io — canary guide](https://spinnaker.io/docs/guides/user/canary/) |
+
+**Example / reference:** [spinnaker/kayenta](https://github.com/spinnaker/kayenta)
+
 ## Related patterns
 
 - [Blue-Green Deployment](/docs/patterns/observability/blue-green-deployment) —

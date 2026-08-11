@@ -255,6 +255,18 @@ last deployment) delegated to a different specialist, and continues
 widening scope only as far as each result actually justifies, bounded
 by a maximum remediation-round count before it escalates to a human.
 
+## Production libraries & getting started
+
+These frameworks implement the plan-delegate-observe-replan loop, where a lead orchestrator dynamically decomposes an open-ended task and delegates steps to specialists as it learns.
+
+| Framework / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| **Microsoft AutoGen (Magentic-One)** | Python | The reference generalist multi-agent system: an orchestrator maintains a task/progress ledger and delegates to web, coding, and file-surfer agents. | [Magentic-One docs](https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/magentic-one.html) |
+| **Microsoft Agent Framework** | Python, .NET | A built-in Magentic workflow orchestration that carries the Magentic-One planning loop into the production Agent Framework. | [Magentic orchestration docs](https://learn.microsoft.com/en-us/agent-framework/user-guide/workflows/orchestrations/magentic) |
+| **Semantic Kernel** | C#, Python, Java | A `MagenticOrchestration` primitive with a manager that plans, delegates to member agents, and revises the plan from their results. | [Magentic orchestration docs](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/magentic) |
+
+**Example / reference:** [Magentic-One: a generalist multi-agent system — Microsoft Research](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/)
+
 ## Related patterns
 
 - [Handoff Orchestration](/docs/patterns/ai-agent-orchestration/handoff-orchestration) —

@@ -198,6 +198,25 @@ internal callers with the same compatibility discipline as external
 ones because the coordination cost of a surprise break is just as
 real inside the organization.
 
+## Production libraries & getting started
+
+Versioning is mostly convention plus routing: you carry a version in
+the path, header, or query param and dispatch on it. Web frameworks
+don't offer a dedicated "versioning" primitive so much as route
+grouping/nesting you mount a version prefix onto, so these are the
+framework routing tools you'd build versioned APIs with, plus the REST
+guidance that governs how to place and sunset a version.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Express Router | JS/TS | Mountable routers to isolate `/v1` and `/v2` route trees | [Getting started](https://expressjs.com/en/guide/routing.html) |
+| FastAPI `APIRouter` | Python | Sub-routers with a version prefix for splitting versioned endpoints | [Getting started](https://fastapi.tiangolo.com/tutorial/bigger-applications/) |
+| chi | Go | Composable route groups and sub-routers to mount per-version | [Getting started](https://go-chi.io/#/pages/routing) |
+| gin `RouterGroup` | Go | Route grouping to nest a version prefix over a set of handlers | [Getting started](https://pkg.go.dev/github.com/gin-gonic/gin#RouterGroup) |
+| axum `Router::nest` | Rust | Nested routers to compose a versioned sub-API under a path | [Getting started](https://docs.rs/axum/latest/axum/struct.Router.html#method.nest) |
+
+**Example / reference:** [Versioning a RESTful web API — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design)
+
 ## Related patterns
 
 - [Gateway Routing](/docs/patterns/api-edge/gateway-routing) — the

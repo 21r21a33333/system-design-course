@@ -208,6 +208,20 @@ main application polls, decoupling "how config changes are fetched and
 validated" from the application's own code, which only needs to know
 how to read from its local, already-validated source.
 
+## Production libraries & getting started
+
+The sidecar pattern is usually realized through a container
+orchestrator's native support for co-scheduled containers, plus a
+purpose-built sidecar runtime or proxy for the concern being offloaded.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Kubernetes sidecar containers | YAML / Go platform | Native co-scheduled helper containers sharing a Pod's network and lifecycle | [Getting started](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/) |
+| Dapr | Go (sidecar runtime) | A portable sidecar exposing service invocation, pub/sub, state, and secrets over local APIs | [Getting started](https://docs.dapr.io/getting-started/) |
+| Envoy | C++ | The de facto sidecar proxy for transparent traffic interception, retries, and mTLS | [Getting started](https://www.envoyproxy.io/docs/envoy/latest/start/start) |
+
+**Example / reference:** [Sidecar pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar)
+
 ## Related patterns
 
 - [Service Mesh](/docs/patterns/api-edge/service-mesh) — a fleet of

@@ -295,6 +295,23 @@ than a true undo. The refund is a clean backward recovery; the email is a
 forward-recovery/mitigation case, and recognizing that split up front is
 what keeps the failure handling correct.
 
+## Production libraries & getting started
+
+You rarely build compensation plumbing by hand — the retry, ordering, and
+"run compensations for completed steps newest-first" logic is exactly what
+saga/workflow engines provide. The real production choices are those
+engines, using their compensation (or routing-slip) primitives.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Temporal | Go, Java, TypeScript, Python, .NET | Durable workflows where a failed activity triggers registered compensations in reverse order — the saga undo path made a first-class primitive | [Failure detection & saga (Go)](https://docs.temporal.io/develop/go/failure-detection#saga) |
+| Camunda 8 | Java + gRPC/REST clients | BPMN compensation boundary events that model the undo action attached to each completed step | [Handling exceptions & compensation](https://docs.camunda.io/docs/components/best-practices/development/dealing-with-problems-and-exceptions/) |
+| Eventuate Tram Sagas | Java (Spring) | Orchestrated sagas where each step declares a compensating command run automatically on rollback | [Eventuate Tram Sagas](https://eventuate.io/docs/manual/eventuate-tram/latest/getting-started-eventuate-tram-sagas.html) |
+| MassTransit (Routing Slip / Courier) | .NET / C# | Routing-slip execution where each activity carries its own compensation, unwound automatically on failure | [MassTransit routing slips](https://masstransit.io/documentation/patterns/routing-slip) |
+| Axon Framework (Saga) | Java | Event-driven sagas that react to a failure event by dispatching the compensating command for already-completed steps | [Axon sagas](https://docs.axoniq.io/reference-guide/axon-framework/sagas) |
+
+**Example / reference:** [temporalio/samples-typescript](https://github.com/temporalio/samples-typescript) — includes a saga sample that registers and runs compensations on failure.
+
 ## Related patterns
 
 - [Saga](/docs/patterns/consistency/saga) — the pattern that chains a

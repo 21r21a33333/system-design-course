@@ -201,6 +201,24 @@ deleting the identity records and voiding the billing setup, in reverse
 order, rather than leaving a half-provisioned account that bills the
 customer for infrastructure they can't actually use yet.
 
+## Production libraries & getting started
+
+Sagas are rarely hand-rolled in production — the sequencing, persistence
+of saga state, timeouts, retries, and compensation-on-failure are exactly
+what durable-execution engines and saga frameworks exist to provide, so
+the real choice is which engine fits your language and operational model.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Temporal | Go, Java, TypeScript, Python, .NET, PHP | Durable-execution engine; the canonical modern way to run a saga as durable workflow code with automatic compensation on failure | [Failure detection & saga (Go)](https://docs.temporal.io/develop/go/failure-detection#saga) |
+| Camunda 8 / Zeebe | Java, plus any language via gRPC/REST clients | BPMN-based workflow engine and orchestrator; model the saga as a process with compensation boundary events | [Zeebe / Camunda 8](https://camunda.com/platform/zeebe/) · [Camunda docs](https://docs.camunda.io/) |
+| Axon Framework (Saga) | Java | Event-sourcing framework with first-class `@Saga` components that react to events and schedule compensations | [Axon sagas](https://docs.axoniq.io/reference-guide/axon-framework/sagas) |
+| MassTransit (Saga state machine) | .NET / C# | Message-bus framework with Automatonymous saga state machines persisted to a database | [MassTransit saga](https://masstransit.io/documentation/patterns/saga/state-machine) |
+| Eventuate Tram Sagas | Java (Spring) | Orchestration-based saga library using transactional messaging over your service databases | [Eventuate Tram Sagas](https://eventuate.io/docs/manual/eventuate-tram/latest/getting-started-eventuate-tram-sagas.html) |
+| NServiceBus (Sagas) | .NET / C# | Long-running message-driven saga persistence and timeout handling in the Particular platform | [NServiceBus sagas](https://docs.particular.net/nservicebus/sagas/) |
+
+**Example / reference:** [temporalio/samples-typescript](https://github.com/temporalio/samples-typescript) — runnable Temporal workflow samples including saga-style compensation.
+
 ## Related patterns
 
 - [Two-Phase Commit](/docs/patterns/consistency/two-phase-commit) — the

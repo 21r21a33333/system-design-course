@@ -309,6 +309,21 @@ a single dropped heartbeat doesn't trigger a disruptive, unnecessary
 switchover. The health check is the detection half of failover; the
 promotion and fencing are the rest.
 
+## Production libraries & getting started
+
+Most stacks combine a platform-level prober (Kubernetes probes, a load balancer's target checks) with a framework module that exposes the actual liveness/readiness endpoints from inside your app.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Kubernetes probes | Platform (any lang) | Liveness, readiness, and startup probes that restart or de-route pods | [kubernetes.io — configure probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) |
+| Spring Boot Actuator | Java | Ready-made `/actuator/health` with liveness/readiness groups | [docs.spring.io — Actuator endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html) |
+| NestJS Terminus | JS/TS | Composable health indicators (DB, disk, HTTP) behind a health endpoint | [docs.nestjs.com — Terminus](https://docs.nestjs.com/recipes/terminus) |
+| hellofresh/health-go | Go | Aggregates dependency checks into one JSON health handler | [github.com/hellofresh/health-go](https://github.com/hellofresh/health-go) |
+| gin-healthcheck | Go | Drop-in health endpoint and checks for the Gin framework | [github.com/tavsec/gin-healthcheck](https://github.com/tavsec/gin-healthcheck) |
+| py-healthcheck | Python | Health/environment endpoints for Flask and Tornado apps | [pypi.org/project/py-healthcheck](https://pypi.org/project/py-healthcheck/) |
+| gRPC Health Checking Protocol | Protocol (any lang) | Standard `Check`/`Watch` RPC so infra can probe gRPC services | [grpc — health-checking spec](https://github.com/grpc/grpc/blob/master/doc/health-checking.md) |
+| Consul checks | Platform (any lang) | Service-registry health checks that gate discovery and routing | [developer.hashicorp.com — Consul checks](https://developer.hashicorp.com/consul/docs/services/usage/checks) |
+
 ## Related patterns
 
 - [Load Balancing](/docs/patterns/api-edge/load-balancing) — the component that most directly consumes readiness results to decide its routing pool.

@@ -211,6 +211,24 @@ it is written in, letting the platform team build one dashboard that
 covers every service in the mesh rather than reconciling several
 different instrumentation approaches.
 
+## Production libraries & getting started
+
+In practice a service mesh is adopted as a whole product — a control
+plane plus a data-plane proxy — rather than assembled from parts; these
+are the mainstream choices, most of which run on Kubernetes and several
+of which use Envoy as the data plane.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Istio | Go (Envoy data plane) | Feature-rich mesh: mTLS, traffic shaping, telemetry, canary routing | [Getting started](https://istio.io/latest/docs/setup/getting-started/) |
+| Linkerd | Rust (micro-proxy data plane) | Lightweight CNCF mesh focused on simplicity and low overhead | [Getting started](https://linkerd.io/2/getting-started/) |
+| Consul service mesh | Go (Envoy data plane) | Mesh with built-in service discovery; multi-platform beyond Kubernetes | [Getting started](https://developer.hashicorp.com/consul/docs/connect) |
+| Cilium Service Mesh | Go / eBPF | eBPF-based, sidecar-optional mesh integrated with the CNI | [Getting started](https://docs.cilium.io/en/stable/network/servicemesh/) |
+| Kuma | Go (Envoy data plane) | CNCF mesh for multi-zone/multi-cluster (also packaged as Kong Mesh) | [Getting started](https://kuma.io/docs/) |
+| Envoy | C++ | The data-plane proxy most meshes build on; usable standalone | [Getting started](https://www.envoyproxy.io/docs/envoy/latest/start/start) |
+
+**Example / reference:** [Istio architecture — control plane and data plane](https://istio.io/latest/docs/ops/deployment/architecture/)
+
 ## Related patterns
 
 - [Sidecar](/docs/patterns/api-edge/sidecar) — the deployment pattern a

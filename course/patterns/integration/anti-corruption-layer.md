@@ -255,6 +255,25 @@ ACL translates between the two in both directions, and it's slated for
 deletion once the ERP orders are fully migrated under a parallel
 strangler-fig effort.
 
+## Production libraries & getting started
+
+An ACL is built from ordinary translation building blocks — object-mapping
+libraries for the field-by-field conversion, an API gateway for transport
+and shape translation at the edge, and DDD frameworks that make the
+bounded-context boundary explicit. These are the real tools teams assemble
+an ACL from:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| MapStruct | Java | Compile-time bean mapper for the translators that convert legacy DTOs to clean domain types | [mapstruct.org/documentation](https://mapstruct.org/documentation/stable/reference/html/) |
+| AutoMapper | .NET / C# | Convention-based object-to-object mapper for the inbound/outbound translation layer | [docs.automapper.org](https://docs.automapper.org/en/stable/) |
+| Kong Gateway | Lua / config | API gateway with request/response transformer plugins that reshape a legacy API's payloads at the boundary | [docs.konghq.com](https://docs.konghq.com/) |
+| Amazon API Gateway | Managed (AWS) | Mapping templates and integration transforms that translate an external/legacy contract into the modern service's shape | [docs.aws.amazon.com/apigateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services.html) |
+| Axon Framework | Java | DDD/CQRS framework that makes bounded contexts and their anti-corruption boundaries first-class in the code | [docs.axoniq.io/reference-guide](https://docs.axoniq.io/reference-guide/) |
+| JHipster | Java (generator) | Scaffolds DDD-style microservices with clean domain models, giving each service a natural place for its ACL | [jhipster.tech](https://www.jhipster.tech/) |
+
+**Example / reference:** [Anti-corruption Layer pattern — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer)
+
 ## Related patterns
 
 - [Strangler Fig](/docs/patterns/integration/strangler-fig) — the two

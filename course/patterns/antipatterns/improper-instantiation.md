@@ -191,6 +191,21 @@ security context or a scoped transaction object that must not leak
 state between callers is deliberately not meant to be shared, and reuse
 there would be its own bug.
 
+## Libraries & tools that prevent this
+
+These tools make the expensive object reusable — a connection pool, a factory that hands back a shared long-lived client, or a session/agent that keeps sockets and TLS warm across calls instead of rebuilding them per request.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| HikariCP | JVM | Fast JDBC connection pool that maintains a fixed set of warm database connections handed out for reuse instead of opening one per request. | [github.com/brettwooldridge/HikariCP](https://github.com/brettwooldridge/HikariCP) |
+| PgBouncer | PostgreSQL / any | External connection pooler so short-lived app calls share a warm pool rather than establishing a fresh backend each time. | [pgbouncer.org](https://www.pgbouncer.org/) |
+| `IHttpClientFactory` | .NET | Manages the lifetime of `HttpClient` handlers so they're reused with pooled connections, avoiding both socket exhaustion and stale-DNS pitfalls of per-call construction. | [learn.microsoft.com](https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory) |
+| reqwest `Client` | Rust | Documented as a pool of connections meant to be created once and reused; cloning shares the pool rather than rebuilding it. | [docs.rs/reqwest](https://docs.rs/reqwest/latest/reqwest/struct.Client.html) |
+| `requests.Session` | Python | Reuses the underlying TCP connection and TLS across requests to the same host instead of a fresh connection per call. | [requests.readthedocs.io](https://requests.readthedocs.io/en/latest/user/advanced/#session-objects) |
+| `http.Agent` (keep-alive) | Node.js (JS/TS) | A shared agent with keep-alive pools sockets across requests so outbound HTTP reuses warm connections. | [nodejs.org docs](https://nodejs.org/api/http.html#class-httpagent) |
+
+**Example / reference:** [HttpClient guidelines for .NET — Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines)
+
 ## Related patterns
 
 - [Connection Pooling](/docs/patterns/scaling/connection-pooling) — the

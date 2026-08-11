@@ -279,6 +279,23 @@ so that "who changed what, when, and in what order" is inherent to the
 data model rather than a separate audit log that can drift, be bypassed,
 or be forgotten on a new write path.
 
+## Production libraries & getting started
+
+You rarely build an event store from scratch — these are the databases and frameworks that provide the append-only log, optimistic-concurrency guarantees, snapshotting, and projection plumbing described above.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| EventStoreDB (KurrentDB) | Multi-language (gRPC clients) | Purpose-built event-store database: append-only streams, optimistic concurrency, catch-up subscriptions, and server-side projections | [developers.eventstore.com](https://developers.eventstore.com/getting-started/) |
+| Marten | .NET / PostgreSQL | Turns Postgres into an event store + document DB, with async projections and inline/live aggregation | [martendb.io](https://martendb.io/events/) |
+| Axon Framework | Java / JVM | Full DDD + event-sourcing + CQRS framework: aggregates, event store, command/event buses, sagas | [docs.axoniq.io](https://docs.axoniq.io/home/) |
+| Eventuous | .NET | Lightweight event-sourcing library with pluggable stores (EventStoreDB, Postgres) and subscriptions | [eventuous.dev](https://eventuous.dev/) |
+| eventsourcing | Python | Aggregate roots, event stores, snapshots, and application layer for event-sourced domains | [eventsourcing.readthedocs.io](https://eventsourcing.readthedocs.io/en/stable/) |
+| Emmett | JS / TS | Node event-sourcing toolkit: event stores, command handling, and projections with a functional API | [event-driven-io.github.io/emmett](https://event-driven-io.github.io/emmett/getting-started.html) |
+| cqrs-es | Rust | Opinionated CQRS + event-sourcing framework with pluggable persistence (Postgres, DynamoDB) | [doc.rust-cqrs.org](https://doc.rust-cqrs.org/) |
+| Commanded | Elixir | Event-sourced aggregates, command routing, event handlers, and process managers on the BEAM | [hexdocs.pm/commanded](https://hexdocs.pm/commanded/Commanded.html) |
+
+**Example / reference:** [serverlesstechnology/cqrs (cqrs-es source + Postgres store)](https://github.com/serverlesstechnology/cqrs)
+
 ## Related patterns
 
 - [CQRS](/docs/patterns/storage/cqrs) — the natural companion: event

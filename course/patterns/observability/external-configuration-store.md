@@ -244,6 +244,24 @@ majority of settings stay defined once while the handful that must differ
 are expressed as targeted overrides rather than forked config files or
 special-case code paths sprinkled through the application.
 
+## Production libraries & getting started
+
+Two layers of tooling implement this pattern: a centralized store (a purpose-built config service, a coordination KV, or a secret vault) and a client-side loader that reads, caches, and layers config inside the app. Keep secrets in a dedicated vault holding only a reference in the general store.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| HashiCorp Consul KV | Go (server); HTTP + SDKs | Distributed key/value store with watches for live, push-based config updates | [developer.hashicorp.com/consul — KV](https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv) |
+| etcd | Go (server); gRPC + SDKs | Strongly consistent KV with watch API, the config/coordination store behind Kubernetes | [etcd.io/docs](https://etcd.io/docs/latest/) |
+| AWS SSM Parameter Store | Managed (any language SDK) | Versioned, hierarchical parameters with IAM access control and change history | [docs.aws.amazon.com — Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) |
+| Azure App Configuration | Managed (any language SDK) | Centralized config + feature management with labels and point-in-time snapshots | [learn.microsoft.com — App Configuration](https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview) |
+| Spring Cloud Config | Java | Server + client for externalized config with Git-backed versioning and refresh | [docs.spring.io — Spring Cloud Config](https://docs.spring.io/spring-cloud-config/reference/index.html) |
+| HashiCorp Vault | Go (server); HTTP + SDKs | Dedicated secret store: encryption at rest, dynamic secrets, audited access, rotation | [developer.hashicorp.com/vault](https://developer.hashicorp.com/vault/docs) |
+| Viper | Go | Client library that merges files, env vars, and remote stores with live-watch reload | [github.com/spf13/viper](https://github.com/spf13/viper) |
+| Dynaconf | Python | Layered settings with environments, overrides, and Vault/Redis backends | [dynaconf.com](https://www.dynaconf.com/) |
+| node-config | JS | Hierarchical, per-environment config layering for Node.js applications | [github.com/node-config/node-config](https://github.com/node-config/node-config) |
+
+**Example / reference:** [etcd (source)](https://github.com/etcd-io/etcd)
+
 ## Related patterns
 
 - [Feature Flags](/docs/patterns/observability/feature-flags) — a

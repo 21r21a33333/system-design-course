@@ -253,6 +253,21 @@ endpoints are explicitly marked non-cacheable, keeping per-user data out
 of the shared cache — the boundary that separates safe offloading from a
 correctness bug.
 
+## Production libraries & getting started
+
+Offloading pushes cross-cutting work — TLS termination, auth, rate
+limiting, caching, compression — off your services and into the edge.
+These tools implement those responsibilities as pluggable filters:
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Envoy | C++ | TLS termination plus `ext_authz`, rate limiting, and compression filters | [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/) |
+| NGINX | C | Mature TLS termination, response caching, and gzip/Brotli offload at the edge | [NGINX docs](https://nginx.org/en/docs/) |
+| Kong Gateway | Lua / C (on NGINX/OpenResty) | Plugins for auth, rate limiting, and caching applied per route | [Kong plugins docs](https://docs.konghq.com/gateway/latest/) |
+| Amazon API Gateway | Managed (AWS) | Managed auth (authorizers), throttling, and caching without running proxies | [Amazon API Gateway docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) |
+
+**Example / reference:** [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/)
+
 ## Related patterns
 
 - [API Gateway](/docs/patterns/api-edge/api-gateway) — the umbrella

@@ -238,6 +238,19 @@ entry's real TTL is reached, it has usually already been quietly
 refreshed, and the origin service never sees a burst that lines up with
 every client's polling interval converging on the same instant.
 
+## Production libraries & getting started
+
+Stampede prevention is a set of techniques — request coalescing (single-flight), distributed locks, and probabilistic early expiration — so the tooling is the library that implements one of them.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| async-cache-dedupe | JS/TS | Coalesces concurrent identical async lookups into a single in-flight call, with optional cache storage | [Docs](https://github.com/mcollina/async-cache-dedupe) |
+| p-memoize | JS/TS | Memoizes an async function so concurrent calls with the same key share one pending promise | [Docs](https://github.com/sindresorhus/p-memoize) |
+| singleflight | Go | `golang.org/x/sync/singleflight` collapses duplicate concurrent calls for the same key into one execution | [Docs](https://pkg.go.dev/golang.org/x/sync/singleflight) |
+| node-redlock | JS/TS | Redlock distributed-lock implementation so only one worker recomputes a hot key at a time | [Docs](https://github.com/mike-marcacci/node-redlock) |
+| Redis distributed locks | Any | The Redlock algorithm for cross-process mutual exclusion on the recompute path | [Redis docs](https://redis.io/docs/latest/develop/use/patterns/distributed-locks/) |
+| Django cache framework | Python | Cache API with locking/`get_or_set` primitives for guarding recomputation of expired entries | [Docs](https://docs.djangoproject.com/en/stable/topics/cache/) |
+
 ## Related patterns
 
 - [Read-Through](/docs/patterns/caching/read-through) — centralizes the

@@ -231,6 +231,19 @@ negotiated terms and account details captured as structured fields —
 the fulfillment agent doesn't need or receive the full back-and-forth
 of the sales conversation, only the fields it actually needs to act on.
 
+## Production libraries & getting started
+
+These frameworks give agents an explicit mechanism to transfer full control of an interaction to a more specialized agent chosen reactively at run time.
+
+| Framework / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| **OpenAI Agents SDK** | Python, JS/TS | First-class `handoffs`: an agent exposes other agents as handoff targets and can transfer the conversation to whichever fits. | [Handoffs docs](https://openai.github.io/openai-agents-python/handoffs/) |
+| **Semantic Kernel** | C#, Python, Java | A built-in `HandoffOrchestration` primitive that routes control to a specialist agent based on rules the current agent evaluates. | [Handoff orchestration docs](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/handoff) |
+| **LangGraph** | Python, JS/TS | A `Command` object that both updates state and names the next agent to hand control to, implementing handoffs as graph transitions. | [Command / handoff how-to](https://langchain-ai.github.io/langgraph/how-tos/command/) |
+| **CrewAI** | Python | Task delegation where an agent can pass work to a better-suited crew member instead of answering outside its competence. | [Collaboration & delegation docs](https://docs.crewai.com/en/concepts/collaboration) |
+
+**Example / reference:** [OpenAI Agents SDK — multi-agent handoffs](https://openai.github.io/openai-agents-python/multi_agent/)
+
 ## Related patterns
 
 - [Sequential Orchestration](/docs/patterns/ai-agent-orchestration/sequential-orchestration) —

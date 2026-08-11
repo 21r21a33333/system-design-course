@@ -237,6 +237,23 @@ the moment of the outage may be lost, in exchange for the primary
 region's writes never paying a cross-region round trip in normal
 operation.
 
+## Production libraries & getting started
+
+Every mainstream database implements primary-replica replication directly;
+the extra tooling you add is for high-availability failover and for routing
+reads away from the primary.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| PostgreSQL | System (SQL) | Streaming/physical replication, synchronous and async standbys | [High availability & replication](https://www.postgresql.org/docs/current/high-availability.html) |
+| MySQL | System (SQL) | Binlog-based replication, semi-synchronous option, replica topologies | [Replication docs](https://dev.mysql.com/doc/refman/8.0/en/replication.html) |
+| Redis | System (KV) | Primary-replica replication for read scaling and failover | [Replication docs](https://redis.io/docs/latest/operate/oss_and_stack/management/replication/) |
+| MongoDB | System (document) | Replica sets with automatic election and failover | [Replication docs](https://www.mongodb.com/docs/manual/replication/) |
+| Patroni | Python | Postgres HA: leader election, automated failover, fencing | [Docs](https://patroni.readthedocs.io/en/latest/) |
+| PgBouncer / ProxySQL | C | Connection pooling and read/write splitting in front of replicas | [PgBouncer](https://www.pgbouncer.org/) · [ProxySQL](https://proxysql.com/documentation/) |
+
+**Example / reference:** [Rails `connects_to` / read-replica routing](https://guides.rubyonrails.org/active_record_multiple_databases.html) shows app-level read/write splitting against a primary and its replicas.
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — partitions data across

@@ -258,6 +258,25 @@ concurrently rather than scanning the full catalog sequentially,
 keeping the scatter-gather round-trip within the page's overall latency
 budget.
 
+## Production libraries & getting started
+
+At scale, teams run a purpose-built vector database that shards the
+index across nodes and fans out queries, rather than sharding a
+raw ANN library themselves — though a library like FAISS still powers
+the per-shard index inside many of these systems.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Milvus | Go / C++ | Distributed vector database with sharded collections and horizontal scale-out | [Scale a cluster](https://milvus.io/docs/scaleout.md) (browser-live; curl sees an edge redirect) |
+| Qdrant | Rust | Vector database with sharding and replication across a distributed cluster | [Distributed deployment](https://qdrant.tech/documentation/guides/distributed_deployment/) |
+| Weaviate | Go | Vector database with horizontal sharding and replication | [Cluster architecture](https://weaviate.io/developers/weaviate/concepts/cluster) |
+| Pinecone | Managed (SaaS) | Fully managed vector database that partitions and scales indexes for you | [Quickstart](https://docs.pinecone.io/guides/get-started/quickstart) |
+| pgvector | C (Postgres) | Vector search inside Postgres, shardable via Postgres partitioning/Citus | [Repository & docs](https://github.com/pgvector/pgvector) |
+| Vespa | Java / C++ | Serving engine with content-node sharding for vector + structured search | [Elasticity & sharding](https://docs.vespa.ai/en/elasticity.html) |
+| FAISS | C++ / Python | Library for ANN indexes (IVF, PQ, HNSW) used as the per-shard index engine | [Getting started](https://github.com/facebookresearch/faiss/wiki/Getting-started) |
+
+**Example / reference:** [Qdrant distributed deployment](https://qdrant.tech/documentation/guides/distributed_deployment/)
+
 ## Related patterns
 
 - [Sharding](/docs/patterns/storage/sharding) — the general

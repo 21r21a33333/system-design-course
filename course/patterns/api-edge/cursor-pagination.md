@@ -196,6 +196,23 @@ lines continue arriving at the head of the stream — an offset-based
 approach would have the engineer's page boundaries drift as new lines
 shift every row's position underneath them.
 
+## Production libraries & getting started
+
+Cursor pagination shows up two ways in practice: as the standardized
+GraphQL Relay "Connections" model (edges plus a `cursor` per node), and
+as first-class keyset/cursor helpers in ORMs and API frameworks. These
+implement the opaque-cursor, seek-by-key mechanics described above.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Relay Connections spec | JS/TS | The standard cursor-based Connections shape (edges, `pageInfo`, `endCursor`) | [Getting started](https://relay.dev/graphql/connections.htm) |
+| graphql-relay | JS/TS | Helpers to build Relay-style cursor connections in a GraphQL server (browser-live; npm returns 403 to curl) | [Getting started](https://www.npmjs.com/package/graphql-relay) |
+| Prisma | JS/TS | Built-in cursor-based pagination on the query client | [Getting started](https://www.prisma.io/docs/orm/prisma-client/queries/pagination#cursor-based-pagination) |
+| Django REST Framework | Python | `CursorPagination` class for opaque, ordering-stable cursors | [Getting started](https://www.django-rest-framework.org/api-guide/pagination/#cursorpagination) |
+| SQLAlchemy | Python | ORM for expressing keyset `WHERE (col, id) < (:c, :id)` seek queries | [Getting started](https://docs.sqlalchemy.org/en/20/orm/queryguide/query.html) |
+
+**Example / reference:** [No-offset / keyset pagination — Use The Index, Luke!](https://use-the-index-luke.com/no-offset)
+
 ## Related patterns
 
 - [Database](/docs/concepts/database) — the primer's broader treatment

@@ -190,6 +190,21 @@ for a low-traffic internal tool where concurrent expensive requests are
 rare enough that thread pool exhaustion is not a realistic risk, the
 operational simplicity of skipping a job queue can be the right call.
 
+## Libraries & tools that prevent this
+
+These are production-grade background job queues and workflow engines — the corrective infrastructure that lets a request handler enqueue expensive work and return immediately, while a separately-scaled worker pool does the actual processing off the request thread.
+
+| Library / Tool | Language | How it helps | Getting started |
+| --- | --- | --- | --- |
+| BullMQ | JS / TS | Redis-backed job queue; the handler enqueues a job and returns, while dedicated worker processes run the heavy task and report progress the client can poll. | [docs.bullmq.io](https://docs.bullmq.io/) |
+| Celery | Python | Distributed task queue that moves image processing, PDF generation, and exports onto worker nodes scaled independently of the web tier. | [celeryq.dev docs](https://docs.celeryq.dev/en/stable/) |
+| RQ | Python | Simpler Redis-based queue for offloading synchronous work when Celery's feature set is more than the job needs. | [python-rq.org](https://python-rq.org/) |
+| asynq | Go | Redis-backed distributed task queue with retries, scheduling, and a worker pool separate from HTTP handlers. | [github.com/hibiken/asynq](https://github.com/hibiken/asynq) |
+| Sidekiq | Ruby | Multithreaded background job processor; the classic answer to keeping Rails request threads free of long-running work. | [sidekiq.org](https://sidekiq.org/) |
+| Temporal | Go / Java / TS / Python / .NET | Durable workflow engine for long-running multi-step tasks, so a request kicks off a workflow and returns rather than blocking through the whole pipeline. | [docs.temporal.io](https://docs.temporal.io/) |
+
+**Example / reference:** [Best practices for background jobs — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/best-practices/background-jobs)
+
 ## Related patterns
 
 - [Queue-Based Load Leveling](/docs/patterns/batch-streaming/queue-based-load-leveling) —

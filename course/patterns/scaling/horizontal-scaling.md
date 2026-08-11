@@ -229,6 +229,20 @@ consumers (up to the partition count) raises throughput near-linearly;
 if a consumer dies, its partitions are reassigned to the survivors —
 horizontal scaling and fault tolerance from the same mechanism.
 
+## Production libraries & getting started
+
+You rarely build the scale-out machinery yourself — orchestrators, cloud auto-scaling groups, and load balancers register interchangeable instances and route around failures for you. These are the production systems that operate horizontally-scaled fleets.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| -------------- | -------- | ----------------- | --------------- |
+| Kubernetes Deployments | YAML / Go | Declarative replica management for a fleet of identical stateless pods, with rolling updates and self-healing | [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) |
+| AWS EC2 Auto Scaling groups | Config / AWS | Managed fleet of identical instances behind an ELB, launched from a template and kept at a desired count | [EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html) |
+| HashiCorp Nomad | HCL / Go | Cluster scheduler that runs many identical task copies across a machine pool via a `count` and `scaling` block | [Nomad scaling](https://developer.hashicorp.com/nomad/docs/job-specification/scaling) |
+| Kubernetes Services | YAML | Stable virtual endpoint that load-balances requests across the pods of a scaled-out fleet | [Services](https://kubernetes.io/docs/concepts/services-networking/service/) |
+| AWS Elastic Load Balancing | Config / AWS | Distributes incoming requests across the fleet and routes around instances that fail health checks | [Elastic Load Balancing](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html) |
+
+**Example / reference:** [Kubernetes Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+
 ## Related patterns
 
 - [Vertical Scaling](/docs/patterns/scaling/vertical-scaling) — the

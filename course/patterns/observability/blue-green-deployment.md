@@ -221,6 +221,18 @@ before the switch is still running, untouched, so "roll back" is a
 deterministic pointer flip to a known-good environment rather than a
 best-effort re-deploy.
 
+## Production libraries & getting started
+
+On Kubernetes you rarely hand-flip Services; a progressive-delivery controller manages the two environments and the atomic cutover, while managed platforms offer built-in blue/green deployment types.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Argo Rollouts | Platform (Kubernetes) | A `Rollout` resource with native blue-green strategy, preview service, and instant promotion/abort | [argoproj.github.io — getting started](https://argoproj.github.io/argo-rollouts/getting-started/) |
+| Flagger | Platform (Kubernetes) | Automated blue-green (and canary) driven by a service mesh or ingress | [docs.flagger.app — Kubernetes blue-green](https://docs.flagger.app/tutorials/kubernetes-blue-green) |
+| Spinnaker | Platform (multi-cloud) | Multi-cloud CD pipelines with red/black (blue-green) deployment stages | [spinnaker.io — setup](https://spinnaker.io/docs/setup/) |
+| AWS CodeDeploy | Platform (AWS) | Managed blue/green deployments across EC2, Lambda, and ECS | [docs.aws.amazon.com — CodeDeploy](https://docs.aws.amazon.com/codedeploy/latest/userguide/welcome.html) |
+| Kubernetes Service | Platform (Kubernetes) | The label-selector switch used to repoint traffic between environments | [kubernetes.io — Service](https://kubernetes.io/docs/concepts/services-networking/service/) |
+
 ## Related patterns
 
 - [Canary Deployment](/docs/patterns/observability/canary-deployment) — the
