@@ -532,3 +532,9 @@ replaced w/ verified axum-idempotent. Independent review re-curled all 61
 URLs (56 200, 5 acceptable bot-block), registry-confirmed every library
 real incl axum-idempotent (crates.io v0.2.7) + express-idempotency (npm
 v2.1.0). Zero fixes. Build clean.
+
+### Libs+visuals — Batch & Streaming (11 pages) — COMPLETE
+Commits: 0a2001d + review-fix. Production-libraries on all 11 (streaming
+engines + clients). Review re-curled 73 URLs (70 200, 2 acceptable bot-
+block, Bytewax real behind sandbox DNS filter); fixed dead Confluent link
++ Sequin language (Go->Elixir). Additive. Build clean.
