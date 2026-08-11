@@ -1130,3 +1130,23 @@ separately): Typeahead/Google Docs/Payment System/Deployment System;
 Data Infrastructure/ChatGPT/LLM Support Bot/Code Assistant — 8 more
 case studies still on the old template, to be brought up to the
 tinyurl.md bar in follow-on tasks.
+
+### Deep-dive rewrite A review — Uber/WhatsApp/Instagram/YouTube — COMPLETE, no fixes
+Independent review of commit `5d16dae`: all 4 required gotchas verified
+genuinely implemented in code (not name-dropped) — Uber's expanding-ring
+geohash search + spatially-smoothed surge pricing, WhatsApp's delivery
+state machine with named failure/rollback branches + E2E-encryption
+constraint, Instagram's celebrity-problem threshold branch, YouTube's
+DAG chunked transcoding + real HLS manifest. Build/typecheck clean.
+Ready, no fix round needed.
+
+### Deep-dive rewrite B fix round — Google Maps/Yelp/Newsfeed — COMPLETE
+Fix commit `529a3c8` on top of `3661cb3`. Review caught 1 Critical:
+`geohash_neighbors`/`haversine_distance` were referenced and called in
+`nearby_search` but never actually implemented — the boundary-problem
+gotcha's prose described the fix without showing it. Fixed directly:
+real base-32 geohash encode/decode + bounding-box-edge-stepping
+neighbor computation, verified correct via a standalone test (nearby
+points crossing a cell boundary genuinely land in the computed
+8-neighbor set, not just the center cell). Build/typecheck clean after
+fix. Task fully closed.
