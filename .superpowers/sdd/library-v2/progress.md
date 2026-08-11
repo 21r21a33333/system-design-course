@@ -499,3 +499,21 @@ pages have 2 each). Preservation confirmed additive (+N/-0 except model-
 serving -1 stray-link fix). Fixed 2 dead links (KServe, Tecton 404s).
 Antipattern template + corrective links intact (retry-storm keeps both).
 Build/typecheck clean, manifest 121. ALL 14 GROUPS COMPLETE (121 pages).
+
+## LIBRARIES + VISUAL-REFS PASS (follow-up, user-requested 2026-08-11)
+User asked to add, to every pattern, a practical production-library
+"getting started" section (JS/TS, Rust, Go, Python — best per pattern,
+curl-verified getting-started URLs + example projects) and, where a
+clearly-better external diagram exists, an attributed "Visual references"
+LINK section (never embedding external images — the copyright boundary
+held; attribution via link credits the author). Additive-only; existing
+content preserved byte-for-byte. Placement: Production-libraries H2 before
+`## Related patterns`; Visual-references H2 before `## Further reading`.
+
+### Libs+visuals — Building Blocks (16 pages) — COMPLETE
+Commit: 525593a. New Production-libraries section on all 16 + Visual-refs
+on cdn/distributed-message-queue/distributed-monitoring. Independent review
+re-curled all 121 new URLs (119 200, 2 npmjs 403 browser-live/real),
+verified every library real + correctly language-attributed (governor=Rust,
+etc.), tables valid GFM, visual-refs are attributed external links (not
+embeds), diffs additive (+N/-0). Zero fixes. Build/typecheck clean.
