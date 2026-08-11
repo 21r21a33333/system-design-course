@@ -338,6 +338,34 @@ export const courseManifest: ManifestEntry[] = [
     "source": "supplementary"
   },
   {
+    "id": "patterns/api-edge/federated-identity",
+    "title": "Federated Identity",
+    "path": "/docs/patterns/api-edge/federated-identity",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/gateway-aggregation",
+    "title": "Gateway Aggregation",
+    "path": "/docs/patterns/api-edge/gateway-aggregation",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/gateway-offloading",
+    "title": "Gateway Offloading",
+    "path": "/docs/patterns/api-edge/gateway-offloading",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/gateway-routing",
+    "title": "Gateway Routing",
+    "path": "/docs/patterns/api-edge/gateway-routing",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
     "id": "patterns/api-edge/service-mesh",
     "title": "Service Mesh",
     "path": "/docs/patterns/api-edge/service-mesh",
@@ -348,6 +376,13 @@ export const courseManifest: ManifestEntry[] = [
     "id": "patterns/api-edge/sidecar",
     "title": "Sidecar",
     "path": "/docs/patterns/api-edge/sidecar",
+    "category": "design-patterns",
+    "source": "supplementary"
+  },
+  {
+    "id": "patterns/api-edge/valet-key",
+    "title": "Valet Key",
+    "path": "/docs/patterns/api-edge/valet-key",
     "category": "design-patterns",
     "source": "supplementary"
   },
