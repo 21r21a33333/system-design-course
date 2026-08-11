@@ -1,0 +1,59 @@
+<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="340" fill="#ffffff"/>
+
+  <text x="360" y="26" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">One publish, independent copy to every current subscriber</text>
+
+  <!-- Publishers -->
+  <rect x="24" y="90" width="120" height="46" rx="8" fill="#1d4ed8"/>
+  <text x="84" y="112" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Publisher A</text>
+  <text x="84" y="128" font-size="9" fill="#dbeafe" text-anchor="middle">emits to topic</text>
+
+  <rect x="24" y="200" width="120" height="46" rx="8" fill="#1d4ed8"/>
+  <text x="84" y="222" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Publisher B</text>
+  <text x="84" y="238" font-size="9" fill="#dbeafe" text-anchor="middle">no knowledge of subs</text>
+
+  <!-- Topic / broker -->
+  <rect x="284" y="120" width="150" height="96" rx="10" fill="#0f766e"/>
+  <text x="359" y="162" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">Topic</text>
+  <text x="359" y="182" font-size="9" fill="#ccfbf1" text-anchor="middle">broker fans out</text>
+  <text x="359" y="196" font-size="9" fill="#ccfbf1" text-anchor="middle">+ optional filter</text>
+
+  <!-- publishers -> topic -->
+  <line x1="144" y1="113" x2="282" y2="150" stroke="#1d4ed8" stroke-width="2.5" marker-end="url(#psBlue)"/>
+  <line x1="144" y1="223" x2="282" y2="186" stroke="#1d4ed8" stroke-width="2.5" marker-end="url(#psBlue)"/>
+
+  <!-- Subscribers -->
+  <rect x="560" y="52" width="136" height="46" rx="8" fill="#334155"/>
+  <text x="628" y="74" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Email service</text>
+  <text x="628" y="90" font-size="9" fill="#cbd5e1" text-anchor="middle">own mailbox</text>
+
+  <rect x="560" y="147" width="136" height="46" rx="8" fill="#334155"/>
+  <text x="628" y="169" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Analytics</text>
+  <text x="628" y="185" font-size="9" fill="#cbd5e1" text-anchor="middle">own mailbox</text>
+
+  <rect x="560" y="242" width="136" height="46" rx="8" fill="#b45309"/>
+  <text x="628" y="264" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Fraud (filtered)</text>
+  <text x="628" y="280" font-size="9" fill="#fde68a" text-anchor="middle">only high-value</text>
+
+  <!-- topic -> subscribers -->
+  <line x1="434" y1="150" x2="558" y2="80" stroke="#15803d" stroke-width="2.5" marker-end="url(#psGreen)"/>
+  <text x="500" y="108" font-size="9" fill="#15803d" text-anchor="middle">copy</text>
+  <line x1="434" y1="168" x2="558" y2="170" stroke="#15803d" stroke-width="2.5" marker-end="url(#psGreen)"/>
+  <text x="500" y="160" font-size="9" fill="#15803d" text-anchor="middle">copy</text>
+  <line x1="434" y1="186" x2="558" y2="262" stroke="#b45309" stroke-width="2.5" stroke-dasharray="5,3" marker-end="url(#psAmber)"/>
+  <text x="498" y="240" font-size="9" fill="#b45309" text-anchor="middle">match only</text>
+
+  <text x="360" y="322" font-size="10" fill="#64748b" text-anchor="middle">Publisher gets no reply · each subscriber consumes at its own pace · add a subscriber without touching publishers</text>
+
+  <defs>
+    <marker id="psBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="psGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/>
+    </marker>
+    <marker id="psAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>
