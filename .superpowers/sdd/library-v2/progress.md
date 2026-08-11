@@ -416,3 +416,101 @@ CloudFront, Kubernetes, AWS/GCP/Azure, Postgres, MySQL, MongoDB).
 matching the established teal/blue/slate/amber/green palette and
 viewBox conventions. Committed as a single `feat(case-studies):`
 commit.
+
+## Phase 4.3: Case studies — Typeahead, Google Docs, Payment System, Deployment System
+
+Added 4 more original case studies (sidebar_position 17-20), bringing
+the supplementary system-design case-study count to 12: `typeahead.md`,
+`google-docs.md`, `payment-system.md`, `deployment-system.md`. Read
+yelp.md and tinyurl.md fresh first as structure/depth reference, per
+the task brief.
+
+Typeahead's hard problem is framed as prefix-matching under a strict
+sub-100ms latency budget (trie with precomputed top-K per node, built
+offline by a batch aggregation pipeline over a query log, atomically
+swapped into a stateless, fully-replicated read fleet — same
+build-fresh-then-atomically-promote shape as blue-green deployment,
+applied to a data structure). Differentiated explicitly, in its own
+"Additional talking points," from Newsfeed/Instagram's ranking
+discussions: those solve personalized multi-source merge-and-rank;
+typeahead solves non-personalized prefix lookup at extreme request
+volume relative to a tiny, largely-static index. 10-gram overlap check
+against newsfeed.md and instagram.md found zero non-boilerplate shared
+prose (only shared template headings and one recurring site-wide idiom,
+"the single number that most shapes this design," also present verbatim
+in yelp.md's existing text — confirmed pre-existing, not new).
+
+Google Docs' hard problem is operational-transform/CRDT-based
+convergence of concurrent edits to one shared mutable document, not
+message delivery — explicitly contrasted against WhatsApp in Step 2
+("there is no single recipient... every connected editor is
+simultaneously a producer and a consumer of the same mutable shared
+state") and again in Additional talking points, including a worked
+concrete example (two editors starting from "cat," one inserting "h",
+one deleting "t," diverging under naive receipt-order application) to
+show *why* transformation is needed, not just assert it. Sharding
+rationale is explicitly contrasted with WhatsApp's per-recipient
+sharding (WhatsApp shards for read-scoping; Google Docs shards by
+doc_id because correctness, not just read efficiency, depends on all
+of one document's concurrent edits passing through one transformation
+authority). 6-gram check against whatsapp.md found only template
+boilerplate (headings, step labels) — zero substantive shared prose.
+
+Payment System genuinely engages idempotency (checked first, before
+any gateway call; atomic conditional insert against the idempotency
+store is the single most load-bearing mechanism in the design) and
+saga (multi-step reserve/charge/mark-paid workflow, explicitly argued
+against two-phase commit because the external gateway call is slow
+and outside this system's control — 2PC's own "when not to use it"
+guidance is cited directly). A dedicated "Additional talking points"
+entry spells out why idempotency and sagas are both necessary and
+neither substitutes for the other (different granularities: idempotency
+within one step, saga around the multi-step workflow). Refunds are
+modeled as new linked ledger events, never in-place mutation, explicitly
+drawing the parallel to Google Docs' edit-history-log-as-source-of-truth
+treatment. No real payment processor named anywhere (grep clean).
+
+Deployment System genuinely engages canary deployment (batch-and-soak
+staged rollout with automated promote/abort on metrics comparison
+against baseline), blue-green deployment (old-version instances kept
+fully intact and live throughout, which is what makes rollback a
+traffic re-point rather than a redeploy), health checks (readiness,
+not just liveness, gates traffic; health checks kept cheap per the
+pattern page's own caution), and feature flags (explicitly framed as
+an orthogonal control axis — code-safety risk via canary/blue-green
+vs. product-behavior risk via flags — with a paragraph on how the two
+compose rather than compete). No real CI/CD tool named anywhere (grep
+clean).
+
+All back-of-envelope numbers independently recomputed in Python against
+each file's stated assumptions. This caught one real arithmetic bug:
+typeahead.md's request-volume calculation wrote "100,000,000 ×
+(20/2.5) ≈ 8 billion" when the correct product is 800 million (an
+order-of-magnitude slip), which had propagated into the average
+(93,000 vs. correct ~9,300 req/sec), peak (280,000 vs. correct ~28,000
+req/sec), the Step 4 scaling paragraph's repeated peak figure, and one
+number embossed in typeahead-overview.svg's annotation box. All four
+locations fixed and re-verified by rerunning the derivation; every
+other number across all 4 files (google-docs.md's edit-event volume,
+bandwidth, per-document rate, storage; payment-system.md's request
+rate, ledger size, idempotency-key volume, refund rate; deployment-
+system.md's deploy interval, batch size/count, health-check rate,
+rollout duration) matched on first check, no further drift found.
+
+Manifest: bumped `expectedSupplementaryCaseStudyCount` from 8 to 12 in
+`scripts/ingest/run.ts`, ran `npm run ingest -- /tmp/system-design-
+primer-src`, got "All counts match expected inventory" (sdCaseStudies:
+8, primer count unaffected). All 4 new pages confirmed present in
+`src/data/courseManifest.ts`. `npm run typecheck` and `npm run build`
+both clean (zero broken links/anchors), re-run after the typeahead.md
+math fix to confirm nothing regressed. Zero disallowed vendor/domain
+names across all 4 files (grep clean for Kafka, RabbitMQ, Cassandra,
+DynamoDB, Elasticsearch, Memcached, ZooKeeper, Stripe, PayPal, Square,
+nginx, HAProxy, CloudFront, Kubernetes, Jenkins, GitHub Actions,
+Spinnaker, ArgoCD, AWS/GCP/Azure, Postgres, MySQL, MongoDB,
+LaunchDarkly). All 18 internal pattern links verified to resolve to
+real files on disk (in addition to the build's own zero-broken-link
+result). 8 original SVGs (2 per case study) in the established teal/
+blue/slate/amber/green palette and viewBox conventions, one amended
+post-fix to match the corrected peak-throughput number. Committed as
+a single `feat(case-studies):` commit, hash `b74fa9e`.
