@@ -255,4 +255,6 @@ of the sales conversation, only the fields it actually needs to act on.
 ## Further reading
 
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
+- [Handoff agent orchestration — Semantic Kernel docs (Microsoft)](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/handoff)
+- [Orchestrating multiple agents (handoffs) — OpenAI Agents SDK docs](https://openai.github.io/openai-agents-python/multi_agent/)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)

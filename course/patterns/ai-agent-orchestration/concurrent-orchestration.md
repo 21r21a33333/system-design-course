@@ -235,5 +235,7 @@ company's outlook rather than smoothing the disagreement away.
 ## Further reading
 
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
+- [Concurrent agent orchestration — Semantic Kernel docs (Microsoft)](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/concurrent)
+- [Building effective agents — Anthropic (parallelization workflow)](https://www.anthropic.com/engineering/building-effective-agents)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
 - [Ensemble learning — Wikipedia](https://en.wikipedia.org/wiki/Ensemble_learning)

@@ -260,5 +260,7 @@ raising a new concern, signaling the discussion has converged.
 ## Further reading
 
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
+- [Group chat agent orchestration — Semantic Kernel docs (Microsoft)](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/group-chat)
+- [CrewAI — collaborative multi-agent crews (framework docs)](https://docs.crewai.com/introduction)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
 - [Four-eyes principle — Wikipedia](https://en.wikipedia.org/wiki/Four-eyes_principle)

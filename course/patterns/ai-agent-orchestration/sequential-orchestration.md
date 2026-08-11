@@ -80,6 +80,28 @@ than once, which sequential's strictly one-directional chain never
 does — once a sequential pipeline moves from stage 2 to stage 3, stage
 2 never runs again for that task.
 
+## Orchestration patterns compared
+
+The five patterns in this group differ along two axes that determine
+everything else about them: whether the set of agents and their order is
+**fixed in advance or decided dynamically**, and **who decides what
+happens next**. This table places sequential against its four siblings on
+those axes so the rest of the group can be read as variations on a shared
+theme rather than five unrelated designs.
+
+| Pattern | Agent set & order | Who decides next | Control shape | Reach for it when |
+| --- | --- | --- | --- | --- |
+| **Sequential** | Fixed, linear, decided up front | The pipeline's designer (baked in) | One direction, no stage runs twice | The task is a clean, ordered chain of stages, each depending on the last |
+| **Concurrent** | Fixed roster, no order (parallel) | Nobody at run time; an aggregator reconciles after | Symmetric fan-out, then fan-in | Redundant independent attempts add confidence, or complementary angles must be merged |
+| **Group chat** | Fixed roster, dynamic turn order | A moderator, per turn | Shared thread; control can return to a prior speaker | The next useful step depends on what was just said, or an action needs a maker-checker review |
+| **Handoff** | Reactive; next agent chosen at transfer time | The agent currently in control | Control transfers fully; one owner at a time | The right specialist only becomes clear partway through a single-owner interaction |
+| **Magentic** | Both roster and order chosen dynamically per task | A persistent central orchestrator | Delegate-out / results-back; orchestrator stays in charge | The task is open-ended and its decomposition can't be known until investigation begins |
+
+Sequential sits at the fully-static end of that spectrum: it commits to
+both the agent set and their order before any task runs, which is exactly
+what makes it the most predictable and auditable member of the group and
+the natural baseline the other four relax one constraint at a time.
+
 ## Code example
 
 ```rust
@@ -221,5 +243,7 @@ is transforming the previous stage's output into a more actionable form.
 ## Further reading
 
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
+- [Sequential agent orchestration — Semantic Kernel docs (Microsoft)](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/sequential)
+- [Building effective agents — Anthropic (prompt chaining / workflows)](https://www.anthropic.com/engineering/building-effective-agents)
 - [Pipeline (software) — Wikipedia](https://en.wikipedia.org/wiki/Pipeline_(software))
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)

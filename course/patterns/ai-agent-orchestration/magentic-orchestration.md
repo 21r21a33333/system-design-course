@@ -278,5 +278,8 @@ by a maximum remediation-round count before it escalates to a human.
 ## Further reading
 
 - [AI agent orchestration patterns — Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
+- [Magentic agent orchestration — Semantic Kernel docs (Microsoft)](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/magentic)
+- [Magentic-One: a generalist multi-agent system — Microsoft Research](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/)
+- [Building effective agents — Anthropic (orchestrator-workers workflow)](https://www.anthropic.com/engineering/building-effective-agents)
 - [Multi-agent system — Wikipedia](https://en.wikipedia.org/wiki/Multi-agent_system)
 - [Automated planning and scheduling — Wikipedia](https://en.wikipedia.org/wiki/Automated_planning_and_scheduling)
