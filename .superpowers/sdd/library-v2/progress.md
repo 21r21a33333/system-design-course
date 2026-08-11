@@ -287,3 +287,36 @@ replication). Originality spot-checks (exact-phrase search) clean. Fixed
 links (Datastore 404 -> Firestore counters; Twitter blog 403 ->
 twitter-archive/snowflake). All 16 Rust snippets compile via rustc
 --edition 2021; typecheck + build clean, manifest untouched at 121.
+
+### Phase 3 (relaunched) — Group: Reliability (7 pages) — COMPLETE
+Commits: b22934c (all 7). failover.md (v3 exemplar) left untouched.
+7 bare pages fully built out: circuit-breaker (+ 2nd state-machine
+diagram circuit-breaker-states.svg), retry-with-backoff, timeout,
+bulkhead, idempotency, dead-letter-queue, graceful-degradation. 8 new
+SVGs. Cross-differentiation deliberately consistent with failover.md
+(breaker stops calls / bulkhead isolates resources / failover replaces /
+degradation reduces / retry repeats). Added jitter-strategies and
+degradation-tier tables, deadline-propagation and idempotency-key
+walkthroughs.
+
+PROCESS LEARNINGS this group (fed into all subsequent briefs):
+1. Implementers initially embedded `#[cfg(test)] mod tests` in every
+   shipped snippet — inconsistent with failover.md/building-blocks
+   (mechanism-only). Ran a normalization fixer to strip test modules
+   (bulkhead's real-thread test converted to a plain `fn main()` demo to
+   preserve the empirical concurrency). RULE NOW IN BRIEFS: code example
+   ships the MECHANISM only, no #[test]/#[cfg(test)] on the page.
+2. That fixer subagent ACCIDENTALLY LEAKED its own tool-call closing
+   tags (`</content>`, `</invoke>`) as trailing lines into 3 files,
+   which broke the MDX build ("unexpected closing slash in tag"). Caught
+   by the orchestrator's mandatory post-edit `npm run build` (NOT by the
+   subagent's self-report). Stripped the 2 junk lines per file; rebuilt
+   clean. Reinforces: always full-build after ANY subagent edit; never
+   trust "verified" self-reports.
+
+Independent review (fresh agent): all 10 checks pass, zero issues, zero
+fixes. Re-ran bulkhead concurrency 5x (peak concurrency == 2 permits
+every run, ~224ms wall, genuinely multi-threaded). Re-verified DLQ (dead-
+letters at exactly max_attempts=3) and idempotency (total_charged stays
+2500 on replay) behaviorally. 16 external URLs curl-checked all 200.
+Originality verbatim-search clean. Build/typecheck clean, manifest 121.
