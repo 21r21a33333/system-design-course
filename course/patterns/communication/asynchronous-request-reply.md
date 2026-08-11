@@ -236,6 +236,25 @@ download link, retrying and dead-lettering failed deliveries. The
 status URL remains available as a fallback for partners that miss a
 webhook.
 
+## Production libraries & getting started
+
+The accept-and-poll shape is usually backed by a job/queue engine that runs
+the out-of-band work and exposes job state to poll, plus HTTP `202`+polling
+conventions on the API surface. For long-running, multi-step operations a
+durable workflow engine replaces hand-rolled state machines.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| BullMQ | JS/TS (Redis) | Job queue with durable state, retries, and progress you can expose as a pollable status | [Docs](https://docs.bullmq.io/) |
+| Celery | Python | Distributed task queue where each task has an id + result backend to poll for status | [First steps](https://docs.celeryq.dev/en/stable/getting-started/first-steps-with-celery.html) |
+| asynq | Go (Redis) | Simple, reliable background job queue with task state inspection | [GitHub](https://github.com/hibiken/asynq) |
+| Faktory | Any (language-agnostic worker protocol) | Background-job server your workers pull from, tracking job lifecycle | [GitHub](https://github.com/contribsys/faktory) |
+| Temporal | Go, Java, TS, Python, .NET | Durable execution for long-running operations — the workflow itself is the queryable status resource | [Getting started](https://learn.temporal.io/getting_started/) |
+
+**Example / reference:** HTTP `202`+polling conventions —
+[Azure async request-reply](https://learn.microsoft.com/en-us/azure/architecture/patterns/async-request-reply)
+and [Google AIP-151 long-running operations](https://google.aip.dev/151).
+
 ## Related patterns
 
 - [Webhooks](/docs/patterns/communication/webhooks) — the callback

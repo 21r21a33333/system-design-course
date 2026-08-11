@@ -251,6 +251,24 @@ Kafka backbone. Independent consumers — real-time alerting,
 rollups, cold-storage archival — each read the same stream via their own
 consumer groups, absorbing bursts without ever back-pressuring the devices.
 
+## Production libraries & getting started
+
+EDA is architectural — it's served by event brokers plus event-modelling
+libraries rather than one drop-in package. In practice you pick a broker for
+transport, a portable event envelope (CloudEvents), and optionally a
+framework that models events and choreography.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| CloudEvents SDKs | JS/TS, Go, Python, Rust, others | A vendor-neutral event envelope so producers/consumers agree on a portable event schema across brokers | [SDK JS](https://github.com/cloudevents/sdk-javascript) · [SDK Go](https://github.com/cloudevents/sdk-go) · [spec](https://cloudevents.io/) |
+| Apache Kafka | Any (JVM/Go/Python/Rust clients) | Log-based, replayable event backbone with consumer groups and partition ordering | [Quickstart](https://kafka.apache.org/quickstart) |
+| NATS / JetStream | Any (Go, Rust, JS, Python clients) | Lightweight pub-sub plus a durable, replayable JetStream stream layer | [JetStream docs](https://docs.nats.io/nats-concepts/jetstream) |
+| Watermill | Go | Library for building event-driven/CQRS apps over Kafka, NATS, and more with router + middleware | [Getting started](https://watermill.io/docs/getting-started/) |
+| AWS EventBridge | Any (via AWS SDKs) | Managed event bus with schema registry, routing rules, and fan-out to targets | [Get started](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-get-started.html) |
+| Axon Framework | Java/JVM | Framework modelling events, aggregates, and choreography/sagas for event-sourced systems | [Overview](https://developer.axoniq.io/axon-framework/overview) |
+
+**Example / reference:** [Watermill getting-started](https://watermill.io/docs/getting-started/)
+
 ## Related patterns
 
 - [Publish-Subscribe](/docs/patterns/communication/pub-sub) — the messaging

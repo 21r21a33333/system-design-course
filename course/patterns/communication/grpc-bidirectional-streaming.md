@@ -316,6 +316,19 @@ signals end-of-audio on its send half, then keeps receiving the final
 tail of results after it has stopped sending. This is a canonical
 public gRPC bidi use case in cloud speech APIs.
 
+## Production libraries & getting started
+
+gRPC ships an official implementation per language; each generates the typed stubs whose independent send/receive halves the code example models. Connect and Buf are modern alternatives for schema management and browser reach.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| `@grpc/grpc-js` | JS/TS | Pure-JavaScript gRPC client/server for Node.js with streaming call types | [gRPC Node quickstart](https://grpc.io/docs/languages/node/quickstart/) |
+| tonic | Rust | Async gRPC over Tokio with Protobuf codegen and full streaming support | [tonic on GitHub](https://github.com/hyperium/tonic) |
+| grpc-go | Go | The canonical Go gRPC implementation, including bidirectional streaming | [gRPC Go quickstart](https://grpc.io/docs/languages/go/quickstart/) |
+| grpcio | Python | Official gRPC Python runtime with sync and asyncio streaming APIs | [gRPC Python quickstart](https://grpc.io/docs/languages/python/quickstart/) |
+| Connect (connectrpc) | JS/TS, Go | gRPC-compatible RPC framework that also speaks a browser-friendly protocol without a proxy | [Connect docs](https://connectrpc.com/docs/introduction/) |
+| Buf | Tooling | Protobuf build tooling, linting, breaking-change detection, and a schema registry | [Buf docs](https://buf.build/docs/introduction) |
+
 ## Related patterns
 
 - [WebSockets](/docs/patterns/communication/websockets) — the

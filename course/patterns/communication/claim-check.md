@@ -224,6 +224,22 @@ scoped to the single object and puts *that* in the claim check, so a
 consumer can fetch exactly one asset for a bounded window and a leaked
 message grants nothing more.
 
+## Production libraries & getting started
+
+Claim Check is assembled from two existing SDKs: a blob-store client that
+holds the payload and a queue client that carries the small reference. Some
+clouds ship a purpose-built extended client that automates the whole
+store-in-blob / send-reference round trip.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| SQS Extended Client Library | Java / Python | Turnkey claim check: transparently offloads large SQS payloads to S3 and passes a reference | [Java](https://github.com/awslabs/amazon-sqs-java-extended-client-lib) · [Python](https://github.com/awslabs/amazon-sqs-python-extended-client-lib) · [docs](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html) |
+| AWS SDK — S3 | JS/TS, Python (boto3), Go, Rust | Blob store to hold the payload and mint pre-signed URLs for the claim check | [JS/TS](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/s3-example-creating-buckets.html) · [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html) · [Rust](https://docs.rs/aws-sdk-s3/latest/aws_sdk_s3/) |
+| Google Cloud Storage SDKs | JS/TS, Python, Go, others | GCS blob store for the payload plus signed-URL references | [Client libraries](https://cloud.google.com/storage/docs/reference/libraries) |
+| Azure Blob Storage + Service Bus | .NET, Python, JS/TS, Java | Blob store for the body and a queue/topic to carry the reference | [Blob quickstart](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-python) · [Service Bus](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-portal) |
+
+**Example / reference:** [SQS Extended Client (S3-backed large messages)](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html)
+
 ## Related patterns
 
 - [Blob Store](/docs/patterns/building-blocks/blob-store) — where the

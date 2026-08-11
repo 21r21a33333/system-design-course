@@ -266,6 +266,22 @@ ships a new service or fixes a bug, it rewinds its group's offset and
 replays history to rebuild its state — the retained log makes onboarding a
 new subscriber a replay rather than a backfill request to the producer.
 
+## Production libraries & getting started
+
+Real pub-sub runs on a broker; the choice is mostly which delivery/retention model you want. NATS and MQTT are lightweight fan-out, Redis is ephemeral, Kafka and RabbitMQ add durability and replay, and cloud Pub/Sub is fully managed.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| NATS | JS/TS, Rust, Go, Python | Lightweight, high-throughput core pub/sub (plus JetStream for durability) | [NATS pub/sub concepts](https://docs.nats.io/nats-concepts/core-nats/pubsub) |
+| Redis Pub/Sub | JS/TS, Rust, Go, Python | Ephemeral, fire-and-forget fan-out via any Redis client | [Redis Pub/Sub docs](https://redis.io/docs/latest/develop/interact/pubsub/) |
+| Google Cloud Pub/Sub | JS/TS, Go, Python | Managed, durable topic/subscription service with push and pull delivery | [Cloud Pub/Sub publisher guide](https://cloud.google.com/pubsub/docs/publisher) |
+| MQTT.js | JS/TS | MQTT client for browser and Node — topic-based pub/sub for IoT and web | [MQTT.js on GitHub](https://github.com/mqttjs/MQTT.js) |
+| rumqtt | Rust | Pure-Rust MQTT client and broker (rumqttc / rumqttd) | [rumqtt on GitHub](https://github.com/bytebeamio/rumqtt) |
+| Eclipse Paho MQTT | Go, Python | Reference MQTT client libraries for topic pub/sub | [paho.mqtt.golang](https://github.com/eclipse-paho/paho.mqtt.golang) · [paho.mqtt.python](https://github.com/eclipse-paho/paho.mqtt.python) |
+| Apache Kafka | JS/TS, Rust, Go, Python | Log-based broker with retained, replayable topics and consumer groups | [Kafka quickstart](https://kafka.apache.org/documentation/#quickstart) |
+
+**Broker options:** Kafka (retain-and-replay log) and RabbitMQ (exchanges/fanout) are the common self-hosted choices when durability or routing beyond plain topics is needed.
+
 ## Related patterns
 
 - [Event-Driven Architecture](/docs/patterns/communication/event-driven-architecture) —

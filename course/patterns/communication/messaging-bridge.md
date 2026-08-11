@@ -224,6 +224,23 @@ marker so a telemetry event bridged edge→cloud is never re-bridged
 back down, and consumers on both sides are idempotent to absorb the
 duplicates that at-least-once forwarding inevitably produces.
 
+## Production libraries & getting started
+
+A messaging bridge is served by integration systems, not a single library:
+you configure a connector/route that consumes from one broker and produces
+to another, handling translation, retries, and offsets. These are the
+production tools people reach for rather than writing the pump by hand.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Kafka Connect + MirrorMaker 2 | JVM (config-driven) | Connector framework plus MM2 for broker-to-broker replication/bridging with offset tracking | [Connect](https://kafka.apache.org/documentation/#connect) · [MirrorMaker 2](https://kafka.apache.org/documentation/#georeplication) |
+| Apache Camel | Java/JVM | Integration framework with 300+ components to route and translate between messaging systems | [Getting started](https://camel.apache.org/getting-started.html) |
+| Benthos / Redpanda Connect | Go (config-driven) | Declarative stream processor for wiring inputs to outputs across brokers with transforms | [Benthos](https://www.benthos.dev/docs/about) · [Redpanda Connect](https://docs.redpanda.com/redpanda-connect/about/) |
+| Debezium | JVM (Kafka Connect) | CDC connectors that bridge database change streams onto a message bus | [Tutorial](https://debezium.io/documentation/reference/stable/tutorial.html) |
+| NATS | Any (Go, Rust, JS, Python clients) | Bridging/gateways to connect NATS clusters and adjacent systems | [Docs](https://docs.nats.io/) |
+
+**Example / reference:** [Kafka MirrorMaker 2 (broker-to-broker bridging)](https://kafka.apache.org/documentation/#georeplication)
+
 ## Related patterns
 
 - [Distributed Message Queue](/docs/patterns/building-blocks/distributed-message-queue) —

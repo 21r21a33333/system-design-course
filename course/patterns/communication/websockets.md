@@ -252,6 +252,21 @@ connection, with binary frames keeping each message compact. Heartbeats
 detect a silently-dropped connection quickly so the client can reconnect
 before it misses fills.
 
+## Production libraries & getting started
+
+Production WebSocket work is rarely raw RFC 6455 framing — these libraries handle the handshake, control frames, and reconnection so you build on the routing logic, not the wire format.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Socket.IO | JS/TS | Higher-level real-time engine over WebSocket with rooms, auto-reconnect, and long-polling fallback | [Socket.IO docs](https://socket.io/docs/v4/) |
+| `ws` | JS/TS | Fast, spec-compliant bare WebSocket client and server for Node.js | [ws usage examples](https://github.com/websockets/ws#usage-examples) |
+| tokio-tungstenite | Rust | Async WebSocket client/server on Tokio (the tungstenite protocol impl) | [tokio-tungstenite README](https://github.com/snapview/tokio-tungstenite) |
+| axum (WebSocket extractor) | Rust | WebSocket upgrade handling built into the axum web framework | [axum::extract::ws docs](https://docs.rs/axum/latest/axum/extract/ws/index.html) |
+| gorilla/websocket | Go | Widely-used, low-level WebSocket implementation for Go servers and clients | [gorilla/websocket reference](https://pkg.go.dev/github.com/gorilla/websocket) |
+| coder/websocket | Go | Minimal, modern WebSocket library (formerly nhooyr.io/websocket) with a small API | [coder/websocket README](https://github.com/coder/websocket) |
+| `websockets` | Python | asyncio-native WebSocket client and server with correct control-frame handling | [websockets docs](https://websockets.readthedocs.io/en/stable/) |
+| Django Channels | Python | Adds WebSocket (and other async protocols) to Django with consumers and a channel layer | [Channels docs](https://channels.readthedocs.io/en/latest/) |
+
 ## Related patterns
 
 - [Server-Sent Events](/docs/patterns/communication/server-sent-events) —
@@ -269,6 +284,10 @@ before it misses fills.
 - [Load Balancing](/docs/patterns/api-edge/load-balancing) — sticky
   sessions here are what keep a client pinned to the instance holding its
   connection.
+
+## Visual references
+
+- [WebSockets explained with handshake and message-flow diagrams — Ably](https://ably.com/topic/websockets) — © Ably
 
 ## Further reading
 

@@ -202,6 +202,19 @@ natural fit, and the browser renders each token on arrival with no
 bidirectional channel needed — one reason SSE is a common transport for
 chat-style AI responses.
 
+## Production libraries & getting started
+
+On the browser the native `EventSource` already handles framing, reconnection, and `Last-Event-ID`; these libraries cover the server side and non-browser clients.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| `EventSource` (native) | JS/TS (browser) | Built-in SSE client with automatic reconnection and `Last-Event-ID` resume | [EventSource — MDN](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) |
+| `eventsource` | JS/TS (Node) | `EventSource` polyfill/client for Node.js where the API isn't built in | [eventsource on GitHub](https://github.com/EventSource/eventsource) |
+| axum (SSE response) | Rust | `text/event-stream` responses from a stream of events, with keep-alive support | [axum::response::sse docs](https://docs.rs/axum/latest/axum/response/sse/index.html) |
+| async-sse | Rust | Encoder/decoder for the SSE wire format over any async byte stream | [async-sse docs](https://docs.rs/async-sse/latest/async_sse/) |
+| r3labs/sse | Go | SSE server and client with channels, event ids, and reconnection | [r3labs/sse reference](https://pkg.go.dev/github.com/r3labs/sse/v2) |
+| sse-starlette | Python | `EventSourceResponse` for Starlette/FastAPI, including ping keep-alives | [sse-starlette on GitHub](https://github.com/sysid/sse-starlette) |
+
 ## Related patterns
 
 - [WebSockets](/docs/patterns/communication/websockets) — the

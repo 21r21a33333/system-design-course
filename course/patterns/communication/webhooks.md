@@ -244,6 +244,18 @@ automation platform exposes generic webhook URLs that let any provider
 trigger a workflow. Both lean on signature verification to trust the
 sender and on idempotency keys to survive retries.
 
+## Production libraries & getting started
+
+Rather than hand-rolling signing, retries, and a delivery log, most teams adopt a webhook toolkit or the Standard Webhooks spec; on the consumer side, use the provider's own signature-verification helpers.
+
+| Library / Tool | Language | What it gives you | Getting started |
+| --- | --- | --- | --- |
+| Svix | JS/TS, Rust, Go, Python | Webhooks-as-a-service: signing, retries with backoff, delivery logs, and verification SDKs in every language | [Svix docs](https://docs.svix.com/) |
+| svix-webhooks (SDKs) | JS/TS, Rust, Go, Python | Open-source signature verification and sending libraries backing Svix | [svix-webhooks on GitHub](https://github.com/svix/svix-webhooks) |
+| Standard Webhooks | Spec | An open specification for consistent, secure webhook payloads and signatures across providers | [standardwebhooks.com](https://www.standardwebhooks.com/) |
+
+**Reference — verifying signatures:** [Svix payload verification](https://docs.svix.com/receiving/verifying-payloads/how) · [Stripe webhook signatures](https://docs.stripe.com/webhooks/signatures) · [GitHub webhook delivery validation](https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries)
+
 ## Related patterns
 
 - [Publish-Subscribe](/docs/patterns/communication/pub-sub) — the internal
