@@ -251,3 +251,39 @@ phrasings (api-gateway.md<->backend-for-frontend.md, service-
 mesh.md<->sidecar.md) restating the same relationship consistently from
 each side. Manifest untouched at 121, `npm run typecheck` and `npm run
 build` both clean with zero broken links.
+
+### Phase 3 (relaunched, all-121 scope) — Group: Building Blocks (16 pages) — COMPLETE
+Commits: 53ad61f (batch A: blob-store, key-value-store, distributed-cache,
+distributed-search), 98ca620 (batch B/C/D: distributed-message-queue,
+distributed-logging, distributed-monitoring, distributed-task-scheduler,
+rate-limiter, sequencer, sharded-counters, throttling, scheduler-agent-
+supervisor, static-content-hosting, cdn, pipes-and-filters), 1a509cc
+(review fixes).
+
+NEW scope per user (2026-08-11): flexible-baseline (v3 spine + topic-
+specific added sections/diagrams/tables where they add value), ALL 121
+pages, real-tech naming ALLOWED and cited, external reference links w/
+attribution generous, ORIGINAL SVGs only (never embed external images),
+no domain denylist. Copyright boundary still hard: no verbatim copy of
+text or images from any source.
+
+Process: 1 pilot implementer (batch A) validated the brief, then 3
+parallel implementers (B/C/D, disjoint files), git kept single-threaded
+in orchestrator. Bare pages got full build-out (diagram+code+deep
+architecture+scenarios+extras); img+code pages depth-up; the 2 already-v3
+pages (cdn, pipes-and-filters) light-enhanced with existing content
+preserved. Added comparison tables (delivery guarantees, rate-limit
+algorithms, ID schemes). 11 new original SVGs.
+
+Independent review (fresh skeptical agent): re-ran all 3 concurrency
+claims with its own timing harnesses — distributed-search scatter-gather
+3.61x, sharded-counters 1.74x + exact-total-no-lost-updates, scheduler-
+agent-supervisor 47ms vs 129ms — all genuinely multi-threaded (real OS
+threads, not sequential-in-disguise). Verified facts (Snowflake bit
+budget, quorum R+W>N, BM25 saturation+length-norm, RS(4,2)=1.5x vs 3x
+replication). Originality spot-checks (exact-phrase search) clean. Fixed
+1 correctness bug (truncated FNV-1a offset basis 1469598103934665603 ->
+14695981039346656037 in distributed-message-queue) + 2 dead external
+links (Datastore 404 -> Firestore counters; Twitter blog 403 ->
+twitter-archive/snowflake). All 16 Rust snippets compile via rustc
+--edition 2021; typecheck + build clean, manifest untouched at 121.
