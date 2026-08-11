@@ -14,6 +14,7 @@ A payment system's defining property is that its failure modes are worse than al
 * **Merchant** (an online store, a platform, an app) submits a request to charge a customer's payment method for an order
 * **Service** coordinates with an external **payment gateway/processor** to actually move funds, since this design does not move money itself — it orchestrates and records the transaction, generically, without depending on any specific external provider's API
 * **Service** guarantees a given payment request is applied at most once, even if the merchant's client retries after a timeout or the request is redelivered internally
+* **Service** coordinates the multiple internal steps a single payment involves — reserving funds, charging the gateway, updating the order record — so that a failure partway through never leaves the system in a state where some of those steps happened and others didn't
 * **Service** records a durable, auditable ledger of every payment attempt and its outcome
 * **Merchant** queries the status of a previously submitted payment
 * **Service** supports refunds against a previously completed payment
