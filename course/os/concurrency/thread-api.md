@@ -38,7 +38,7 @@ sequenceDiagram
     W-->>K: return retval (a void*)
     M->>K: pthread_join(tid, &out)
     Note over M: blocks until worker finishes
-    K-->>M: unblocks; out = retval
+    K-->>M: unblocks — out = retval
 ```
 
 Return codes matter: `pthread_create` can fail with `EAGAIN` (not enough resources) and both calls can fail with `EINVAL`. They return the error number directly rather than setting `errno`, so the idiom is `int rc = pthread_...(...); if (rc != 0) { /* handle */ }`.
@@ -103,9 +103,9 @@ sequenceDiagram
     participant P as Producer
     C->>Mx: lock(mutex)
     C->>Mx: while(!ready) cond_wait(cond, mutex)
-    Note over C,Mx: cond_wait atomically unlocks &#38; sleeps
+    Note over C,Mx: cond_wait atomically unlocks and sleeps
     P->>Mx: lock(mutex)
-    P->>Mx: ready = 1; cond_signal(cond)
+    P->>Mx: ready = 1, then cond_signal(cond)
     P->>Mx: unlock(mutex)
     Note over C,Mx: consumer wakes, re-locks, re-checks predicate
     C->>Mx: unlock(mutex)

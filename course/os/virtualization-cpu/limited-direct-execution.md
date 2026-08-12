@@ -63,11 +63,11 @@ sequenceDiagram
     Note over K: At boot: install trap table (privileged)
     U->>U: put args + syscall number in registers
     U->>H: execute trap instruction
-    H->>H: save regs/PC to kernel stack; raise to kernel mode
+    H->>H: save regs/PC to kernel stack, raise to kernel mode
     H->>K: jump to registered trap handler
-    K->>K: validate syscall number; run handler (do the work)
+    K->>K: validate syscall number, run handler (do the work)
     K->>H: execute return-from-trap
-    H->>H: restore regs/PC from kernel stack; lower to user mode
+    H->>H: restore regs/PC from kernel stack, lower to user mode
     H->>U: resume right after the trap
 ```
 
@@ -112,15 +112,15 @@ sequenceDiagram
     participant H as Hardware
     participant OS as OS + scheduler
     participant B as Process B (user)
-    Note over H,OS: boot: install timer handler; start timer
+    Note over H,OS: boot: install timer handler, start timer
     A->>A: running normally...
-    H->>H: timer interrupt: save A's user regs to A's kernel stack; kernel mode
+    H->>H: timer interrupt: save A's user regs to A's kernel stack, kernel mode
     H->>OS: jump to timer interrupt handler
-    OS->>OS: scheduler picks B; call switch(A, B)
-    OS->>OS: save A's kernel regs to proc(A); restore B's kernel regs from proc(B)
+    OS->>OS: scheduler picks B, call switch(A, B)
+    OS->>OS: save A's kernel regs to proc(A), restore B's kernel regs from proc(B)
     OS->>OS: switch kernel stack pointer to B
     OS->>H: return-from-trap (into B)
-    H->>H: restore B's user regs from B's kernel stack; user mode
+    H->>H: restore B's user regs from B's kernel stack, user mode
     H->>B: resume B at its saved PC
     B->>B: running normally...
 ```

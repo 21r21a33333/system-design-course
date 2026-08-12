@@ -70,8 +70,8 @@ sequenceDiagram
     K-->>C: returns 0
     Note over P,C: both continue from the same line
     C->>K: execvp("echo", ...)
-    Note over C: image replaced; does not return
-    P->>K: wait(&#38;status)
+    Note over C: image replaced, does not return
+    P->>K: wait(status)
     Note over P: blocks until child exits
     C-->>K: exit(0)
     K-->>P: unblocks with child's status

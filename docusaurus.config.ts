@@ -90,6 +90,14 @@ const config: Config = {
       defaultMode: 'light',
       respectPrefersColorScheme: false,
     },
+    docs: {
+      sidebar: {
+        // Adds a collapse control at the bottom of the doc sidebar so readers
+        // can hide it entirely (a small arrow toggles it back), useful once a
+        // section like DSA/OS gets deep and the sidebar competes for width.
+        hideable: true,
+      },
+    },
     navbar: {
       title: 'System Design Course',
       items: [

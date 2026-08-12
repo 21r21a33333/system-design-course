@@ -104,7 +104,7 @@ flowchart LR
   split -->|"low bits"| off["offset"]
   vpn --> idx["index page table<br/>PTBR &#43; VPN &#215; sizeof(PTE)"]
   idx --> pte["read PTE"]
-  pte --> chk{"valid &#38; protection ok?"}
+  pte --> chk{"valid and protection ok?"}
   chk -->|"no"| fault["trap to OS<br/>(seg / protection fault)"]
   chk -->|"yes"| pfn["PFN"]
   pfn --> form["PA = (PFN &#60;&#60; shift) &#124; offset"]

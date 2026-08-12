@@ -31,6 +31,13 @@ problems** expected in interviews.
   ```
 - Diagrams: prefer ```mermaid (state machines, address translation, page-table walks, the
   disk/CPU pipeline, RAID layouts). Mermaid labels must use `&#60;`/`&#62;` (HTML entities, with the ampersand) for `<`/`>`.
+- **NEVER put a bare `;` inside a `sequenceDiagram` message or `Note` line** (e.g.
+  `H->>H: save regs; raise to kernel mode`) — mermaid's sequence parser treats an
+  unquoted `;` as a statement terminator, silently glues the rest of the line onto
+  the NEXT statement, and throws a confusing "Expecting SOLID_ARROW... got NEWLINE"
+  parse error at runtime (this does NOT get caught by `npm run build`, since mermaid
+  parses client-side — verify with `node scripts/dsa/verify-mermaid.mjs` instead).
+  Use `,`, `—`, or "then"/"and" in place of `;` in any sequence-diagram text.
 
 ## Page structure
 

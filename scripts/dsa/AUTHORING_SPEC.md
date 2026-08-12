@@ -90,6 +90,11 @@ Pavel Mavrin _Algorithms & Data Structures_ lecture. The reader reads the note
 - **Inside markdown TABLE cells, never put a literal `|` in `$…$` math** (it's read as a
   column separator and breaks the cell). Use `\vert`, `\lvert … \rvert`, or `\mid` instead.
 - Math notation: prefer real KaTeX (this site renders it). Keep mermaid fences balanced.
+- **NEVER put a bare `;` inside a `sequenceDiagram` message or `Note` line** — mermaid's
+  sequence parser treats an unquoted `;` as a statement terminator and throws a runtime
+  parse error that `npm run build` does NOT catch (mermaid parses client-side, not at
+  MDX build time). Use `,`/`—`/"then" instead. Verify all diagrams parse with
+  `node scripts/dsa/verify-mermaid.mjs` before shipping a batch with sequence diagrams.
 
 ## Verification before you finish
 

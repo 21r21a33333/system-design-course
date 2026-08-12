@@ -61,7 +61,7 @@ The universal pattern: pay the asymmetric cost *once* to move a fresh symmetric 
 sequenceDiagram
     participant A as Alice
     participant B as Bob
-    Note over A,B: Bob has a keypair; Alice knows Bob's PUBLIC key
+    Note over A,B: Bob has a keypair — Alice knows Bob's PUBLIC key
     A->>A: generate random session key Ks
     A->>A: wrap Ks with Bob's public key (RSA/ECC)
     A->>B: send encrypted-Ks  +  AES-encrypt(Ks, big message)
@@ -138,7 +138,7 @@ sequenceDiagram
     B->>A: B = g^b mod p
     A->>A: s = B^a mod p
     B->>B: s = A^b mod p
-    Note over A,B: both hold s = g^(ab) mod p; eavesdropper cannot
+    Note over A,B: both hold s = g^(ab) mod p — an eavesdropper cannot
 ```
 
 ### TLS, at a high level
