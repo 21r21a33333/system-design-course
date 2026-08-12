@@ -319,6 +319,11 @@ Most languages have a mature breaker library; resilience4j (Java) and Polly (.NE
   dependency with a standby; a breaker only protects the caller from it.
   The two layer together — a breaker short-circuits a failing primary while
   failover promotes a standby.
+- [Cascading Failures](/docs/patterns/reliability/cascading-failures) —
+  the broader failure mode a breaker helps contain: stopping calls to a
+  clearly-failing dependency is one of several techniques (alongside load
+  shedding, queue management, and deadline propagation) that keep an
+  overload from spreading.
 
 ## Further reading
 

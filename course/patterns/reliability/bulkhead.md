@@ -307,6 +307,9 @@ resilience4j (Java) and Polly (.NET) ship a dedicated Bulkhead abstraction; in m
 - [Noisy Neighbor](/docs/patterns/antipatterns/noisy-neighbor) — the
   antipattern of a shared resource being starved by one consumer, which
   per-tenant bulkheads directly prevent.
+- [Cascading Failures](/docs/patterns/reliability/cascading-failures) —
+  the broader failure mode a bulkhead helps contain, alongside queue
+  management, load shedding, and deadline propagation.
 
 ## Further reading
 

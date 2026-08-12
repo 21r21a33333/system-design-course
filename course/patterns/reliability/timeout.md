@@ -258,6 +258,10 @@ Timeouts are usually a first-class primitive of the language runtime or HTTP cli
   exposure to the failure without fixing or replacing it.
 - [Retry Storm](/docs/patterns/antipatterns/retry-storm) — the antipattern
   a too-short timeout combined with aggressive retry can trigger.
+- [Cascading Failures](/docs/patterns/reliability/cascading-failures) —
+  why deadline propagation (this page's core mechanic) matters more than
+  it looks: a small fraction of requests without a bounded deadline can
+  exhaust an entire thread pool and turn into a much larger error rate.
 
 ## Further reading
 

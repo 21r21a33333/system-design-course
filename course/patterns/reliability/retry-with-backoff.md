@@ -267,6 +267,10 @@ Reach for a library rather than hand-rolling the delay math — these implement 
   *replacement*, whereas retry keeps calling the same dependency.
 - [Retry Storm](/docs/patterns/antipatterns/retry-storm) — the antipattern
   that backoff, jitter, and retry budgets exist to prevent.
+- [Cascading Failures](/docs/patterns/reliability/cascading-failures) —
+  the broader failure mode this pattern is one defense against; covers why
+  retries multiply across layers and how backoff, load shedding, and
+  deadline propagation combine to stop an overload from spreading.
 
 ## Further reading
 

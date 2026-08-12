@@ -256,6 +256,9 @@ Graceful degradation comes in two flavors: reactive fallbacks (a resilience libr
 - [CDN](/docs/patterns/building-blocks/cdn) — serves static fallback
   content (a generic page, a cached response) when a dynamic origin
   dependency is down.
+- [Cascading Failures](/docs/patterns/reliability/cascading-failures) —
+  the broader failure mode graceful degradation exists to contain; also
+  covers why an untested degraded-mode path is effectively a broken path.
 
 ## Further reading
 

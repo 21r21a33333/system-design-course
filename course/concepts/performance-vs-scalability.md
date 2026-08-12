@@ -13,5 +13,5 @@ Another way to look at performance vs scalability:
 ### Source(s) and further reading
 
 * [A word on scalability](http://www.allthingsdistributed.com/2006/03/a_word_on_scalability.html)
-* [Addressing cascading failures](https://sre.google/sre-book/addressing-cascading-failures/) — a full chapter from Google's SRE book on how a system that's fast for one user degrades under load, and the stability patterns (backoff, load shedding, circuit breaking) that prevent it, grounded in real production incidents.
+* [Cascading Failures](/docs/patterns/reliability/cascading-failures) — this course's condensed walkthrough of Google's SRE book chapter on exactly this failure mode: how a system that's fast for one user degrades under load, and the load-shedding, queue-management, deadline-propagation, and circuit-breaking techniques that prevent it.
 * [CircuitBreaker](https://martinfowler.com/bliki/CircuitBreaker.html) — Martin Fowler's canonical explanation of the circuit-breaker pattern for containing failures instead of letting them cascade under load.
