@@ -30,7 +30,7 @@ problems** expected in interviews.
   ---
   ```
 - Diagrams: prefer ```mermaid (state machines, address translation, page-table walks, the
-  disk/CPU pipeline, RAID layouts). Mermaid labels must use `#60;`/`#62;` for `<`/`>`.
+  disk/CPU pipeline, RAID layouts). Mermaid labels must use `&#60;`/`&#62;` (HTML entities, with the ampersand) for `<`/`>`.
 
 ## Page structure
 
@@ -67,7 +67,7 @@ problems** expected in interviews.
 ## Hard rules (build-breaking or quality-critical)
 
 - No `{#heading-id}` anchors; no bare `{`/`}`/`<`/`>` in prose OR in mermaid/image alt-text
-  (use words, `≤`/`≥`, or `#60;`/`#62;` in mermaid). Balanced code fences. No literal `|`
+  (use words, `≤`/`≥`, or `&#60;`/`&#62;` (HTML entities, with the ampersand) in mermaid). Balanced code fences. No literal `|`
   inside `$…$` in table cells (use `\vert`).
 - Internal `/docs/...` links must resolve to real files (build throws otherwise). You MAY
   cross-link real DSA pages (`/docs/dsa/...`) and pattern pages (`/docs/patterns/...`) —

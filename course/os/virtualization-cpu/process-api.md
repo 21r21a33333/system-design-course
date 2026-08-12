@@ -66,12 +66,12 @@ sequenceDiagram
     participant C as Child
     P->>K: fork()
     K->>C: create copy of address space (COW)
-    K-->>P: returns child PID (#62; 0)
+    K-->>P: returns child PID (&#62; 0)
     K-->>C: returns 0
     Note over P,C: both continue from the same line
     C->>K: execvp("echo", ...)
     Note over C: image replaced; does not return
-    P->>K: wait(#38;status)
+    P->>K: wait(&#38;status)
     Note over P: blocks until child exits
     C-->>K: exit(0)
     K-->>P: unblocks with child's status

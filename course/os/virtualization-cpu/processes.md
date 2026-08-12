@@ -219,9 +219,9 @@ sequenceDiagram
   participant K as Kernel (scheduler)
   participant B as Process B (user)
   A->>K: timer interrupt / blocking syscall
-  Note over K: save A's regs -#62; PCB(A)
+  Note over K: save A's regs -&#62; PCB(A)
   Note over K: pick next READY (policy)
-  Note over K: restore PCB(B) -#62; regs, switch address space
+  Note over K: restore PCB(B) -&#62; regs, switch address space
   K->>B: return to user mode (resume at B's PC)
 ```
 

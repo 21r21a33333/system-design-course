@@ -392,11 +392,11 @@ $$
 
 ```mermaid
 graph LR
-    P["P #60;br/#62; poly time"] --> NP["NP #60;br/#62; poly-verifiable"]
-    NP --> EXP["EXP #60;br/#62; 2^poly time"]
-    EXP --> R["R #60;br/#62; solvable / decidable"]
-    R --> U["undecidable #60;br/#62; e.g. HALT"]
-    NPC["NP-complete #60;br/#62; SAT, 3-SAT, subset-sum, #60;br/#62; clique, vertex cover, Ham-cycle"] -.->|"hardest in"| NP
+    P["P &#60;br/&#62; poly time"] --> NP["NP &#60;br/&#62; poly-verifiable"]
+    NP --> EXP["EXP &#60;br/&#62; 2^poly time"]
+    EXP --> R["R &#60;br/&#62; solvable / decidable"]
+    R --> U["undecidable &#60;br/&#62; e.g. HALT"]
+    NPC["NP-complete &#60;br/&#62; SAT, 3-SAT, subset-sum, &#60;br/&#62; clique, vertex cover, Ham-cycle"] -.->|"hardest in"| NP
 ```
 
 - Known: $\mathsf{P} \subseteq \mathsf{NP} \subseteq \mathsf{EXP} \subseteq \mathsf{R}$. Whether the first inclusion is strict is the open P vs NP question.

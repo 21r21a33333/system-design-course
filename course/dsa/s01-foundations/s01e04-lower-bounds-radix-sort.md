@@ -38,11 +38,11 @@ description: Why comparison sorting cannot beat n log n via the decision-tree ar
 
 ```mermaid
 graph TD
-    A["x #60; y ?"] -->|yes| B["x #60; z ?"]
-    A -->|no| C["y #60; z ?"]
-    B -->|yes| D["y #60; z ?"]
+    A["x &#60; y ?"] -->|yes| B["x &#60; z ?"]
+    A -->|no| C["y &#60; z ?"]
+    B -->|yes| D["y &#60; z ?"]
     B -->|no| E["z x y"]
-    C -->|yes| F["x #60; z ?"]
+    C -->|yes| F["x &#60; z ?"]
     C -->|no| G["z y x"]
     D -->|yes| H["x y z"]
     D -->|no| I["x z y"]
