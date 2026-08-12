@@ -1,0 +1,77 @@
+<svg viewBox="0 0 820 420" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="420" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">UPI: four-party model around the NPCI central switch</text>
+
+  <!-- Payer -->
+  <rect x="20" y="80" width="120" height="58" rx="8" fill="#1d4ed8"/>
+  <text x="80" y="104" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Payer</text>
+  <text x="80" y="121" font-size="9" fill="#dbeafe" text-anchor="middle">MPIN authorizes</text>
+
+  <!-- Payer PSP app -->
+  <rect x="20" y="180" width="120" height="58" rx="8" fill="#0f766e"/>
+  <text x="80" y="204" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Payer PSP app</text>
+  <text x="80" y="221" font-size="9" fill="#ccfbf1" text-anchor="middle">e.g. a UPI app</text>
+
+  <!-- NPCI switch -->
+  <rect x="330" y="130" width="160" height="70" rx="8" fill="#6d28d9"/>
+  <text x="410" y="158" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">NPCI central switch</text>
+  <text x="410" y="175" font-size="9" fill="#ede9fe" text-anchor="middle">routes by VPA,</text>
+  <text x="410" y="188" font-size="9" fill="#ede9fe" text-anchor="middle">idempotent txn id</text>
+
+  <!-- Payee PSP app -->
+  <rect x="680" y="180" width="120" height="58" rx="8" fill="#0f766e"/>
+  <text x="740" y="204" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Payee PSP app</text>
+  <text x="740" y="221" font-size="9" fill="#ccfbf1" text-anchor="middle">resolves payee VPA</text>
+
+  <!-- Payee -->
+  <rect x="680" y="80" width="120" height="58" rx="8" fill="#1d4ed8"/>
+  <text x="740" y="104" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Payee</text>
+  <text x="740" y="121" font-size="9" fill="#dbeafe" text-anchor="middle">alice@okbank</text>
+
+  <!-- Remitter bank -->
+  <rect x="290" y="300" width="150" height="60" rx="8" fill="#b45309"/>
+  <text x="365" y="325" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Remitter bank</text>
+  <text x="365" y="342" font-size="9" fill="#fde68a" text-anchor="middle">debits payer account</text>
+
+  <!-- Beneficiary bank -->
+  <rect x="480" y="300" width="150" height="60" rx="8" fill="#b45309"/>
+  <text x="555" y="325" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Beneficiary bank</text>
+  <text x="555" y="342" font-size="9" fill="#fde68a" text-anchor="middle">credits payee account</text>
+
+  <!-- Payer -> PSP -->
+  <line x1="80" y1="138" x2="80" y2="178" stroke="#1d4ed8" stroke-width="2" marker-end="url(#upiArrowBlue)"/>
+  <!-- PSP -> NPCI -->
+  <line x1="140" y1="205" x2="328" y2="180" stroke="#0f766e" stroke-width="2" marker-end="url(#upiArrowTeal)"/>
+  <!-- NPCI -> Payee PSP -->
+  <line x1="490" y1="180" x2="678" y2="205" stroke="#6d28d9" stroke-width="2" marker-end="url(#upiArrowViolet)"/>
+  <!-- Payee PSP -> Payee -->
+  <line x1="740" y1="178" x2="740" y2="138" stroke="#1d4ed8" stroke-width="2" marker-end="url(#upiArrowBlue)"/>
+  <!-- NPCI -> remitter (debit) -->
+  <line x1="380" y1="200" x2="368" y2="298" stroke="#b45309" stroke-width="2" marker-end="url(#upiArrowAmber)"/>
+  <!-- NPCI -> beneficiary (credit) -->
+  <line x1="450" y1="200" x2="548" y2="298" stroke="#b45309" stroke-width="2" marker-end="url(#upiArrowAmber)"/>
+
+  <!-- note box -->
+  <rect x="30" y="285" width="230" height="95" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="145" y="305" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">User-visible transfer is real time;</text>
+  <text x="145" y="319" font-size="9" fill="#334155" text-anchor="middle">interbank settlement between banks</text>
+  <text x="145" y="333" font-size="9" fill="#334155" text-anchor="middle">is deferred net settlement in</text>
+  <text x="145" y="347" font-size="9" fill="#334155" text-anchor="middle">scheduled cycles. No bank account</text>
+  <text x="145" y="361" font-size="9" fill="#334155" text-anchor="middle">numbers are shared end to end.</text>
+
+  <defs>
+    <marker id="upiArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="upiArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="upiArrowViolet" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#6d28d9"/>
+    </marker>
+    <marker id="upiArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,93 @@
+<svg viewBox="0 0 820 460" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="stkScArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="stkScArrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="stkScArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+
+  <rect width="820" height="460" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="13" fill="#334155" text-anchor="middle" font-weight="600">Scaled: sharded order flow, in-memory matching, batched net settlement</text>
+
+  <!-- Broker cluster -->
+  <rect x="20" y="52" width="150" height="150" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="95" y="72" font-size="11" fill="#1d4ed8" text-anchor="middle" font-weight="700">Broker platform</text>
+  <rect x="34" y="84" width="122" height="30" rx="6" fill="#1d4ed8"/>
+  <text x="95" y="103" font-size="9" fill="#ffffff" text-anchor="middle">API gateway + auth</text>
+  <rect x="34" y="120" width="122" height="30" rx="6" fill="#1d4ed8"/>
+  <text x="95" y="139" font-size="9" fill="#ffffff" text-anchor="middle">order queue (Kafka)</text>
+  <rect x="34" y="156" width="122" height="34" rx="6" fill="#1d4ed8"/>
+  <text x="95" y="171" font-size="9" fill="#ffffff" text-anchor="middle">risk + buying-power</text>
+  <text x="95" y="183" font-size="9" fill="#ffffff" text-anchor="middle">pre-trade checks</text>
+
+  <!-- SOR -->
+  <rect x="196" y="96" width="120" height="64" rx="10" fill="#0f766e"/>
+  <text x="256" y="118" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="700">Smart order</text>
+  <text x="256" y="132" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="700">router</text>
+  <text x="256" y="149" font-size="8.5" fill="#ccfbf1" text-anchor="middle">venue scoring, FIX out</text>
+
+  <!-- Matching venues cluster -->
+  <rect x="342" y="44" width="176" height="176" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="430" y="63" font-size="11" fill="#0f766e" text-anchor="middle" font-weight="700">Matching venues</text>
+  <rect x="356" y="74" width="148" height="40" rx="6" fill="#0f766e"/>
+  <text x="430" y="90" font-size="9" fill="#ffffff" text-anchor="middle">exchange matching engine</text>
+  <text x="430" y="103" font-size="8.5" fill="#ccfbf1" text-anchor="middle">in-memory, single writer/symbol</text>
+  <rect x="356" y="120" width="148" height="38" rx="6" fill="#0f766e"/>
+  <text x="430" y="136" font-size="9" fill="#ffffff" text-anchor="middle">market maker / dark pool</text>
+  <text x="430" y="149" font-size="8.5" fill="#ccfbf1" text-anchor="middle">internalizes retail flow</text>
+  <rect x="356" y="164" width="148" height="44" rx="6" fill="#0f766e"/>
+  <text x="430" y="182" font-size="9" fill="#ffffff" text-anchor="middle">order book sharded by symbol</text>
+  <text x="430" y="196" font-size="8.5" fill="#ccfbf1" text-anchor="middle">price-time priority, seq-numbered</text>
+
+  <!-- Consolidated tape / market data -->
+  <rect x="342" y="234" width="176" height="46" rx="8" fill="#6d28d9"/>
+  <text x="430" y="254" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">market data feed / tape</text>
+  <text x="430" y="269" font-size="8.5" fill="#ede9fe" text-anchor="middle">NBBO, fills streamed to brokers</text>
+
+  <!-- Clearing corp -->
+  <rect x="548" y="44" width="248" height="150" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+  <text x="672" y="64" font-size="11" fill="#b45309" text-anchor="middle" font-weight="700">Clearing corporation (CCP)</text>
+  <rect x="562" y="76" width="220" height="34" rx="6" fill="#b45309"/>
+  <text x="672" y="91" font-size="9" fill="#ffffff" text-anchor="middle">trade capture + novation</text>
+  <text x="672" y="103" font-size="8.5" fill="#fde68a" text-anchor="middle">CCP becomes counterparty to both sides</text>
+  <rect x="562" y="116" width="220" height="34" rx="6" fill="#b45309"/>
+  <text x="672" y="131" font-size="9" fill="#ffffff" text-anchor="middle">continuous net settlement (CNS)</text>
+  <text x="672" y="143" font-size="8.5" fill="#fde68a" text-anchor="middle">multilateral netting per symbol per member</text>
+  <rect x="562" y="156" width="220" height="30" rx="6" fill="#b45309"/>
+  <text x="672" y="175" font-size="9" fill="#ffffff" text-anchor="middle">clearing fund + margin (guarantee)</text>
+
+  <!-- Depository / settlement -->
+  <rect x="548" y="210" width="248" height="86" rx="10" fill="#faf5ff" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="672" y="230" font-size="11" fill="#6d28d9" text-anchor="middle" font-weight="700">Central depository (DTC)</text>
+  <rect x="562" y="240" width="220" height="22" rx="5" fill="#6d28d9"/>
+  <text x="672" y="255" font-size="8.5" fill="#ffffff" text-anchor="middle">book-entry share ledger (Cede and Co)</text>
+  <rect x="562" y="266" width="220" height="22" rx="5" fill="#6d28d9"/>
+  <text x="672" y="281" font-size="8.5" fill="#ffffff" text-anchor="middle">DVP: shares vs cash atomically, T+1</text>
+
+  <!-- Reconciliation -->
+  <rect x="20" y="330" width="500" height="70" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="270" y="352" font-size="11" fill="#334155" text-anchor="middle" font-weight="700">Reconciliation and books-and-records</text>
+  <text x="270" y="370" font-size="9" fill="#475569" text-anchor="middle">broker sub-ledger of client positions reconciled daily against the CCP net</text>
+  <text x="270" y="384" font-size="9" fill="#475569" text-anchor="middle">obligation and the depository's book-entry balance; breaks are investigated, not overwritten</text>
+
+  <!-- Arrows -->
+  <line x1="170" y1="128" x2="192" y2="128" stroke="#1d4ed8" stroke-width="2" marker-end="url(#stkScArrowBlue)"/>
+  <line x1="316" y1="128" x2="338" y2="128" stroke="#0f766e" stroke-width="2" marker-end="url(#stkScArrowGreen)"/>
+  <line x1="518" y1="120" x2="544" y2="120" stroke="#b45309" stroke-width="2" marker-end="url(#stkScArrowAmber)"/>
+  <text x="531" y="112" font-size="8" fill="#b45309" text-anchor="middle">fills</text>
+  <line x1="672" y1="194" x2="672" y2="207" stroke="#6d28d9" stroke-width="2" marker-end="url(#stkScArrowGreen)"/>
+  <!-- tape back to broker -->
+  <path d="M342,257 L180,257 L180,204" fill="none" stroke="#6d28d9" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#stkScArrowGreen)"/>
+  <!-- clearing net to reconciliation -->
+  <path d="M548,175 L534,175 L534,320 L400,320 L400,327" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#stkScArrowGreen)"/>
+
+  <!-- callouts -->
+  <text x="256" y="430" font-size="9" fill="#0f766e" text-anchor="middle" font-weight="600">Hot path: shard the book by symbol so one symbol is a single-writer, lock-free loop</text>
+  <text x="256" y="444" font-size="9" fill="#b45309" text-anchor="middle" font-weight="600">Cold path: settlement is a batched net job, orders of magnitude fewer postings than trades</text>
+</svg>

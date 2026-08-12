@@ -1,0 +1,85 @@
+<svg viewBox="0 0 820 440" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="hftScaledArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="hftScaledArrowTeal" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="820" height="440" fill="#ffffff"/>
+  <text x="410" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">Scaled HFT platform: sharded by symbol, colocated per venue</text>
+
+  <!-- colo cage boundary -->
+  <rect x="24" y="52" width="520" height="300" rx="10" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="40" y="72" font-size="11" font-weight="700" fill="#64748b">Colocation cage (single venue)</text>
+
+  <!-- venue feeds -->
+  <rect x="40" y="90" width="120" height="56" rx="8" fill="#1d4ed8"/>
+  <text x="100" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Multicast feeds</text>
+  <text x="100" y="128" text-anchor="middle" font-size="9" fill="#dbeafe">A/B redundant lines</text>
+  <text x="100" y="139" text-anchor="middle" font-size="9" fill="#dbeafe">arbitration on gap</text>
+
+  <!-- shard by symbol -->
+  <rect x="200" y="82" width="150" height="40" rx="8" fill="#0f766e"/>
+  <text x="275" y="100" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">Feed handler shard A-M</text>
+  <text x="275" y="114" text-anchor="middle" font-size="9" fill="#ccfbf1">book + strategy pinned</text>
+
+  <rect x="200" y="134" width="150" height="40" rx="8" fill="#0f766e"/>
+  <text x="275" y="152" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">Feed handler shard N-Z</text>
+  <text x="275" y="166" text-anchor="middle" font-size="9" fill="#ccfbf1">book + strategy pinned</text>
+
+  <!-- FPGA fast path -->
+  <rect x="200" y="192" width="150" height="44" rx="8" fill="#6d28d9"/>
+  <text x="275" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">FPGA fast path</text>
+  <text x="275" y="225" text-anchor="middle" font-size="9" fill="#ede9fe">tick-to-trade in silicon</text>
+
+  <!-- risk gate -->
+  <rect x="392" y="110" width="120" height="56" rx="8" fill="#b45309"/>
+  <text x="452" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Pre-trade risk</text>
+  <text x="452" y="148" text-anchor="middle" font-size="9" fill="#fef3c7">15c3-5 gate</text>
+  <text x="452" y="159" text-anchor="middle" font-size="9" fill="#fef3c7">per-shard, in-line</text>
+
+  <!-- order gateway -->
+  <rect x="392" y="192" width="120" height="52" rx="8" fill="#0f766e"/>
+  <text x="452" y="213" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Order gateway</text>
+  <text x="452" y="228" text-anchor="middle" font-size="9" fill="#ccfbf1">OUCH / FIX, SOR</text>
+
+  <!-- PTP clock -->
+  <rect x="200" y="256" width="312" height="34" rx="8" fill="#334155"/>
+  <text x="356" y="277" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">PTP grandmaster clock — nanosecond timestamps across all shards</text>
+
+  <!-- exchange -->
+  <rect x="600" y="110" width="120" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="660" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Exchange</text>
+  <text x="660" y="150" text-anchor="middle" font-size="9" fill="#dbeafe">matching engine</text>
+  <text x="660" y="162" text-anchor="middle" font-size="9" fill="#dbeafe">order entry ports</text>
+
+  <!-- off-hot-path plane -->
+  <rect x="600" y="300" width="196" height="118" rx="10" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="616" y="320" font-size="11" font-weight="700" fill="#64748b">Async control plane (off hot path)</text>
+  <rect x="616" y="330" width="164" height="26" rx="6" fill="#be123c"/>
+  <text x="698" y="347" text-anchor="middle" font-size="10" fill="#ffffff">OMS: fills, positions, state</text>
+  <rect x="616" y="362" width="164" height="26" rx="6" fill="#334155"/>
+  <text x="698" y="379" text-anchor="middle" font-size="10" fill="#ffffff">Latency + health monitoring</text>
+  <rect x="616" y="394" width="164" height="22" rx="6" fill="#0f766e"/>
+  <text x="698" y="409" text-anchor="middle" font-size="9" fill="#ffffff">Audit log to durable storage</text>
+
+  <!-- arrows -->
+  <line x1="160" y1="112" x2="196" y2="102" stroke="#0f766e" stroke-width="1.8" marker-end="url(#hftScaledArrowTeal)"/>
+  <line x1="160" y1="124" x2="196" y2="150" stroke="#0f766e" stroke-width="1.8" marker-end="url(#hftScaledArrowTeal)"/>
+  <line x1="160" y1="132" x2="196" y2="210" stroke="#0f766e" stroke-width="1.8" marker-end="url(#hftScaledArrowTeal)"/>
+
+  <line x1="350" y1="102" x2="388" y2="130" stroke="#334155" stroke-width="1.8" marker-end="url(#hftScaledArrow)"/>
+  <line x1="350" y1="154" x2="388" y2="142" stroke="#334155" stroke-width="1.8" marker-end="url(#hftScaledArrow)"/>
+  <line x1="350" y1="214" x2="388" y2="216" stroke="#334155" stroke-width="1.8" marker-end="url(#hftScaledArrow)"/>
+
+  <line x1="452" y1="166" x2="452" y2="188" stroke="#334155" stroke-width="1.8" marker-end="url(#hftScaledArrow)"/>
+  <line x1="512" y1="216" x2="596" y2="160" stroke="#334155" stroke-width="1.8" marker-end="url(#hftScaledArrow)"/>
+
+  <!-- exchange fills to OMS -->
+  <line x1="660" y1="170" x2="680" y2="296" stroke="#334155" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#hftScaledArrow)"/>
+
+  <text x="410" y="434" text-anchor="middle" font-size="10" fill="#64748b">Each symbol shard keeps its own in-memory book on a pinned core; the hot path never touches disk, locks, or the control plane</text>
+</svg>

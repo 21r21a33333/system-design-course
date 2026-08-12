@@ -1,0 +1,79 @@
+<svg viewBox="0 0 820 460" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="460" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">The US rails: same clearing/settlement engine, different speed, cost and finality</text>
+
+  <!-- Originating bank -->
+  <rect x="30" y="180" width="130" height="80" rx="8" fill="#1d4ed8"/>
+  <text x="95" y="212" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Sending bank</text>
+  <text x="95" y="229" font-size="9" fill="#dbeafe" text-anchor="middle">debits its customer,</text>
+  <text x="95" y="242" font-size="9" fill="#dbeafe" text-anchor="middle">picks a rail</text>
+
+  <!-- Rails column -->
+  <!-- Book transfer -->
+  <rect x="250" y="56" width="300" height="52" rx="8" fill="#0f766e"/>
+  <text x="266" y="78" font-size="11" fill="#ffffff" font-weight="600">Book transfer (same bank)</text>
+  <text x="266" y="94" font-size="9" fill="#ccfbf1">two internal ledger updates, instant, no rail</text>
+
+  <!-- ACH -->
+  <rect x="250" y="116" width="300" height="52" rx="8" fill="#0f766e"/>
+  <text x="266" y="138" font-size="11" fill="#ffffff" font-weight="600">ACH (NACHA, batched)</text>
+  <text x="266" y="154" font-size="9" fill="#ccfbf1">net settlement, T+1 or same-day, cheap, payroll/bills</text>
+
+  <!-- Fedwire -->
+  <rect x="250" y="176" width="300" height="52" rx="8" fill="#6d28d9"/>
+  <text x="266" y="198" font-size="11" fill="#ffffff" font-weight="600">Fedwire (RTGS)</text>
+  <text x="266" y="214" font-size="9" fill="#ede9fe">real-time gross, irrevocable, final, high-value</text>
+
+  <!-- RTP / FedNow -->
+  <rect x="250" y="236" width="300" height="52" rx="8" fill="#6d28d9"/>
+  <text x="266" y="258" font-size="11" fill="#ffffff" font-weight="600">RTP / FedNow (instant)</text>
+  <text x="266" y="274" font-size="9" fill="#ede9fe">24/7 credit-push, irrevocable, prefunded balance</text>
+
+  <!-- Correspondent -->
+  <rect x="250" y="296" width="300" height="52" rx="8" fill="#b45309"/>
+  <text x="266" y="318" font-size="11" fill="#ffffff" font-weight="600">Correspondent + SWIFT (cross-border)</text>
+  <text x="266" y="334" font-size="9" fill="#fde68a">nostro/vostro relay, message only, days</text>
+
+  <!-- arrows from sending bank into rails -->
+  <line x1="160" y1="200" x2="248" y2="90"  stroke="#94a3b8" stroke-width="1.4" marker-end="url(#bnkScArrowGrey)"/>
+  <line x1="160" y1="205" x2="248" y2="142" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#bnkScArrowGrey)"/>
+  <line x1="160" y1="220" x2="248" y2="202" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#bnkScArrowGrey)"/>
+  <line x1="160" y1="235" x2="248" y2="262" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#bnkScArrowGrey)"/>
+  <line x1="160" y1="250" x2="248" y2="322" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#bnkScArrowGrey)"/>
+
+  <!-- Fed master accounts settlement -->
+  <rect x="640" y="130" width="150" height="90" rx="8" fill="#b45309"/>
+  <text x="715" y="160" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Fed master</text>
+  <text x="715" y="176" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">accounts</text>
+  <text x="715" y="194" font-size="9" fill="#fde68a" text-anchor="middle">gross per Fedwire,</text>
+  <text x="715" y="206" font-size="9" fill="#fde68a" text-anchor="middle">net per ACH cycle</text>
+
+  <line x1="550" y1="142" x2="638" y2="165" stroke="#b45309" stroke-width="1.6" marker-end="url(#bnkScArrowAmber)"/>
+  <line x1="550" y1="202" x2="638" y2="180" stroke="#b45309" stroke-width="1.6" marker-end="url(#bnkScArrowAmber)"/>
+
+  <!-- Receiving bank -->
+  <rect x="640" y="250" width="150" height="72" rx="8" fill="#1d4ed8"/>
+  <text x="715" y="278" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Receiving bank</text>
+  <text x="715" y="295" font-size="9" fill="#dbeafe" text-anchor="middle">credits its customer</text>
+  <text x="715" y="308" font-size="9" fill="#dbeafe" text-anchor="middle">on/after settlement</text>
+
+  <line x1="550" y1="262" x2="638" y2="278" stroke="#1d4ed8" stroke-width="1.6" marker-end="url(#bnkScArrowBlue)"/>
+  <line x1="550" y1="322" x2="638" y2="300" stroke="#b45309" stroke-width="1.6" marker-end="url(#bnkScArrowAmber)"/>
+
+  <!-- footnote -->
+  <text x="410" y="378" font-size="9" fill="#64748b" text-anchor="middle">Net rails settle a small number of positions per cycle; gross rails settle each payment against Fed master accounts one at a time.</text>
+  <text x="410" y="392" font-size="9" fill="#64748b" text-anchor="middle">Finality lives at the Fed master account: once it posts, the payment is settled and, for RTGS/instant rails, irrevocable.</text>
+
+  <defs>
+    <marker id="bnkScArrowGrey" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="bnkScArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="bnkScArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+</svg>

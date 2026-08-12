@@ -1,0 +1,82 @@
+<svg viewBox="0 0 820 420" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="420" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Programmable card auth: developer code decides inside the network timeout</text>
+
+  <!-- Cardholder / merchant -->
+  <rect x="20" y="70" width="130" height="58" rx="8" fill="#1d4ed8"/>
+  <text x="85" y="94" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Cardholder</text>
+  <text x="85" y="111" font-size="9" fill="#dbeafe" text-anchor="middle">taps at merchant</text>
+
+  <!-- Card network -->
+  <rect x="20" y="180" width="130" height="58" rx="8" fill="#be123c"/>
+  <text x="85" y="204" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Card network</text>
+  <text x="85" y="221" font-size="9" fill="#fecdd3" text-anchor="middle">ISO 8583 0100</text>
+
+  <!-- Issuer-processor -->
+  <rect x="330" y="150" width="170" height="72" rx="8" fill="#6d28d9"/>
+  <text x="415" y="176" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Issuer-processor</text>
+  <text x="415" y="193" font-size="9" fill="#ede9fe" text-anchor="middle">forwards webhook,</text>
+  <text x="415" y="206" font-size="9" fill="#ede9fe" text-anchor="middle">enforces deadline,</text>
+  <text x="415" y="219" font-size="9" fill="#ede9fe" text-anchor="middle">replies 0110</text>
+
+  <!-- Developer service -->
+  <rect x="670" y="150" width="130" height="72" rx="8" fill="#0f766e"/>
+  <text x="735" y="176" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Developer service</text>
+  <text x="735" y="193" font-size="9" fill="#ccfbf1" text-anchor="middle">rule engine +</text>
+  <text x="735" y="206" font-size="9" fill="#ccfbf1" text-anchor="middle">JIT funding</text>
+  <text x="735" y="219" font-size="9" fill="#ccfbf1" text-anchor="middle">approve / decline</text>
+
+  <!-- Stand-in -->
+  <rect x="330" y="290" width="170" height="56" rx="8" fill="#b45309"/>
+  <text x="415" y="313" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Stand-in default</text>
+  <text x="415" y="330" font-size="9" fill="#fde68a" text-anchor="middle">on late / error webhook</text>
+
+  <!-- Clearing engine -->
+  <rect x="620" y="290" width="180" height="56" rx="8" fill="#334155"/>
+  <text x="710" y="313" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Clearing + reconcile</text>
+  <text x="710" y="330" font-size="9" fill="#cbd5e1" text-anchor="middle">batched, settles real amount</text>
+
+  <!-- cardholder -> network -->
+  <line x1="85" y1="128" x2="85" y2="178" stroke="#1d4ed8" stroke-width="2" marker-end="url(#prgArrowBlue)"/>
+  <!-- network -> processor -->
+  <line x1="150" y1="205" x2="328" y2="190" stroke="#be123c" stroke-width="2" marker-end="url(#prgArrowRose)"/>
+  <!-- processor -> developer -->
+  <line x1="500" y1="180" x2="668" y2="180" stroke="#6d28d9" stroke-width="2" marker-end="url(#prgArrowViolet)"/>
+  <!-- developer -> processor (decision, dashed back) -->
+  <line x1="668" y1="200" x2="502" y2="200" stroke="#0f766e" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#prgArrowTeal)"/>
+  <!-- processor -> stand-in -->
+  <line x1="415" y1="222" x2="415" y2="288" stroke="#b45309" stroke-width="2" marker-end="url(#prgArrowAmber)"/>
+  <!-- processor -> clearing (later, dashed) -->
+  <line x1="500" y1="210" x2="618" y2="300" stroke="#334155" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#prgArrowSlate)"/>
+
+  <!-- note box -->
+  <rect x="20" y="285" width="290" height="105" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="165" y="305" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Auth clock: developer code must approve or</text>
+  <text x="165" y="319" font-size="9" fill="#334155" text-anchor="middle">decline within the network window (about 2s),</text>
+  <text x="165" y="333" font-size="9" fill="#334155" text-anchor="middle">funding the amount just in time. A hold, not a</text>
+  <text x="165" y="347" font-size="9" fill="#334155" text-anchor="middle">debit. Clearing later settles the real amount,</text>
+  <text x="165" y="361" font-size="9" fill="#334155" text-anchor="middle">which can differ, and reverses surplus holds.</text>
+  <text x="165" y="378" font-size="9" fill="#334155" text-anchor="middle">Raw PAN stays inside the processor (PCI).</text>
+
+  <defs>
+    <marker id="prgArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="prgArrowRose" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#be123c"/>
+    </marker>
+    <marker id="prgArrowViolet" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#6d28d9"/>
+    </marker>
+    <marker id="prgArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="prgArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="prgArrowSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

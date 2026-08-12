@@ -1,0 +1,71 @@
+<svg viewBox="0 0 860 420" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="pgpArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="pgpArrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="860" height="420" fill="#ffffff"/>
+  <text x="430" y="30" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">One card payment, five roles</text>
+
+  <!-- Cardholder -->
+  <rect x="20" y="70" width="130" height="60" rx="10" fill="#1d4ed8"/>
+  <text x="85" y="97" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Cardholder</text>
+  <text x="85" y="115" text-anchor="middle" font-size="11" fill="#dbeafe">enters card at checkout</text>
+
+  <!-- Merchant -->
+  <rect x="20" y="180" width="130" height="60" rx="10" fill="#1d4ed8"/>
+  <text x="85" y="207" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Merchant</text>
+  <text x="85" y="225" text-anchor="middle" font-size="11" fill="#dbeafe">store / checkout page</text>
+
+  <!-- Gateway -->
+  <rect x="215" y="180" width="150" height="60" rx="10" fill="#0f766e"/>
+  <text x="290" y="203" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Payment gateway</text>
+  <text x="290" y="220" text-anchor="middle" font-size="10.5" fill="#ccfbf1">encrypts, tokenizes,</text>
+  <text x="290" y="233" text-anchor="middle" font-size="10.5" fill="#ccfbf1">forwards the request</text>
+
+  <!-- Processor / Acquirer -->
+  <rect x="425" y="180" width="160" height="60" rx="10" fill="#b45309"/>
+  <text x="505" y="203" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Processor / acquirer</text>
+  <text x="505" y="220" text-anchor="middle" font-size="10.5" fill="#fde68a">talks to the card</text>
+  <text x="505" y="233" text-anchor="middle" font-size="10.5" fill="#fde68a">networks, settles funds</text>
+
+  <!-- Card network -->
+  <rect x="645" y="90" width="150" height="60" rx="10" fill="#6d28d9"/>
+  <text x="720" y="113" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Card network</text>
+  <text x="720" y="131" text-anchor="middle" font-size="10.5" fill="#ede9fe">Visa / Mastercard</text>
+
+  <!-- Issuer -->
+  <rect x="645" y="270" width="150" height="60" rx="10" fill="#be123c"/>
+  <text x="720" y="293" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Issuing bank</text>
+  <text x="720" y="311" text-anchor="middle" font-size="10.5" fill="#ffe4e6">approves or declines</text>
+
+  <!-- Cardholder to Merchant -->
+  <line x1="85" y1="130" x2="85" y2="178" stroke="#334155" stroke-width="2" marker-end="url(#pgpArrow)"/>
+
+  <!-- Merchant to Gateway -->
+  <line x1="150" y1="210" x2="213" y2="210" stroke="#334155" stroke-width="2" marker-end="url(#pgpArrow)"/>
+  <text x="182" y="200" text-anchor="middle" font-size="9.5" fill="#475569">card data</text>
+
+  <!-- Gateway to Processor -->
+  <line x1="365" y1="210" x2="423" y2="210" stroke="#334155" stroke-width="2" marker-end="url(#pgpArrow)"/>
+  <text x="394" y="200" text-anchor="middle" font-size="9.5" fill="#475569">token</text>
+
+  <!-- Processor to Network -->
+  <line x1="585" y1="197" x2="645" y2="135" stroke="#334155" stroke-width="2" marker-end="url(#pgpArrow)"/>
+  <text x="628" y="180" text-anchor="middle" font-size="9.5" fill="#475569">ISO 8583</text>
+
+  <!-- Network to Issuer -->
+  <line x1="720" y1="150" x2="720" y2="268" stroke="#334155" stroke-width="2" marker-end="url(#pgpArrow)"/>
+  <text x="763" y="212" text-anchor="middle" font-size="9.5" fill="#475569">auth request</text>
+
+  <!-- Issuer approval back to Processor -->
+  <path d="M645,300 C560,320 560,270 585,232" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#pgpArrowGreen)"/>
+  <text x="560" y="330" text-anchor="middle" font-size="9.5" fill="#0f766e">approval code</text>
+
+  <text x="430" y="385" text-anchor="middle" font-size="11.5" fill="#334155">Auth (a hold) travels right; the approval travels back left. Money settles hours later in a separate batch.</text>
+  <text x="430" y="404" text-anchor="middle" font-size="10.5" fill="#64748b">Only the gateway and processor legs touch raw card data — tokenization keeps the merchant out of most PCI-DSS scope.</text>
+</svg>

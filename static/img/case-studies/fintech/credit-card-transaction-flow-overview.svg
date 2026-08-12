@@ -1,0 +1,67 @@
+<svg viewBox="0 0 820 440" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="ccArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="ccArrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+
+  <rect width="820" height="440" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Four-party card model: authorization round trip in roughly two seconds</text>
+
+  <!-- Cardholder -->
+  <rect x="24" y="150" width="120" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="84" y="176" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Cardholder</text>
+  <text x="84" y="193" font-size="9" fill="#dbeafe" text-anchor="middle">taps EMV chip card</text>
+
+  <!-- Merchant terminal -->
+  <rect x="180" y="150" width="128" height="60" rx="8" fill="#0f766e"/>
+  <text x="244" y="172" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Merchant + terminal</text>
+  <text x="244" y="188" font-size="9" fill="#ccfbf1" text-anchor="middle">builds ISO 8583 0100,</text>
+  <text x="244" y="200" font-size="9" fill="#ccfbf1" text-anchor="middle">carries ARQC cryptogram</text>
+
+  <!-- Acquirer -->
+  <rect x="344" y="150" width="120" height="60" rx="8" fill="#b45309"/>
+  <text x="404" y="176" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Acquirer</text>
+  <text x="404" y="193" font-size="9" fill="#fde68a" text-anchor="middle">merchant's bank</text>
+
+  <!-- Network -->
+  <rect x="500" y="140" width="140" height="80" rx="8" fill="#6d28d9"/>
+  <text x="570" y="168" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Card network</text>
+  <text x="570" y="185" font-size="9" fill="#ede9fe" text-anchor="middle">Visa / Mastercard</text>
+  <text x="570" y="198" font-size="9" fill="#ede9fe" text-anchor="middle">interchange switch,</text>
+  <text x="570" y="211" font-size="9" fill="#ede9fe" text-anchor="middle">routes by BIN</text>
+
+  <!-- Issuer -->
+  <rect x="676" y="150" width="120" height="60" rx="8" fill="#be123c"/>
+  <text x="736" y="172" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Issuer</text>
+  <text x="736" y="188" font-size="9" fill="#fecdd3" text-anchor="middle">cardholder's bank,</text>
+  <text x="736" y="200" font-size="9" fill="#fecdd3" text-anchor="middle">approves / declines</text>
+
+  <!-- Auth request path (left to right) -->
+  <line x1="144" y1="172" x2="178" y2="172" stroke="#1d4ed8" stroke-width="2" marker-end="url(#ccArrowBlue)"/>
+  <line x1="308" y1="172" x2="342" y2="172" stroke="#1d4ed8" stroke-width="2" marker-end="url(#ccArrowBlue)"/>
+  <line x1="464" y1="172" x2="498" y2="172" stroke="#1d4ed8" stroke-width="2" marker-end="url(#ccArrowBlue)"/>
+  <line x1="640" y1="172" x2="674" y2="172" stroke="#1d4ed8" stroke-width="2" marker-end="url(#ccArrowBlue)"/>
+  <text x="410" y="128" font-size="9.5" fill="#1d4ed8" text-anchor="middle" font-weight="600">authorization request (0100) travels right, funds held on approve</text>
+
+  <!-- Auth response path (right to left) -->
+  <line x1="674" y1="196" x2="642" y2="196" stroke="#0f766e" stroke-width="2" marker-end="url(#ccArrowGreen)"/>
+  <line x1="498" y1="196" x2="466" y2="196" stroke="#0f766e" stroke-width="2" marker-end="url(#ccArrowGreen)"/>
+  <line x1="342" y1="196" x2="310" y2="196" stroke="#0f766e" stroke-width="2" marker-end="url(#ccArrowGreen)"/>
+  <line x1="178" y1="196" x2="146" y2="196" stroke="#0f766e" stroke-width="2" marker-end="url(#ccArrowGreen)"/>
+  <text x="410" y="238" font-size="9.5" fill="#0f766e" text-anchor="middle" font-weight="600">authorization response (0110) with response + auth code travels back</text>
+
+  <!-- Clearing and settlement band -->
+  <rect x="180" y="300" width="616" height="96" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="488" y="322" font-size="11" fill="#334155" text-anchor="middle" font-weight="700">Clearing and settlement: batched, T+1 to T+2, decoupled from the tap</text>
+  <text x="488" y="344" font-size="9.5" fill="#475569" text-anchor="middle">Merchant captures the held amount at end of day. Acquirer submits clearing records to the network.</text>
+  <text x="488" y="360" font-size="9.5" fill="#475569" text-anchor="middle">The network nets each issuer against each acquirer and moves funds via a settlement bank.</text>
+  <text x="488" y="380" font-size="9.5" fill="#475569" text-anchor="middle">Issuer pays the network; acquirer receives, keeps its markup, pays the merchant amount minus interchange plus scheme fees.</text>
+
+  <line x1="404" y1="212" x2="420" y2="298" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="330" y="270" font-size="9" fill="#64748b" text-anchor="middle">later, same transaction</text>
+</svg>

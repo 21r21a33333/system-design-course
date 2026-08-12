@@ -1,0 +1,76 @@
+<svg viewBox="0 0 860 470" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="baasScaleArrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="baasScaleArrowTeal" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="baasScaleArrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#be123c"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="860" height="470" fill="#ffffff"/>
+  <text x="430" y="28" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Scaled BaaS: many fintechs, pooled FBO accounts, reconciliation as the safety net</text>
+
+  <!-- fintech programs -->
+  <rect x="30" y="66" width="150" height="44" rx="8" fill="#1d4ed8"/>
+  <text x="105" y="93" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Fintech A app</text>
+  <rect x="30" y="124" width="150" height="44" rx="8" fill="#1d4ed8"/>
+  <text x="105" y="151" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Fintech B app</text>
+  <rect x="30" y="182" width="150" height="44" rx="8" fill="#1d4ed8"/>
+  <text x="105" y="209" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Fintech C app</text>
+
+  <!-- middleware with sharded sub-ledgers -->
+  <rect x="250" y="80" width="200" height="130" rx="12" fill="#6d28d9"/>
+  <text x="350" y="106" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">BaaS middleware</text>
+  <text x="350" y="124" text-anchor="middle" font-size="11" fill="#ede9fe">sub-ledger sharded by program</text>
+  <rect x="266" y="138" width="168" height="26" rx="5" fill="#ffffff"/>
+  <text x="350" y="156" text-anchor="middle" font-size="11" fill="#4c1d95">double-entry sub-ledger (append-only)</text>
+  <rect x="266" y="172" width="168" height="26" rx="5" fill="#ffffff"/>
+  <text x="350" y="190" text-anchor="middle" font-size="11" fill="#4c1d95">idempotency store for transfers</text>
+
+  <line x1="180" y1="88" x2="248" y2="110" stroke="#1d4ed8" stroke-width="2" marker-end="url(#baasScaleArrowBlue)"/>
+  <line x1="180" y1="146" x2="248" y2="146" stroke="#1d4ed8" stroke-width="2" marker-end="url(#baasScaleArrowBlue)"/>
+  <line x1="180" y1="204" x2="248" y2="182" stroke="#1d4ed8" stroke-width="2" marker-end="url(#baasScaleArrowBlue)"/>
+
+  <!-- sponsor banks holding FBO accounts -->
+  <rect x="540" y="72" width="200" height="64" rx="10" fill="#0f766e"/>
+  <text x="640" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Sponsor bank 1</text>
+  <text x="640" y="118" text-anchor="middle" font-size="11" fill="#ccfbf1">FBO account (pooled)</text>
+  <rect x="540" y="152" width="200" height="64" rx="10" fill="#0f766e"/>
+  <text x="640" y="178" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Sponsor bank 2</text>
+  <text x="640" y="198" text-anchor="middle" font-size="11" fill="#ccfbf1">FBO account (pooled)</text>
+
+  <line x1="450" y1="120" x2="538" y2="104" stroke="#0f766e" stroke-width="2" marker-end="url(#baasScaleArrowTeal)"/>
+  <line x1="450" y1="170" x2="538" y2="184" stroke="#0f766e" stroke-width="2" marker-end="url(#baasScaleArrowTeal)"/>
+
+  <!-- reconciliation engine -->
+  <rect x="250" y="270" width="490" height="78" rx="12" fill="#ffffff" stroke="#be123c" stroke-width="2.5"/>
+  <text x="495" y="296" text-anchor="middle" font-size="13" font-weight="700" fill="#be123c">Daily reconciliation job (per program, per bank)</text>
+  <text x="495" y="318" text-anchor="middle" font-size="12" fill="#334155">assert sum(sub_ledger[program]) == bank_balance(FBO[program])</text>
+  <text x="495" y="337" text-anchor="middle" font-size="11" fill="#be123c">drift over tolerance -> freeze new debits, alert, block distributions until resolved</text>
+
+  <line x1="350" y1="210" x2="360" y2="268" stroke="#be123c" stroke-width="2" marker-end="url(#baasScaleArrowRed)"/>
+  <line x1="640" y1="216" x2="620" y2="268" stroke="#be123c" stroke-width="2" marker-end="url(#baasScaleArrowRed)"/>
+  <text x="300" y="245" text-anchor="middle" font-size="10" fill="#be123c">sub-ledger sums</text>
+  <text x="690" y="245" text-anchor="middle" font-size="10" fill="#be123c">bank statements</text>
+
+  <!-- payment networks -->
+  <rect x="540" y="232" width="200" height="26" rx="6" fill="#b45309"/>
+  <text x="640" y="250" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Visa / ACH / FedNow settlement</text>
+  <line x1="640" y1="216" x2="640" y2="230" stroke="#b45309" stroke-width="2"/>
+
+  <!-- failure callout -->
+  <rect x="30" y="272" width="200" height="76" rx="10" fill="#be123c"/>
+  <text x="130" y="296" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Concentration risk</text>
+  <text x="130" y="315" text-anchor="middle" font-size="10.5" fill="#fecdd3">one middleware or one</text>
+  <text x="130" y="330" text-anchor="middle" font-size="10.5" fill="#fecdd3">sponsor bank failing</text>
+  <text x="130" y="345" text-anchor="middle" font-size="10.5" fill="#fecdd3">freezes every program on it</text>
+
+  <!-- lesson banner -->
+  <rect x="30" y="378" width="800" height="66" rx="10" fill="#fef2f2" stroke="#be123c" stroke-width="1.5"/>
+  <text x="430" y="404" text-anchor="middle" font-size="13" font-weight="700" fill="#be123c">Ledger integrity and reconciliation between fintech and bank is the whole ballgame.</text>
+  <text x="430" y="426" text-anchor="middle" font-size="11.5" fill="#334155">If the sub-ledger and the bank balance can drift without a hard, continuous reconciliation, "whose money is this?" becomes unanswerable.</text>
+</svg>

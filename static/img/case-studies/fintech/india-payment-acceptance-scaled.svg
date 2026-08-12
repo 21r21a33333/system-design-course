@@ -1,0 +1,93 @@
+<svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="470" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Scaled: idempotent event ingest, push-then-poll delivery, offline queue at the edge</text>
+
+  <!-- UPI callback -->
+  <rect x="20" y="60" width="150" height="60" rx="8" fill="#6d28d9"/>
+  <text x="95" y="85" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">UPI paid callback</text>
+  <text x="95" y="102" font-size="9" fill="#ede9fe" text-anchor="middle">signed, may duplicate</text>
+
+  <!-- API gateway -->
+  <rect x="230" y="60" width="150" height="60" rx="8" fill="#0f766e"/>
+  <text x="305" y="82" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">API gateway</text>
+  <text x="305" y="98" font-size="9" fill="#ccfbf1" text-anchor="middle">verify signature,</text>
+  <text x="305" y="110" font-size="9" fill="#ccfbf1" text-anchor="middle">rate-limit, dedupe</text>
+
+  <!-- Idempotent ingest -->
+  <rect x="440" y="60" width="160" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="520" y="82" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Ingest service</text>
+  <text x="520" y="98" font-size="9" fill="#dbeafe" text-anchor="middle">claim-or-replay on</text>
+  <text x="520" y="110" font-size="9" fill="#dbeafe" text-anchor="middle">upi_txn_id (exactly-once)</text>
+
+  <!-- Distributed queue -->
+  <rect x="440" y="170" width="160" height="60" rx="8" fill="#b45309"/>
+  <text x="520" y="195" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Notification queue</text>
+  <text x="520" y="212" font-size="9" fill="#fde68a" text-anchor="middle">partitioned by device</text>
+
+  <!-- IoT gateway -->
+  <rect x="440" y="280" width="160" height="60" rx="8" fill="#be123c"/>
+  <text x="520" y="302" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">IoT gateway</text>
+  <text x="520" y="318" font-size="9" fill="#fecdd3" text-anchor="middle">push over 4G/2G,</text>
+  <text x="520" y="330" font-size="9" fill="#fecdd3" text-anchor="middle">retry with backoff</text>
+
+  <!-- Device registry -->
+  <rect x="230" y="280" width="160" height="60" rx="8" fill="#0f766e"/>
+  <text x="310" y="302" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Device registry</text>
+  <text x="310" y="318" font-size="9" fill="#ccfbf1" text-anchor="middle">VPA to device binding,</text>
+  <text x="310" y="330" font-size="9" fill="#ccfbf1" text-anchor="middle">token, language</text>
+
+  <!-- Soundbox fleet -->
+  <rect x="440" y="390" width="160" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="520" y="412" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Soundbox fleet</text>
+  <text x="520" y="428" font-size="9" fill="#dbeafe" text-anchor="middle">local queue, poll fallback,</text>
+  <text x="520" y="440" font-size="9" fill="#dbeafe" text-anchor="middle">speaks confirmation</text>
+
+  <!-- Reconciliation -->
+  <rect x="650" y="170" width="150" height="60" rx="8" fill="#6d28d9"/>
+  <text x="725" y="192" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Reconciliation</text>
+  <text x="725" y="208" font-size="9" fill="#ede9fe" text-anchor="middle">against bank</text>
+  <text x="725" y="220" font-size="9" fill="#ede9fe" text-anchor="middle">settlement files</text>
+
+  <!-- Ledger / txn store -->
+  <rect x="650" y="60" width="150" height="60" rx="8" fill="#b45309"/>
+  <text x="725" y="85" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Txn store</text>
+  <text x="725" y="102" font-size="9" fill="#fde68a" text-anchor="middle">sharded by device</text>
+
+  <!-- flows -->
+  <line x1="170" y1="90" x2="228" y2="90" stroke="#6d28d9" stroke-width="2" marker-end="url(#scaledArrowViolet)"/>
+  <line x1="380" y1="90" x2="438" y2="90" stroke="#0f766e" stroke-width="2" marker-end="url(#scaledArrowTeal)"/>
+  <line x1="600" y1="90" x2="648" y2="90" stroke="#1d4ed8" stroke-width="2" marker-end="url(#scaledArrowBlue)"/>
+  <line x1="520" y1="120" x2="520" y2="168" stroke="#1d4ed8" stroke-width="2" marker-end="url(#scaledArrowBlue)"/>
+  <line x1="520" y1="230" x2="520" y2="278" stroke="#b45309" stroke-width="2" marker-end="url(#scaledArrowAmber)"/>
+  <line x1="438" y1="310" x2="392" y2="310" stroke="#0f766e" stroke-width="2" marker-end="url(#scaledArrowTeal)"/>
+  <line x1="520" y1="340" x2="520" y2="388" stroke="#be123c" stroke-width="2" marker-end="url(#scaledArrowRose)"/>
+  <!-- poll fallback (dashed, device back up to gateway) -->
+  <line x1="600" y1="420" x2="700" y2="420" stroke="#334155" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="700" y1="420" x2="700" y2="345" stroke="#334155" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="700" y1="345" x2="602" y2="322" stroke="#334155" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#scaledArrowSlate)"/>
+  <text x="700" y="438" font-size="8.5" fill="#334155" text-anchor="middle">poll fallback</text>
+  <!-- recon links -->
+  <line x1="650" y1="200" x2="602" y2="200" stroke="#6d28d9" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#scaledArrowViolet)"/>
+
+  <defs>
+    <marker id="scaledArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="scaledArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="scaledArrowViolet" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#6d28d9"/>
+    </marker>
+    <marker id="scaledArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="scaledArrowRose" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#be123c"/>
+    </marker>
+    <marker id="scaledArrowSlate" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>

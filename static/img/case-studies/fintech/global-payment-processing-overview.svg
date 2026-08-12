@@ -1,0 +1,74 @@
+<svg viewBox="0 0 820 430" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="gppArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="gppArrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="820" height="430" fill="#ffffff"/>
+
+  <text x="410" y="28" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">Digital wallet platform: funding sources in, payouts out, balance held in a double-entry ledger</text>
+
+  <!-- Funding sources -->
+  <rect x="24" y="70" width="150" height="120" rx="10" fill="#1d4ed8"/>
+  <text x="99" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Funding sources</text>
+  <text x="99" y="120" text-anchor="middle" font-size="11.5" fill="#dbeafe">Card (Visa/MC)</text>
+  <text x="99" y="140" text-anchor="middle" font-size="11.5" fill="#dbeafe">Bank / ACH</text>
+  <text x="99" y="160" text-anchor="middle" font-size="11.5" fill="#dbeafe">Wallet balance</text>
+  <text x="99" y="180" text-anchor="middle" font-size="11.5" fill="#dbeafe">FX conversion</text>
+
+  <!-- Wallet API / risk gate -->
+  <rect x="230" y="70" width="170" height="120" rx="10" fill="#6d28d9"/>
+  <text x="315" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Wallet API</text>
+  <text x="315" y="120" text-anchor="middle" font-size="11.5" fill="#ede9fe">Idempotency key</text>
+  <text x="315" y="140" text-anchor="middle" font-size="11.5" fill="#ede9fe">KYC / AML gate</text>
+  <text x="315" y="160" text-anchor="middle" font-size="11.5" fill="#ede9fe">Risk score + holds</text>
+  <text x="315" y="180" text-anchor="middle" font-size="11.5" fill="#ede9fe">FX at a spread</text>
+
+  <!-- Ledger core -->
+  <rect x="455" y="55" width="180" height="150" rx="10" fill="#0f766e"/>
+  <text x="545" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Double-entry ledger</text>
+  <text x="545" y="106" text-anchor="middle" font-size="11.5" fill="#ccfbf1">balanced debit/credit</text>
+  <text x="545" y="126" text-anchor="middle" font-size="11.5" fill="#ccfbf1">per-currency sub-ledgers</text>
+  <text x="545" y="146" text-anchor="middle" font-size="11.5" fill="#ccfbf1">balance = sum(entries)</text>
+  <text x="545" y="166" text-anchor="middle" font-size="11.5" fill="#ccfbf1">integer minor units</text>
+  <text x="545" y="186" text-anchor="middle" font-size="11.5" fill="#ccfbf1">append-only, immutable</text>
+
+  <!-- Payout rails -->
+  <rect x="676" y="70" width="120" height="120" rx="10" fill="#b45309"/>
+  <text x="736" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Payout rails</text>
+  <text x="736" y="120" text-anchor="middle" font-size="11.5" fill="#fde68a">Bank / ACH</text>
+  <text x="736" y="140" text-anchor="middle" font-size="11.5" fill="#fde68a">Card push</text>
+  <text x="736" y="160" text-anchor="middle" font-size="11.5" fill="#fde68a">Wallet-to-wallet</text>
+
+  <!-- flow arrows top row -->
+  <line x1="174" y1="130" x2="226" y2="130" stroke="#334155" stroke-width="2.5" marker-end="url(#gppArrow)"/>
+  <line x1="400" y1="130" x2="451" y2="130" stroke="#334155" stroke-width="2.5" marker-end="url(#gppArrow)"/>
+  <line x1="635" y1="130" x2="672" y2="130" stroke="#334155" stroke-width="2.5" marker-end="url(#gppArrow)"/>
+
+  <!-- Hold / risk state machine box -->
+  <rect x="230" y="250" width="170" height="130" rx="10" fill="#be123c"/>
+  <text x="315" y="276" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Hold / release</text>
+  <text x="315" y="300" text-anchor="middle" font-size="11.5" fill="#ffe4e6">PENDING - HELD</text>
+  <text x="315" y="320" text-anchor="middle" font-size="11.5" fill="#ffe4e6">HELD - RELEASED</text>
+  <text x="315" y="340" text-anchor="middle" font-size="11.5" fill="#ffe4e6">HELD - REVERSED</text>
+  <text x="315" y="360" text-anchor="middle" font-size="11.5" fill="#ffe4e6">available vs total</text>
+
+  <!-- Compliance / FX services -->
+  <rect x="455" y="250" width="180" height="130" rx="10" fill="#1d4ed8"/>
+  <text x="545" y="276" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Supporting services</text>
+  <text x="545" y="300" text-anchor="middle" font-size="11.5" fill="#dbeafe">FX rate engine (spread)</text>
+  <text x="545" y="320" text-anchor="middle" font-size="11.5" fill="#dbeafe">Fraud / risk scoring</text>
+  <text x="545" y="340" text-anchor="middle" font-size="11.5" fill="#dbeafe">KYC / AML screening</text>
+  <text x="545" y="360" text-anchor="middle" font-size="11.5" fill="#dbeafe">Reconciliation</text>
+
+  <!-- connectors from wallet api down to hold and from ledger down to services -->
+  <line x1="315" y1="190" x2="315" y2="246" stroke="#0f766e" stroke-width="2.5" marker-end="url(#gppArrowGreen)"/>
+  <line x1="545" y1="205" x2="545" y2="246" stroke="#0f766e" stroke-width="2.5" marker-end="url(#gppArrowGreen)"/>
+  <line x1="400" y1="315" x2="451" y2="315" stroke="#0f766e" stroke-width="2.5" marker-end="url(#gppArrowGreen)"/>
+
+  <text x="410" y="410" text-anchor="middle" font-size="11.5" fill="#475569">The platform HOLDS a stored-value balance; a pure payment processor only orchestrates and never holds funds.</text>
+</svg>

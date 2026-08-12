@@ -1,0 +1,73 @@
+<svg viewBox="0 0 820 430" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="430" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="12" fill="#334155" text-anchor="middle" font-weight="600">Zelle: token-directory routing across banks, real-time to the user, deferred settlement behind the scenes</text>
+
+  <!-- Sender -->
+  <rect x="20" y="70" width="120" height="58" rx="8" fill="#1d4ed8"/>
+  <text x="80" y="94" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Sender</text>
+  <text x="80" y="111" font-size="9" fill="#dbeafe" text-anchor="middle">enters recipient token</text>
+
+  <!-- Sender bank -->
+  <rect x="20" y="180" width="120" height="62" rx="8" fill="#b45309"/>
+  <text x="80" y="204" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Sender bank</text>
+  <text x="80" y="220" font-size="9" fill="#fde68a" text-anchor="middle">debits sender,</text>
+  <text x="80" y="232" font-size="9" fill="#fde68a" text-anchor="middle">funds control</text>
+
+  <!-- EWS / Zelle network -->
+  <rect x="320" y="150" width="180" height="80" rx="8" fill="#6d28d9"/>
+  <text x="410" y="176" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Early Warning Services</text>
+  <text x="410" y="192" font-size="10" fill="#ede9fe" text-anchor="middle">(Zelle network)</text>
+  <text x="410" y="209" font-size="9" fill="#ede9fe" text-anchor="middle">token to bank directory,</text>
+  <text x="410" y="221" font-size="9" fill="#ede9fe" text-anchor="middle">routing, fraud and AML</text>
+
+  <!-- Recipient bank -->
+  <rect x="680" y="180" width="120" height="62" rx="8" fill="#b45309"/>
+  <text x="740" y="204" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Recipient bank</text>
+  <text x="740" y="220" font-size="9" fill="#fde68a" text-anchor="middle">credits recipient</text>
+  <text x="740" y="232" font-size="9" fill="#fde68a" text-anchor="middle">in minutes</text>
+
+  <!-- Recipient -->
+  <rect x="680" y="70" width="120" height="58" rx="8" fill="#1d4ed8"/>
+  <text x="740" y="94" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Recipient</text>
+  <text x="740" y="111" font-size="9" fill="#dbeafe" text-anchor="middle">token to bound account</text>
+
+  <!-- Settlement rail -->
+  <rect x="290" y="300" width="240" height="60" rx="8" fill="#0f766e"/>
+  <text x="410" y="325" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Interbank settlement rail</text>
+  <text x="410" y="342" font-size="9" fill="#ccfbf1" text-anchor="middle">ACH batch or RTP, netted, not the UX</text>
+
+  <!-- Sender -> sender bank -->
+  <line x1="80" y1="128" x2="80" y2="178" stroke="#1d4ed8" stroke-width="2" marker-end="url(#zelArrowBlue)"/>
+  <!-- Sender bank -> EWS -->
+  <line x1="140" y1="200" x2="318" y2="185" stroke="#b45309" stroke-width="2" marker-end="url(#zelArrowAmber)"/>
+  <!-- EWS -> recipient bank -->
+  <line x1="500" y1="190" x2="678" y2="200" stroke="#6d28d9" stroke-width="2" marker-end="url(#zelArrowViolet)"/>
+  <!-- Recipient bank -> recipient -->
+  <line x1="740" y1="178" x2="740" y2="128" stroke="#1d4ed8" stroke-width="2" marker-end="url(#zelArrowBlue)"/>
+  <!-- banks -> settlement rail (dashed = deferred) -->
+  <line x1="90" y1="242" x2="330" y2="320" stroke="#0f766e" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#zelArrowTeal)"/>
+  <line x1="730" y1="242" x2="490" y2="320" stroke="#0f766e" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#zelArrowTeal)"/>
+
+  <!-- note box -->
+  <rect x="560" y="290" width="240" height="80" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="680" y="310" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">Push, irrevocable, near-instant.</text>
+  <text x="680" y="324" font-size="9" fill="#334155" text-anchor="middle">A completed transfer to an enrolled</text>
+  <text x="680" y="338" font-size="9" fill="#334155" text-anchor="middle">token cannot be canceled, so there</text>
+  <text x="680" y="352" font-size="9" fill="#334155" text-anchor="middle">is no chargeback path for a scam.</text>
+
+  <defs>
+    <marker id="zelArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="zelArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="zelArrowViolet" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#6d28d9"/>
+    </marker>
+    <marker id="zelArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,82 @@
+<svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="gppsArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="gppsArrowTeal" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="820" height="470" fill="#ffffff"/>
+  <text x="410" y="28" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">Scaled wallet: idempotent edge, sharded ledger, FX and payout adapters, reconciliation</text>
+
+  <!-- Clients -->
+  <rect x="24" y="60" width="130" height="90" rx="10" fill="#1d4ed8"/>
+  <text x="89" y="90" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Clients</text>
+  <text x="89" y="112" text-anchor="middle" font-size="11" fill="#dbeafe">consumers</text>
+  <text x="89" y="130" text-anchor="middle" font-size="11" fill="#dbeafe">merchants / API</text>
+
+  <!-- API edge / idempotency -->
+  <rect x="190" y="45" width="160" height="120" rx="10" fill="#6d28d9"/>
+  <text x="270" y="72" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">API edge</text>
+  <text x="270" y="94" text-anchor="middle" font-size="11" fill="#ede9fe">load balancer</text>
+  <text x="270" y="112" text-anchor="middle" font-size="11" fill="#ede9fe">auth + rate limit</text>
+  <text x="270" y="130" text-anchor="middle" font-size="11" fill="#ede9fe">idempotency store</text>
+  <text x="270" y="148" text-anchor="middle" font-size="11" fill="#ede9fe">(strong consistency)</text>
+
+  <!-- Ledger shards -->
+  <rect x="388" y="40" width="180" height="150" rx="10" fill="#0f766e"/>
+  <text x="478" y="66" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Ledger shards</text>
+  <text x="478" y="90" text-anchor="middle" font-size="11" fill="#ccfbf1">shard by account_id</text>
+  <text x="478" y="110" text-anchor="middle" font-size="11" fill="#ccfbf1">transfer within shard</text>
+  <text x="478" y="130" text-anchor="middle" font-size="11" fill="#ccfbf1">= single-shard txn</text>
+  <text x="478" y="150" text-anchor="middle" font-size="11" fill="#ccfbf1">cross-shard = saga</text>
+  <text x="478" y="172" text-anchor="middle" font-size="11" fill="#ccfbf1">append-only WAL</text>
+
+  <!-- Read replicas -->
+  <rect x="606" y="45" width="190" height="70" rx="10" fill="#334155"/>
+  <text x="701" y="72" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Read replicas</text>
+  <text x="701" y="94" text-anchor="middle" font-size="11" fill="#e2e8f0">balance + history reads</text>
+
+  <!-- FX engine -->
+  <rect x="606" y="130" width="190" height="65" rx="10" fill="#b45309"/>
+  <text x="701" y="156" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">FX rate engine</text>
+  <text x="701" y="178" text-anchor="middle" font-size="11" fill="#fde68a">mid-rate + spread, minor units</text>
+
+  <!-- arrows top -->
+  <line x1="154" y1="105" x2="186" y2="105" stroke="#334155" stroke-width="2.5" marker-end="url(#gppsArrow)"/>
+  <line x1="350" y1="105" x2="384" y2="105" stroke="#334155" stroke-width="2.5" marker-end="url(#gppsArrow)"/>
+  <line x1="568" y1="80" x2="602" y2="80" stroke="#0f766e" stroke-width="2.5" marker-end="url(#gppsArrowTeal)"/>
+  <line x1="568" y1="160" x2="602" y2="160" stroke="#0f766e" stroke-width="2.5" marker-end="url(#gppsArrowTeal)"/>
+
+  <!-- Payout / funding adapters row -->
+  <rect x="24" y="235" width="220" height="110" rx="10" fill="#b45309"/>
+  <text x="134" y="262" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Funding + payout adapters</text>
+  <text x="134" y="286" text-anchor="middle" font-size="11" fill="#fde68a">card / ACH / wallet rails</text>
+  <text x="134" y="306" text-anchor="middle" font-size="11" fill="#fde68a">circuit breaker per rail</text>
+  <text x="134" y="326" text-anchor="middle" font-size="11" fill="#fde68a">retry with backoff</text>
+
+  <!-- Risk + compliance -->
+  <rect x="280" y="235" width="220" height="110" rx="10" fill="#be123c"/>
+  <text x="390" y="262" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Risk + compliance</text>
+  <text x="390" y="286" text-anchor="middle" font-size="11" fill="#ffe4e6">fraud scoring, holds</text>
+  <text x="390" y="306" text-anchor="middle" font-size="11" fill="#ffe4e6">KYC / AML screening</text>
+  <text x="390" y="326" text-anchor="middle" font-size="11" fill="#ffe4e6">sanctions lists</text>
+
+  <!-- Reconciliation -->
+  <rect x="536" y="235" width="260" height="110" rx="10" fill="#1d4ed8"/>
+  <text x="666" y="262" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Reconciliation</text>
+  <text x="666" y="286" text-anchor="middle" font-size="11" fill="#dbeafe">debits == credits per currency</text>
+  <text x="666" y="306" text-anchor="middle" font-size="11" fill="#dbeafe">ledger vs rail statements</text>
+  <text x="666" y="326" text-anchor="middle" font-size="11" fill="#dbeafe">breaks - alert + hold</text>
+
+  <!-- connectors ledger to lower row -->
+  <line x1="478" y1="190" x2="478" y2="231" stroke="#0f766e" stroke-width="2.5" marker-end="url(#gppsArrowTeal)"/>
+  <line x1="270" y1="165" x2="200" y2="231" stroke="#334155" stroke-width="2.5" marker-end="url(#gppsArrow)"/>
+
+  <!-- Settlement note -->
+  <rect x="150" y="385" width="520" height="55" rx="10" fill="#0f766e"/>
+  <text x="410" y="410" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">External settlement runs off the hot path</text>
+  <text x="410" y="428" text-anchor="middle" font-size="11" fill="#ccfbf1">card/ACH funds settle on their own clock; the wallet balance updates the instant the ledger entry commits</text>
+</svg>

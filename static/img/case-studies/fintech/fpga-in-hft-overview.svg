@@ -1,0 +1,113 @@
+<svg viewBox="0 0 820 440" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="820" height="440" fill="#ffffff"/>
+
+  <text x="410" y="24" font-size="13" fill="#334155" text-anchor="middle" font-weight="600">FPGA tick-to-trade fast path, with a CPU slow path alongside</text>
+
+  <!-- Exchange feed -->
+  <rect x="20" y="70" width="120" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="80" y="95" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Exchange feed</text>
+  <text x="80" y="112" font-size="9" fill="#dbeafe" text-anchor="middle">UDP market data</text>
+  <text x="80" y="124" font-size="9" fill="#dbeafe" text-anchor="middle">A/B multicast</text>
+
+  <!-- FPGA container -->
+  <rect x="175" y="55" width="470" height="240" rx="10" fill="none" stroke="#6d28d9" stroke-width="2"/>
+  <text x="410" y="75" font-size="11" fill="#6d28d9" text-anchor="middle" font-weight="700">FPGA (fabric: no OS, fixed pipeline)</text>
+
+  <!-- PHY/MAC -->
+  <rect x="190" y="90" width="86" height="54" rx="7" fill="#0f766e"/>
+  <text x="233" y="112" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">PHY + MAC</text>
+  <text x="233" y="127" font-size="8" fill="#ccfbf1" text-anchor="middle">wire in/out</text>
+
+  <!-- Feed handler -->
+  <rect x="288" y="90" width="86" height="54" rx="7" fill="#0f766e"/>
+  <text x="331" y="109" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Feed</text>
+  <text x="331" y="122" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">handler</text>
+  <text x="331" y="135" font-size="8" fill="#ccfbf1" text-anchor="middle">parse + gap</text>
+
+  <!-- Order book -->
+  <rect x="386" y="90" width="86" height="54" rx="7" fill="#0f766e"/>
+  <text x="429" y="112" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Order book</text>
+  <text x="429" y="127" font-size="8" fill="#ccfbf1" text-anchor="middle">block RAM</text>
+
+  <!-- Strategy -->
+  <rect x="484" y="90" width="72" height="54" rx="7" fill="#0f766e"/>
+  <text x="520" y="112" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Strategy</text>
+  <text x="520" y="127" font-size="8" fill="#ccfbf1" text-anchor="middle">fire?</text>
+
+  <!-- Risk gate -->
+  <rect x="484" y="164" width="72" height="52" rx="7" fill="#be123c"/>
+  <text x="520" y="185" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Risk gate</text>
+  <text x="520" y="199" font-size="8" fill="#fecdd3" text-anchor="middle">inline</text>
+  <text x="520" y="210" font-size="8" fill="#fecdd3" text-anchor="middle">pre-trade</text>
+
+  <!-- Order builder -->
+  <rect x="386" y="164" width="86" height="52" rx="7" fill="#b45309"/>
+  <text x="429" y="185" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Order build</text>
+  <text x="429" y="199" font-size="8" fill="#fde68a" text-anchor="middle">format +</text>
+  <text x="429" y="210" font-size="8" fill="#fde68a" text-anchor="middle">checksum</text>
+
+  <!-- Capture tap -->
+  <rect x="190" y="230" width="284" height="48" rx="7" fill="#334155"/>
+  <text x="332" y="251" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="600">Capture tap (parallel): timestamp every msg + order</text>
+  <text x="332" y="266" font-size="8" fill="#cbd5e1" text-anchor="middle">DMA off-chip, never inline with tick-to-trade</text>
+
+  <!-- Exchange order out -->
+  <rect x="680" y="90" width="120" height="60" rx="8" fill="#1d4ed8"/>
+  <text x="740" y="115" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Exchange</text>
+  <text x="740" y="131" font-size="9" fill="#dbeafe" text-anchor="middle">order entry</text>
+
+  <!-- Host CPU -->
+  <rect x="680" y="230" width="120" height="82" rx="8" fill="#6d28d9"/>
+  <text x="740" y="252" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">Host CPU</text>
+  <text x="740" y="268" font-size="8" fill="#ede9fe" text-anchor="middle">slow-path software</text>
+  <text x="740" y="281" font-size="8" fill="#ede9fe" text-anchor="middle">params + limits</text>
+  <text x="740" y="294" font-size="8" fill="#ede9fe" text-anchor="middle">position + logging</text>
+  <text x="740" y="307" font-size="8" fill="#ede9fe" text-anchor="middle">over PCIe</text>
+
+  <!-- Flow arrows through pipeline -->
+  <line x1="140" y1="100" x2="188" y2="112" stroke="#1d4ed8" stroke-width="2" marker-end="url(#fpgaArrowBlue)"/>
+  <line x1="276" y1="117" x2="286" y2="117" stroke="#0f766e" stroke-width="2" marker-end="url(#fpgaArrowTeal)"/>
+  <line x1="374" y1="117" x2="384" y2="117" stroke="#0f766e" stroke-width="2" marker-end="url(#fpgaArrowTeal)"/>
+  <line x1="472" y1="117" x2="482" y2="117" stroke="#0f766e" stroke-width="2" marker-end="url(#fpgaArrowTeal)"/>
+  <!-- strategy -> risk -->
+  <line x1="520" y1="144" x2="520" y2="162" stroke="#be123c" stroke-width="2" marker-end="url(#fpgaArrowRed)"/>
+  <!-- risk -> order build -->
+  <line x1="484" y1="190" x2="474" y2="190" stroke="#be123c" stroke-width="2" marker-end="url(#fpgaArrowRed)"/>
+  <!-- order build -> PHY/MAC (emit) up-left back to phy -->
+  <line x1="386" y1="180" x2="240" y2="146" stroke="#b45309" stroke-width="2" marker-end="url(#fpgaArrowAmber)"/>
+  <!-- PHY -> exchange out -->
+  <line x1="276" y1="104" x2="678" y2="104" stroke="#b45309" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#fpgaArrowAmber)"/>
+  <text x="470" y="98" font-size="8" fill="#b45309" text-anchor="middle">order onto the wire</text>
+
+  <!-- host <-> fpga config -->
+  <line x1="680" y1="255" x2="476" y2="252" stroke="#6d28d9" stroke-width="2" marker-end="url(#fpgaArrowViolet)"/>
+  <text x="590" y="245" font-size="8" fill="#6d28d9" text-anchor="middle">config in / capture out (PCIe)</text>
+
+  <!-- tick-to-trade label -->
+  <text x="333" y="163" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">tick-to-trade: low hundreds of ns, deterministic</text>
+
+  <!-- note -->
+  <rect x="20" y="350" width="500" height="72" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="270" y="372" font-size="9" fill="#334155" text-anchor="middle" font-weight="600">The CPU parameterizes and observes the fast path.</text>
+  <text x="270" y="388" font-size="9" fill="#334155" text-anchor="middle">It is never a stage IN the tick-to-trade pipeline: the moment</text>
+  <text x="270" y="402" font-size="9" fill="#334155" text-anchor="middle">software sits in the loop, OS + PCIe jitter reintroduces the</text>
+  <text x="270" y="416" font-size="9" fill="#334155" text-anchor="middle">microsecond tail the FPGA exists to remove.</text>
+
+  <defs>
+    <marker id="fpgaArrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="fpgaArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="fpgaArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#b45309"/>
+    </marker>
+    <marker id="fpgaArrowViolet" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#6d28d9"/>
+    </marker>
+    <marker id="fpgaArrowRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#be123c"/>
+    </marker>
+  </defs>
+</svg>
