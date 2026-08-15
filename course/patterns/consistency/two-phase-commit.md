@@ -244,6 +244,10 @@ Two-phase commit reaches production through XA/JTA transaction managers that coo
   [Paxos](/docs/patterns/consistency/paxos) — consensus protocols that
   avoid 2PC's blocking-on-coordinator-failure weakness by replicating the
   commit decision through a quorum rather than trusting one coordinator.
+- [Multi-Master Replication](/docs/patterns/consistency/multi-master-replication) —
+  gives up the real cross-node transaction 2PC provides in exchange for
+  every node accepting writes independently, with conflicts reconciled
+  after the fact instead of prevented up front.
 
 ## Further reading
 

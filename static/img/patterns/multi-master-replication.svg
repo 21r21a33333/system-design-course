@@ -1,0 +1,45 @@
+<svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="760" height="340" fill="#ffffff"/>
+
+  <defs>
+    <marker id="mmrArrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="mmrArrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+
+  <text x="380" y="24" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Every master accepts writes locally; masters reconcile with each other in the background</text>
+
+  <!-- Master A -->
+  <rect x="60" y="55" width="180" height="60" rx="8" fill="#0f766e"/>
+  <text x="150" y="80" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Master A (us-east)</text>
+  <text x="150" y="98" font-size="9" fill="#ccfbf1" text-anchor="middle">accepts local writes</text>
+
+  <!-- Master B -->
+  <rect x="520" y="55" width="180" height="60" rx="8" fill="#0f766e"/>
+  <text x="610" y="80" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Master B (eu-west)</text>
+  <text x="610" y="98" font-size="9" fill="#ccfbf1" text-anchor="middle">accepts local writes</text>
+
+  <!-- Master C -->
+  <rect x="290" y="240" width="180" height="60" rx="8" fill="#0f766e"/>
+  <text x="380" y="265" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Master C (ap-south)</text>
+  <text x="380" y="283" font-size="9" fill="#ccfbf1" text-anchor="middle">accepts local writes</text>
+
+  <!-- Bidirectional async replication edges -->
+  <line x1="240" y1="80" x2="518" y2="80" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#mmrArrowTeal)" marker-start="url(#mmrArrowTeal)"/>
+  <text x="380" y="72" font-size="8.5" fill="#0f766e" text-anchor="middle">async replication</text>
+
+  <line x1="120" y1="115" x2="330" y2="242" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#mmrArrowTeal)" marker-start="url(#mmrArrowTeal)"/>
+  <line x1="640" y1="115" x2="430" y2="242" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#mmrArrowTeal)" marker-start="url(#mmrArrowTeal)"/>
+
+  <!-- Conflict callout -->
+  <rect x="230" y="145" width="300" height="60" rx="8" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="380" y="166" font-size="9.5" fill="#92400e" text-anchor="middle" font-weight="600">Concurrent write to the same key at A and B</text>
+  <text x="380" y="182" font-size="9" fill="#92400e" text-anchor="middle">neither version vector dominates the other --</text>
+  <text x="380" y="196" font-size="9" fill="#92400e" text-anchor="middle">reconciled later, e.g. by last-write-wins</text>
+
+  <text x="150" y="135" font-size="8" fill="#64748b" text-anchor="middle">reads + writes never pause here</text>
+  <text x="610" y="135" font-size="8" fill="#64748b" text-anchor="middle">reads + writes never pause here</text>
+</svg>

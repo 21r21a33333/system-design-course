@@ -272,6 +272,11 @@ reads away from the primary.
   fencing and single-writer discipline a correct primary promotion
   relies on to avoid two nodes both believing they're the primary at
   once.
+- [Multi-Master Replication](/docs/patterns/consistency/multi-master-replication) —
+  the direct alternative when the single-writer constraint here becomes
+  the bottleneck: every node accepts writes independently, trading this
+  pattern's simpler consistency model for no read-only window during
+  failover.
 
 ## Further reading
 

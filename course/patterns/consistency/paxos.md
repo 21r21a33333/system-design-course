@@ -347,6 +347,11 @@ Paxos is almost never consumed as a drop-in library — it is an algorithm embed
   the data-replication layer a Paxos/Multi-Paxos group ultimately drives:
   consensus decides the *order* of writes, replication carries them to
   every copy.
+- [Multi-Master Replication](/docs/patterns/consistency/multi-master-replication) —
+  the availability-favoring alternative when Paxos's synchronous
+  cross-node round trip is too costly for the write path: every node
+  accepts writes independently and reconciles conflicts afterward
+  instead of agreeing before the write is acknowledged.
 
 ## Further reading
 

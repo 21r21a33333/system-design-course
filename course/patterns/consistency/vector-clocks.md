@@ -257,6 +257,10 @@ that implement causal-context tracking for you.
   the situation where multiple replica versions get compared, and
   vector clocks are what let that comparison detect real conflicts
   instead of assuming the most recent write always wins.
+- [Multi-Master Replication](/docs/patterns/consistency/multi-master-replication) —
+  the pattern whose reconciliation logic this page's dominance check is
+  built for: telling a causally-later write apart from a truly
+  concurrent one before falling back to a cruder tiebreak.
 
 ## Further reading
 

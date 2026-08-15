@@ -25,4 +25,4 @@ This approach is seen in file systems and RDBMSes.  Strong consistency works wel
 
 ### Source(s) and further reading
 
-* [Transactions across data centers](http://snarfed.org/transactions_across_datacenters_io.html)
+* [Transactions Across Datacenters](/docs/patterns/consistency/transactions-across-datacenters) — this course's condensed walkthrough of Ryan Barrett's Google I/O talk on the five techniques for multihoming a datastore across datacenters (including [Multi-Master Replication](/docs/patterns/consistency/multi-master-replication)), evaluated on consistency, latency, data-loss risk, and failover behavior — and the real trade-off that pushed Google App Engine's own datastore to primary-replica replication over Paxos.
